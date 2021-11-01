@@ -1,0 +1,10 @@
+"0","	if (print.times) {
+		ptm <- proc.time()
+		cat(""\n"")
+		cat(""Be patient. The program is computing ... \n"")
+	}
+"
+"1","
+"
+"1","Be patient. The program is computing ... 
+"

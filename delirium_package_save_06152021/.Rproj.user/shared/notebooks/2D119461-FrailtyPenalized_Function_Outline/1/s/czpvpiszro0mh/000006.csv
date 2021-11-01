@@ -1,0 +1,4 @@
+"0","		stop(""init.Ksi and Ksi parameters belong only to nested joint frailty model"")
+"
+"2","Error in missing(Ksi) : 'missing' can only be used for arguments
+"

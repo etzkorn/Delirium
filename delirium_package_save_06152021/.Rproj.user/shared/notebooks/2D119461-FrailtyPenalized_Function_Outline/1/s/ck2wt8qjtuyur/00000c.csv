@@ -1,0 +1,64 @@
+"0","	if ((all.equal(length(hazard), 1) == T) == T) {
+		if (!(hazard %in% c(""Weibull"", ""Piecewise"", ""Splines""))) {
+			stop(""Only 'Weibull', 'Splines' or 'Piecewise' hazard can be specified in hazard argument."")
+		}else {
+			typeof <- switch(hazard, Splines = 0, Piecewise = 1, 
+				     Weibull = 2)
+			if (typeof == 0) {
+				if (!missing(nb.int)) {
+					stop(""When the hazard function equals 'Splines' or 'Weibull', 'nb.int' argument must be deleted."")
+				}
+				size1 <- 100
+				size2 <- 100
+				equidistant <- 1
+				nbintervR <- 0
+				nbintervDC <- 0
+			}
+			if (typeof == 2) {
+				if (!missing(nb.int)) {
+					stop(""When the hazard function equals 'Splines' or 'Weibull', 'nb.int' argument must be deleted."")
+				}
+				size1 <- 100
+				size2 <- 100
+				equidistant <- 2
+				nbintervR <- 0
+				nbintervDC <- 0
+			}
+			if (typeof == 1) {
+				stop(""The hazard argument is incorrectly specified. Type of hazard are required ('per' or 'equi'). Please refer to the help file of frailtypack."")
+			}
+		}
+	}else {
+		if (all(!(c(""Splines"", ""Piecewise"") %in% hazard))) {
+			stop(""Only 'Splines' and 'Piecewise' hazard can be specified in hazard argument in this case"")
+		}
+		if (""Splines"" %in% hazard) {
+			typeof <- 0
+			if (!(all(hazard %in% c(""Splines"", ""per"")))) {
+				stop(""The hazard argument is incorrectly specified. Only 'per' is allowed with 'Splines'. Please refer to the help file of frailtypack."")
+			}else {
+				if (haztemp == ""Splines-per"") 
+					equidistant <- 0
+				else equidistant <- 1
+				size1 <- 100
+				size2 <- 100
+				nbintervR <- 0
+				nbintervDC <- 0
+			}
+		}
+		if (""Piecewise"" %in% hazard) {
+			typeof <- 1
+			if (!(all(hazard %in% c(""Piecewise"", ""per"", ""equi"")))) {
+				stop(""The hazard argument is incorrectly specified. Type of hazard are required ('per' or 'equi'). Please refer to the help file of frailtypack."")
+			}else {
+				if (!(haztemp %in% c(""Piecewise-per"", ""Piecewise-equi""))) {
+					stop(""The hazard argument is incorrectly specified. Please refer to the help file of frailtypack."")
+				}
+				equidistant <- switch(haztemp, `Piecewise-per` = 0, 
+					          `Piecewise-equi` = 1)
+			}
+		}
+	}
+"
+"2","Error in missing(nb.int) : 'missing' can only be used for arguments
+"
