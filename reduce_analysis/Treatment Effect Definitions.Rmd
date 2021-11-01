@@ -1,0 +1,110 @@
+---
+title: "Simulated_Treatment_Effects"
+author: "Lacey Etzkorn"
+date: "3/18/2021"
+output: html_document
+---
+
+We want to take parameters from our model and convert them into more interpretable parameters, so that when we simulate different treatment effects from our model, clinicians can understand the clinical significance of the treatment effect. 
+Here we list some treatment effects we may be interested in.
+
+# General Competing Joint Model
+
+$$
+    r_{ij}(t|w_i, X_{ij}) = r_0(t) \exp(X_{i} \gamma_r + \frac 12 [w_i + u_i]) \\
+    \lambda_{i}^{(1)}(t|w_i, X_{ij}) = \lambda_0^{(1)}(t) \exp(X_{i} \gamma_1 + \alpha_{1} w_i) \\
+    \lambda_{i}^{(2)}(t|w_i, X_{ij}) = \lambda_0^{(2)}(t) \exp(X_{i} \gamma_2 + \alpha_{2} u_i) \\
+        r_0(t) =  \frac{\eta_r \cdot t^{\eta_r-1}}{\beta_r^{\eta_r}} \text{(weibull hazard)}\\
+    \lambda_0^{(1)}(t) = \frac{\beta_1 \cdot t^{\beta_1-1}}{\eta_1^{\beta_1}} \text{(weibull hazard)}\\
+    \lambda_0^{(2)}(t) = \frac{\beta_2 \cdot t^{\beta_2-1}}{\eta_2^{\beta_2}} \text{(weibull hazard)}\\
+    \langle w_i, u_i \rangle \sim_{IID} N_2(0,\Sigma_2)
+$$
+
+Note that when $\Sigma_{12} = 1$, $w_i = u_i$ and this model simplifies to the shared competing joint model. 
+
+Hence, we can generate data from the shared model using fits from the REDUCE trial.
+
+$$
+    \textbf{Fitted Values:}\\
+    \gamma_r = -0.578 , \gamma_1 = 0.033 , \gamma_2 = 0.118 \text{  (treatment effects)}\\
+    \eta_r = 22.1, \eta_1 = 24.1, \eta_2 = 8.4 \text{  (weibull scale)}\\
+    \beta_r = 0.83, \beta_1 = 1.84, \beta_2 = 1.14 \text{  (weibull shape)}\\
+    \alpha_1 = -0.092;  
+    \alpha_2 = -0.313; 
+    \theta = 2.272 \\
+    \text{Maximum Observation (Censoring) Time } = 28
+$$
+
+# Calculating Parameters of Interest
+
+It is important to note that when we calculate these averages, we make a lot of assumptions about the shape of the tail of the distribution. Should we calculate medians instead?
+
+### Proportion of People who Die
+
+```{r}
+w <- rnorm(50000, 0, sqrt(2.272))
+t1 <- rweibull(50000, shape = 1.84, scale = 24.1 * exp(0.092*w/1.84)) # exponentiate frailty by -1/shape when modifying hazard
+t2 <- rweibull(50000, shape = 1.14, scale = 8.4 * exp(0.313*w/1.14)) 
+mean(t1 < t2 & t1 < 28)
+```
+
+This is less than the proportion of people who actually die in the study, 0.171.
+
+# Proposing Treatment Effects
+
+### Average/Median Time between Delirium Episodes
+
+We want to increase the time between delirium episodes by 0.5 days on average.
+
+For the person with the average random effect in the placebo group, the hazard of delirium is described by $\eta_r = 22.1$ and $\beta_r = 0.83$, 
+for which the estimated average time between delirium episodes is $\eta_r \Gamma(1 + \beta_r ^{-1}) = `r round(22.1 * gamma(1+1/0.83),2)`$ days. The estimated median time between delirium episodes is $\eta_r \ln(2) ^{1 / \beta_r} = `r round(22.1 * log(2)^(1/0.83),2)`$ days.
+
+
+### Median Time to Observed Death
+
+For the person with the average random effect in the placebo group, the hazard of death is described by $\eta_1 = 24.1$ and $\beta_1 = 1.84$, 
+for which the estimated median time to death is $\eta_1 \ln(2) ^{1 / \beta_1} = `r round(24.1 * log(2)^(1/1.84),2)`$ days.
+
+Extend median survival among people who die by two days.
+
+```{r}
+w <- rnorm(100000, 0, sqrt(2.272))
+t1 <- rweibull(100000, shape = 1.84, scale = 24.1 * exp(0.092*w/1.84)) # exponentiate frailty by -1/shape when modifying hazard
+t1.treated <- rweibull(100000, shape = 1.84, scale = 24.1 * exp(0.092*w/1.84) * 0.37^(-1/1.84)) # relative hazard of 0.62
+median(t1[t1< t2 & t1< 28]); median(t1.treated[t1.treated < t2 & t1.treated < 28])
+```
+
+The relative hazard of death would need to be 0.37. 
+
+```{r}
+mean(t1< t2 & t1< 28);mean(t1.treated < t2 & t1.treated < 28)
+```
+
+Changing this parameter also reduced mortality by more than half.
+
+### Median Time to Observed Discharge
+
+
+For the person with the average random effect in the placebo group, the hazard of discharge is described by $\eta_2 = 8.4$ and $\beta_2 = 1.14$, 
+for which the estimated median time to discharge is $\eta_2 \ln(2) ^{1 / \beta_2} = `r round(8.4 * log(2)^(1/1.14),2)`$ days.
+
+Reduce time to discharge by a median of 1 day.
+
+```{r}
+t2.treated <- rweibull(100000, shape = 1.14, scale = 8.4 * exp(0.313*w/1.14) * 1.4^(-1/1.14)) # relative hazard of 0.62
+median(t2[t2< t1 & t2 < 28 ]); median(t2.treated[t2.treated < t1 & t2.treated < 28])
+```
+
+The relative hazard of discharge would need to be approximately 1.4.
+
+### Proportion of People who Die
+
+What relative hazard would need would need to be associated with the treatment effect for there to be a 5% reduction in mortality in the treatment arm?
+
+```{r}
+t1.treated <- rweibull(100000, shape = 1.84, scale = 24.1 * exp(0.092*w/1.84) * 0.62^(-1/1.84)) # relative hazard of 0.62
+mean(t1 < t2 & t1 < 28); mean(t1.treated < t2 & t1.treated < 28)
+```
+
+The relative hazard of death would need to be approximately 0.62
+
