@@ -1,0 +1,55 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+# Model Formulation
+
+We formulate our model so that the random frailty term will be centered around 0 on the scale of the linear predictor, NOT be directly proportional to the hazard with mean 1. We also have a slightly different, but equivalent formulation of the Weibull density.
+
+$$
+\begin{align}
+ && \textbf{EM Algorithm} 
+ && \textbf{Frailty Pack} 
+ &&& \textbf{Difference}
+\\
+&\text{Frailty Distribution } 
+& w_i \sim N(0,\sigma^2)  
+&& \exp(v_i) \sim LN(1,\theta) 
+&&& \text{Frailties are centered around different constants.}
+\\
+&&&&&&& v_i \sim N(-\sigma^2/2, \sigma^2), \sigma^2 = \ln(\theta + 1) \Rightarrow w_i = v_i + \sigma^2/2
+\\
+&\text{Weibull Density} 
+&  f(y) = b_i k y^{k-1} \exp( - b_i \cdot y^k)
+&&  f(y) = h_i^{-k} k y^{k-1} \exp( - h_i^{-k} \cdot y^k)
+&&&  b_i = h_i^{-k}
+\\
+\\
+& \text{Weibull Hazard} 
+&  \lambda(y) = b_i k y^{k-1} 
+&&  \lambda(y) = h_i^{-k} k y^{k-1}
+\\
+\\
+&\text{Weibull Survivor} 
+&S(y) = \exp( - b_i \cdot y^k)
+&&S(y)=  \exp( - h_i^{-k} \cdot y^k)
+\\
+\\
+&\text{Rec. Link and Predictor}
+&  b_{xi} = \exp(X_i \beta_x + w_i)
+&&  h_{ix}^{-k} = \exp(X_i \beta_x + \ln(v_i))
+&&& \text{Interpretation of }\beta_{x0} \text{ will vary. } \beta_{EMx0} \approx \beta_{FPx0} -  \sigma^2/2
+\\
+\\
+&\text{Term. Link and Predictor}
+&  b_{yi} = \exp(X_i \beta_y + \alpha w_i)
+&&  h_{yi}^{-k_y} = \exp(X_i \beta_y + \alpha \ln(v_i))
+&&& \text{Interpretation of }\beta_{y0} \text{ will vary. } \beta_{EMy0} \approx \beta_{FPy0} - \alpha \sigma^2/2
+\\
+\\
+\end{align}
+$$
+
