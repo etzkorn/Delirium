@@ -1,0 +1,197 @@
+---
+title: "Simulation of Competing (Gap) Joint Model"
+output: html_document
+---
+```{r, echo =FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(frailtypack); library(tidyverse)
+source("../delirium_package/R/competing_simulate_data.R")
+source("../delirium_package/R/random_weibull.R")
+source("../delirium_package/R/extract_frailtypack_coef_weibullgap.R")
+```
+
+No treatment effects, but what if alpha1 and alpha2 are in the same direction.
+
+We simulate an artificial data set where shape parameters match estimates from the reduce trial.
+Scale parameters are chosen by us (20,25,10).
+Simulated treatment effects are all 0.
+We also set alpha1 = -0.3, alpha2 = -0.1 and theta = 1.
+
+In the code below, I make the mistake of simulating from the gap time framework, 
+but fitting the calendar times model.
+
+# Competing Joint Model
+
+$$
+    r_{ij}(t|w_i, X_{ij}) = r_0(t) \exp(X_{i} \gamma_r + \frac 12 [w_i + u_i]) \\
+    \lambda_{i}^{(1)}(t|w_i, X_{ij}) = \lambda_0^{(1)}(t) \exp(X_{i} \gamma_1 + \alpha_{1} w_i) \\
+    \lambda_{i}^{(2)}(t|w_i, X_{ij}) = \lambda_0^{(2)}(t) \exp(X_{i} \gamma_2 + \alpha_{2} u_i) \\
+        r_0(t) =  \frac{\eta_r \cdot t^{\eta_r-1}}{\beta_r^{\eta_r}} \text{(weibull hazard)}\\
+    \lambda_0^{(1)}(t) = \frac{\beta_1 \cdot t^{\beta_1-1}}{\eta_1^{\beta_1}} \text{(weibull hazard)}\\
+    \lambda_0^{(2)}(t) = \frac{\beta_2 \cdot t^{\beta_2-1}}{\eta_2^{\beta_2}} \text{(weibull hazard)}\\
+    w_i \sim_{IID} N(0,\sigma^2)
+$$
+
+Hence, we can generate data from the shared model using fits from the REDUCE trial.
+
+$$
+    \textbf{Simulation Values:}\\
+    \gamma_r = 0, \gamma_1 = 0, \gamma_2 = 0 \text{  (treatment effects)}\\
+    \eta_r =20, \eta_1 = 25, \eta_2 = 10 \text{  (weibull scale)}\\
+    \beta_r = 1, \beta_1 = 1.8, \beta_2 = 1.15 \text{  (weibull shape)}\\
+    \alpha_1 = -0.3;  
+    \alpha_2 = -0.1; 
+    \theta = 1 \\
+    \text{Maximum Observation (Censoring) Time } = 28
+$$
+
+# Test Competing Joint Model 
+
+```{r, fig.height = 14, fig.width=18}
+set.seed(080421)
+par00 = c(betaR = 1, etaR = 20,
+         betaD = 1.8, etaD = 25,         
+         betaD2 = 1.15, etaD2 = 10,
+         theta = 1, alpha1 = -0.3, alpha2 = -0.1,
+         trtR = 0, trtD = 0, trtD2 = 0)
+
+data <- 
+simulate.competing.data(n = 1200,
+		truncate = 28,
+		par0 = par00)
+
+data %>% 
+group_by(id) %>% 
+summarise(del = any(event==1), 
+          death = any(terminal1==1), 
+          discharge = any(terminal2==1)) %>% 
+summarise(mean(del), mean(death), mean(discharge), 
+          mean(death*del)/mean(death), mean((discharge*del))/mean(discharge)) %>% 
+t
+```
+
+
+```{r}
+mod0 <- 
+multivPenal(
+formula = Surv(t0, t, event)~cluster(id)+trt+terminal(terminal1)+terminal2(terminal2),
+formula.terminalEvent=~trt,
+formula.terminalEvent2=~trt,
+data=data, 
+jointGeneral = F,
+initialize = FALSE, 
+save.progress = T,
+hazard = "Weibull",
+gapTimes=F,
+maxit = 200,
+init.hazard = c(1,1,1,1,1,1),
+init.Theta = 1,
+init.Alpha1 = -0.25,
+init.Alpha2 = -0.1,
+init.B = c(0,0,0))
+
+mod0$critCV
+mod0$summary.table
+```
+
+# Simulate Data and Fit General Model
+
+In this version, we will use the true data generating values as the starting point for the optimizer.
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.height = 8, fig.width = 12}
+set.seed(012921)
+nsim = 1000
+par0 = rep(each = nsim, list(par00))
+
+####################################################################
+# Generate Data
+if(!file.exists("../package_test_output/CompetingJointModels_20210803.rdata")){
+data0 <- 
+map(par0, 
+    ~simulate.competing.data(n = 1200,truncate = 2,par0 = .))
+
+# Fit models
+mod.joint.a <- list()
+
+for(i in 1:length(par0)){
+mod.joint.a[[i]] <-
+multivPenal(formula = Surv(t0, t, event) ~ trt + cluster(id) +
+		terminal(terminal1) + terminal2(terminal2),
+formula.terminalEvent = ~trt, 
+formula.terminalEvent2= ~trt,
+jointGeneral = F,
+data = data0[[i]],
+gapTimes=FALSE,
+hazard = "Weibull",
+maxit = 100, 
+initialize = F,
+init.hazard = par00[1:6],
+init.Theta = par00[7],
+init.Alpha1 = par00[8],
+init.Alpha2 = par00[9],
+init.B = c(0,0,0))
+cat("Model ", i, "complete.\n")
+save(data0, mod.joint.a, file = "../package_test_output/CompetingJointModels_20210803.rdata")
+}
+} else load(file = "../package_test_output/CompetingJointModels_20210803.rdata")
+
+####################################################################
+# Combine  Results
+truth =
+tibble(Parameter = mod.joint.a[[1]]$summary.table$Parameter,
+truth = par00)
+
+results <- 
+tibble(data = 1:(nsim),
+       est = map(mod.joint.a, ~.$summary.table),
+       error = map(mod.joint.a, ~.$critCV[2]) %>% unlist %>% 
+           factor(labels = c("None","Maxit","Calculation")),
+       anyerror = map(mod.joint.a, ~.$critCV[2]!=1)%>% unlist,
+       error2 = map(mod.joint.a, ~.$critCV[2] ==2) %>% unlist,
+       error4 = map(mod.joint.a, ~.$critCV[2] ==4) %>% unlist) %>% 
+unnest(c(est))
+
+# Plot Results
+results %>% 
+#filter(!error) %>%
+ggplot()+
+geom_point(aes(y = data, x = Estimate, color = factor(error))) +
+facet_wrap("Parameter", scales = "free") +
+geom_vline(data = truth, aes(xintercept = truth), color = "red") +
+scale_color_manual(values = c("black", "blue", "red"))+
+theme_bw()+
+labs(title = "Joint Model Simulation Results under Different Values of Theta, Alpha1 (R = 1000, n = 1200)")
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+tab_start <-
+results %>%mutate(Truth = rep(truth$truth,nsim)) %>%
+group_by(Parameter) %>%
+summarise(Truth = Truth[1], Mean = mean(Estimate[!anyerror]),
+          SD = sd(Estimate[!anyerror], na.rm=T),
+          Est.SD = mean(Estimate.SE[!anyerror], na.rm=T), .groups = "drop"
+) %>%
+pivot_longer(cols = Mean:Est.SD) %>%
+mutate(value = round(value, 3)) %>%
+pivot_wider(names_from = c(name), values_from = value)
+
+library(gt)
+gt(tab_start, rowname_col = "Parameter")%>%
+tab_stubhead(label = "Parameter")%>%
+tab_header(
+    title = md("**Joint Model Frailty Pack Fits (R = 1,000, n = 1,200)**"))%>%
+cols_label(
+    Truth = html("True Value"),
+    Mean = html("Avg. Estimate"),
+    SD = html("SE"),
+    Est.SD = html("Avg. Est. SE")
+)
+```
+
+# Errors
+
+```{r}
+mean(results$anyerror)
+mean(results$error2)
+mean(results$error4)
+```

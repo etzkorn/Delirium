@@ -1,0 +1,275 @@
+---
+title: "Simulation of Classic Joint Model"
+output: html_document
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+## Estimation Model
+
+$$
+    r_{ij}(t|w_i, X_{ij}) = r_0(t) \exp(X_{i} \gamma_r + w_i) \\
+    r_0(t) =  \frac{\eta_r \cdot t^{\eta_r-1}}{\beta_r^{\eta_r}} \text{(weibull hazard)}\\
+    \lambda_{i}^{(1)}(t|w_i, X_{ij}) = \lambda_0^{(1)}(t) \exp(X_{i} \gamma_1 + \alpha_{1} w_i) \\
+    \lambda_{i}^{(2)}(t|w_i, X_{ij}) = \lambda_0^{(2)}(t) \exp(X_{i} \gamma_2 + \alpha_{2} w_i) \\
+    \lambda_0^{(1)}(t) = \frac{\eta_1 \cdot t^{\eta_1-1}}{\beta_1^{\eta_1}} \text{(weibull hazard)}\\
+    \lambda_0^{(2)}(t) = \frac{\eta_2 \cdot t^{\eta_2-1}}{\beta_2^{\eta_2}} \text{(weibull hazard)}\\
+    w_i \sim_{IID} N(0,\theta)
+$$
+
+$$
+    \textbf{Simulation Values:}\\
+    \gamma_r = 0.5 , \gamma_1 = 0 , \gamma_2 = 0 \text{(treatment effects)}\\
+    \eta_r = 0.5, \eta_1 = 1, \eta_2 = 1 \text{(weibull scale)}\\
+    \beta_r = 1, \beta_1 = 1, \beta_2 = 1 \text{(weibull shape, exponential)}\\
+    \alpha_1 = 0 \text{ or } 0.1\\
+    \alpha_2 = 0 \\
+    \theta = 0.5 \text{ or } 0.1 \\
+    \text{Maximum Observation (Censoring) Time }=2
+$$
+
+
+# Vary Parameters (Theta Alpha)
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.height = 8, fig.width = 12}
+nsim = 100
+library(frailtypack); library(tidyverse)
+source("../delirium_package/R/simulate_competing_data.R")
+source("../delirium_package/R/random_weibull.R")
+source("../delirium_package/R/extract_frailtypack_coef_weibullgap.R")
+set.seed(080492)
+par0 = rep(each = nsim, list(
+       c(betaR = 1, etaR = .5,
+         betaD = 1, etaD = 1,         
+         betaD2 = 1, etaD2 = 1,
+         theta = 0.1, alpha1 = 0, alpha2 = 0,
+         trtR = 0.5, trtD = 0, trtD2 = 0),
+      c(betaR = 1, etaR = .5,
+         betaD = 1, etaD = 1,
+         betaD2 = 1, etaD2 = 1,         
+         theta = 0.5, alpha1 = 0, alpha2 = 0,
+         trtR = 0.5, trtD = 0, trtD2 = 0),
+       c(betaR = 1, etaR = .5,
+         betaD = 1, etaD = 1,
+         betaD2 = 1, etaD2 = 1,
+         theta = 0.1, alpha1 = 0.1, alpha2 = 0,
+         trtR = 0.5, trtD = 0, trtD2 = 0),
+      c(betaR = 1, etaR = .5,
+         betaD = 1, etaD = 1,
+         betaD2 = 1, etaD2 = 1,         
+         theta = 0.5, alpha1 = 0.1, alpha2 = 0,
+         trtR = 0.5, trtD = 0, trtD2 = 0)
+       ))
+truth =
+expand.grid(theta = c(0.5, 0.1),
+	alpha1 = c(0, 0.1),
+	Parameter = c("betaR", "etaR",
+	          "betaD", "etaD", "betaD2", "etaD2","theta","alpha1","alpha2",
+		"trtR", "trtD", "trtD2")) %>%
+mutate(truth = rep(c(1,0.5, 1,1,1,1,-1,-1,0,0.5,0,0), each = 4),
+       label= paste0("Theta = ", theta, ", Alpha1 = ", alpha1),
+       truth = ifelse(Parameter == "theta", theta, truth),
+       truth = ifelse(Parameter == "alpha1", alpha1, truth))
+
+####################################################################
+# Generate Data
+if(!file.exists("CompetingJointModelsA_011121.rdata")){
+data0 <- 
+map(par0, 
+    ~simulate.competing.data(n = 500,truncate = 2,par0 = .))
+
+# Fit models
+mod.joint.a <- list()
+for(i in 1:length(par0)){
+mod.joint.a[[i]] <-
+multivPenal(formula = Surv(t0, t, event) ~ trt + cluster(id) +
+		terminal(terminal1) + terminal2(terminal2),
+	formula.terminalEvent = ~trt, 
+	formula.terminalEvent2= ~trt,
+	data = data0[[i]],
+	recurrentAG=FALSE,
+	hazard = "Weibull",
+	maxit = 100, initialize = F)
+cat("Model ", i, "complete.\n")
+}
+save(data0, mod.joint.a, file = "CompetingJointModelsA_011121.rdata")
+} else load(file = "CompetingJointModelsA_011121.rdata")
+
+####################################################################
+# Combine  Results
+results <- 
+tibble(data = 1:(4*nsim),
+       par0 = par0,
+       label = rep(c("Theta = 0.1, Alpha1 = 0", 
+       	      "Theta = 0.5, Alpha1 = 0",
+       	      "Theta = 0.1, Alpha1 = 0.1",
+       	      "Theta = 0.5, Alpha1 = 0.1"), each = nsim),
+       fits =  mod.joint.a,
+       est = map(fits, ~.$b), 
+       error = map(fits, ~.$critCV[2] !=1) %>% unlist
+       ) %>% 
+mutate(par0 = map(par0, ~tibble(par0 = ., Parameter = names(.)))) %>%
+unnest(c(est,par0)) %>%
+select(-fits) %>%
+mutate(est = ifelse(Parameter %in% c("betaR", "etaR", "betaD","etaD","betaD2","etaD2","theta"),
+	        exp(est)^2, est))
+
+# Plot Results
+results %>% 
+arrange(error) %>%
+ggplot()+
+geom_point(aes(y = data, x = est, color = error)) +
+facet_grid(label~Parameter, scales = "free") +
+geom_vline(data = truth, aes(xintercept = truth), color = "red") +
+scale_color_manual(values = c("black", "red"))+
+theme_bw()+
+labs(title = "Joint Model Simulation Results under Different Values of Theta, Alpha1 (R = 100, n = 500)",
+     caption = "Note: For all simulations, etaR = 0.5; betaR, betaD, etaD, betaD2, etaD2 = 1; trtR = 0.5; trtD, trtD2 = 0")
+```
+
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+tab_start <-
+results %>%
+group_by(label, Parameter) %>%
+summarise(Truth = mean(par0[!error]),
+          Mean = mean(est[!error]),
+          Bias = mean(est[!error] - par0[!error], na.rm=T),
+          RMSE = sqrt(mean((est[!error] - par0[!error])^2, na.rm=T)),
+          SD = sd(est[!error], na.rm=T),
+          Bias_SD = Bias / SD,
+          Failure_Percent = 100*mean(error)
+) %>%
+pivot_longer(cols = Mean:Failure_Percent) %>%
+mutate(value = round(value, 3)) %>%
+pivot_wider(names_from = c(name), values_from = value)
+
+library(gt)
+gt(data = tab_start, rowname_col = "Parameter")%>%
+tab_stubhead(label = "Parameter")%>%
+tab_header(
+    title = md("**Joint Model Frailty Pack Fits (R = 100, n = 500)**"))%>%
+cols_label(
+    Truth = html("True Value"),
+    Mean = html("Avg. Estimate"),
+    RMSE = html("RMSE"),
+    Bias = html("Bias"),
+    SD = html("SE"),
+    Bias_SD = html("Bias / SE"),
+    Failure_Percent = html("Failure %")
+)
+```
+
+# Investigate Fitting Errors
+
+```{r, fig.height = 7, fig.width = 10, message = FALSE, warning = FALSE}
+data.sum <- 
+tibble(data = 1:(4*nsim),
+       par0 = par0,
+       label = rep(c("Theta = 0.1, Alpha1 = 0", 
+       	      "Theta = 0.5, Alpha1 = 0",
+       	      "Theta = 0.1, Alpha1 = 0.1",
+       	      "Theta = 0.5, Alpha1 = 0.1"), each = nsim),
+       fits =  mod.joint.a,
+       est = map(fits, ~.$b), 
+       error = map(fits, ~.$critCV[2] !=1) %>% unlist
+       ) %>% 
+mutate(n.terminal1 = map(data0, ~sum(.$terminal1)) %>% unlist,
+       n.terminal2 = map(data0, ~sum(.$terminal2)) %>% unlist,
+       n.censored = map(data0, ~500 - sum(.$terminal1+.$terminal2)) %>% unlist,
+       n.noevents = map(data0, 
+       	            ~group_by(., id) %>% 
+       	     	summarise(n = n()) %>%  ungroup %>%
+       	     	summarise(n.noevents = sum(n == 1), .groups = "drop")),
+       n.multievents = map(data0, 
+       	            ~group_by(., id) %>% 
+       	     	summarise(n = n()) %>%  ungroup %>%
+       	     	summarise(n.multievents = sum(n > 2), .groups = "drop")),
+       maxevents = map(data0, 
+       	            ~group_by(., id) %>% 
+       	     	summarise(n = n()) %>% ungroup %>%
+       	     	summarise(maxevents = max(n), .groups = "drop")),
+       n.treated = map(data0, 
+       	            ~group_by(., id) %>% 
+       	     	summarise(trt = mean(trt)) %>%  ungroup %>%
+       	     	summarise(n.treated = sum(trt), .groups = "drop"))) %>%
+select(error, n.terminal1, n.terminal2, n.censored, n.noevents, maxevents, n.treated,
+       n.multievents) %>%
+unnest(cols = c(n.noevents, maxevents , n.treated, n.multievents))
+
+gridExtra::grid.arrange(
+ggplot(data.sum) +
+geom_boxplot(aes(x = error, fill = error, y = n.censored))+
+geom_jitter(aes(x = error, fill = error, y = n.censored))+
+theme(legend.position = "none"),
+ggplot(data.sum) +
+geom_boxplot(aes(x = error, fill = error, y = n.terminal1))+
+geom_jitter(aes(x = error, fill = error, y = n.terminal1))+
+theme(legend.position = "none"),
+ggplot(data.sum) +
+geom_boxplot(aes(x = error, fill = error, y = n.terminal2))+
+geom_jitter(aes(x = error, fill = error, y = n.terminal2))+
+theme(legend.position = "none"),
+ggplot(data.sum) +
+geom_boxplot(aes(x = error, fill = error, y = n.noevents))+
+geom_jitter(aes(x = error, fill = error, y = n.noevents))+
+theme(legend.position = "none"),
+ggplot(data.sum) +
+geom_boxplot(aes(x = error, fill = error, y = n.multievents))+
+geom_jitter(aes(x = error, fill = error, y = n.multievents))+
+theme(legend.position = "none"),
+ggplot(data.sum) +
+geom_boxplot(aes(x = error, fill = error, y = maxevents))+
+geom_jitter(aes(x = error, fill = error, y = maxevents))+
+theme(legend.position = "none"),
+ggplot(data.sum) +
+geom_boxplot(aes(x = error, fill = error, y = n.treated))+
+geom_jitter(aes(x = error, fill = error, y = n.treated))+
+theme(legend.position = "none"),
+nrow = 2
+)
+```
+
+```{r}
+all.data <- 
+tibble(data = 1:(4*nsim),
+       data0 = data0,
+       par0 = par0,
+       label = rep(c("Theta = 0.1, Alpha1 = 0", 
+       	      "Theta = 0.5, Alpha1 = 0",
+       	      "Theta = 0.1, Alpha1 = 0.1",
+       	      "Theta = 0.5, Alpha1 = 0.1"), each = nsim),
+       fits =  mod.joint.a,
+       est = map(fits, ~.$b), 
+       error = map(fits, ~.$critCV[2] !=1) %>% unlist
+       ) %>%
+select(error, data0, label) %>%
+unnest(cols = c(data0))
+
+gridExtra::grid.arrange(
+ggplot(all.data) +
+geom_density(aes(x = w, fill = error), alpha = 0.5)+
+facet_wrap("label")+
+theme(legend.position = c(.1, .9)),
+ggplot(all.data) +
+geom_density(aes(x = g, fill = error), alpha = 0.5)+
+facet_wrap("label")+
+theme(legend.position = "none"),
+all.data %>% filter(!event) %>% 
+ggplot() +
+geom_density(aes(x = t, fill = error), alpha = 0.5)+
+facet_wrap("label")+
+theme(legend.position = "none"),
+nrow = 2)
+```
+
+```{r}
+all.data %>% filter(!event) %>% 
+ggplot() +
+geom_point(aes(x = w, y = t), alpha = 0.5)+
+stat_smooth(aes(x = w, y = t, color = error), alpha = 0.5)+
+facet_wrap("label")+
+theme(legend.position = "none")
+```

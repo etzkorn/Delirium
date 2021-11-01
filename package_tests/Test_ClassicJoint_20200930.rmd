@@ -1,0 +1,237 @@
+---
+title: "FrailtyPenal Tests"
+output:
+  html_document:
+    df_print: paged
+---
+
+# Generate the Data Sets
+
+I have already run this section for you to produce the list of data sets `data0`.
+
+```{r setup, eval=FALSE}
+source("../frailtypack/R/simulate_competing_data.R")
+source("../delirium_package/R/random_weibull.R")
+
+set.seed(10)
+# Simulate 10 data sets and store them into a list
+data0 <- 
+map(1:10, ~simulate.competing.data(n = 500,
+		         par0 = c(betaR = .8, etaR = 25,
+		                  betaD = 1, etaD = 84,
+		                  betaD2 = 1, etaD2 = 84,
+		                  theta = 1,
+		                  alpha1 = 1.4, alpha2 = 1.4,
+		                  trtR = -.3, trtD = -.5, trtD2 = -.5)) %>%
+    	mutate(terminal = terminal1 + terminal2,
+    	       g10 = g/10,
+    	       g5 = g/5,
+    	       g20 = g/20,
+    	       g.2 = g*2))
+save(data0, file = "FrailtyPenal_Test_Data.rdata")
+```
+
+# Verify Data
+
+Verify that no one has a recurrent event at the final observation time.
+
+```{r}
+library(frailtypack); library(tidyverse)
+load("FrailtyPenal_Test_Data.rdata")
+tibble(iter = 1:10, data = data0) %>% 
+unnest(data)%>%
+group_by(iter, id) %>% 
+filter(t == max(t)) %>%
+ungroup() %>%
+summarise(any(event == 1))
+```
+
+Verify max of one terminal event per person
+
+```{r}
+tibble(iter = 1:10, data = data0) %>% 
+unnest(data)%>%
+group_by(iter, id) %>% 
+summarise(n = sum(terminal)) %>%
+ungroup() %>%
+summarise(all(n <= 1))
+```
+
+Verify all gap times are positive.
+
+```{r}
+tibble(iter = 1:10, data = data0) %>% 
+unnest(data)%>%
+summarise(all(g > 0))
+```
+
+# Fit Joint Models: Weibull-Gamma Gap Time Models
+
+### Original Time Scale
+
+```{r fit_models}
+weibull.gamma.gap.models <-
+map(data0, 
+~frailtyPenal(formula = Surv(g, event) ~ trt + cluster(id) +
+		terminal(terminal),
+	formula.terminalEvent = ~trt,
+	data = .,
+	recurrentAG=FALSE,
+	hazard = "Weibull",
+	maxit = 100)
+)
+```
+
+### Gap Times/10
+
+```{r }
+weibull.gamma.gap10.models <-
+map(data0, 
+~frailtyPenal(formula = Surv(g10, event) ~ trt + cluster(id) +
+		terminal(terminal),
+	formula.terminalEvent = ~trt,
+	data = .,
+	recurrentAG=FALSE,
+	hazard = "Weibull",
+	maxit = 100)
+)
+```
+
+### Gap Times/5
+
+```{r }
+weibull.gamma.gap5.models <-
+map(data0, 
+~frailtyPenal(formula = Surv(g5, event) ~ trt + cluster(id) +
+		terminal(terminal),
+	formula.terminalEvent = ~trt,
+	data = .,
+	recurrentAG=FALSE,
+	hazard = "Weibull",
+	maxit = 100)
+)
+```
+
+### Gap Times/20
+
+```{r }
+weibull.gamma.gap20.models <-
+map(data0, 
+~frailtyPenal(formula = Surv(g20, event) ~ trt + cluster(id) +
+		terminal(terminal),
+	formula.terminalEvent = ~trt,
+	data = .,
+	recurrentAG=FALSE,
+	hazard = "Weibull",
+	maxit = 100)
+)
+```
+
+### Gap Times * 2
+
+```{r }
+weibull.gamma.gap.2.models <-
+map(data0, 
+~frailtyPenal(formula = Surv(g.2, event) ~ trt + cluster(id) +
+		terminal(terminal),
+	formula.terminalEvent = ~trt,
+	data = .,
+	recurrentAG=FALSE,
+	hazard = "Weibull",
+	maxit = 100)
+)
+```
+
+## Error Codes
+
+```{r errors}
+error.df <- 
+tibble(
+dataset = 1:10,
+orig = map(weibull.gamma.gap.models, ~.$istop) %>% unlist,
+fifth = map(weibull.gamma.gap5.models, ~.$istop) %>% unlist,
+tenth = map(weibull.gamma.gap10.models, ~.$istop) %>% unlist,
+twentyth = map(weibull.gamma.gap20.models, ~.$istop) %>% unlist,
+double = map(weibull.gamma.gap.2.models, ~.$istop) %>% unlist
+)
+error.df
+```
+
+#### Number Models Converged by Timescale
+
+```{r}
+error.df[,-1] %>% lapply(function(x) sum(x == 1)) %>% unlist
+```
+
+# Fit Joint Models: Weibull-Gamma Calendar Time Models
+
+```{r }
+weibull.gamma.cal.models <-
+map(data0, 
+~frailtyPenal(formula = Surv(t0, t, event) ~ trt + cluster(id) +
+		terminal(terminal),
+	formula.terminalEvent = ~trt,
+	data = .,
+	recurrentAG=T, # changed to true for calendar model
+	hazard = "Weibull",
+	maxit = 100)
+)
+```
+
+```{r}
+map(weibull.gamma.cal.models, ~.$istop) %>% unlist
+```
+
+# Fit Joint Models: Weibull-LogNormal Gap Time Models
+
+```{r }
+weibull.logn.gap.models <-
+map(data0, 
+~frailtyPenal(formula = Surv(g, event) ~ trt + cluster(id) +
+		terminal(terminal),
+	formula.terminalEvent = ~trt,
+	data = .,
+	recurrentAG=FALSE,
+	hazard = "Weibull",
+	RandDist = "LogN",
+	maxit = 100)
+)
+```
+
+
+```{r}
+map(weibull.logn.gap.models, ~.$istop) %>% unlist
+```
+
+# Fit Joint Models: Weibull-LogNormal Calendar Time Models
+
+```{r }
+weibull.logn.cal.models <-
+map(data0, 
+~frailtyPenal(formula = Surv(t0, t, event) ~ trt + cluster(id) +
+		terminal(terminal),
+	formula.terminalEvent = ~trt,
+	data = .,
+	recurrentAG=T,
+	hazard = "Weibull",
+	RandDist = "LogN",
+	maxit = 100)
+)
+```
+
+```{r}
+map(weibull.logn.cal.models, ~.$istop) %>% unlist
+```
+
+```{r}
+save(weibull.gamma.gap.models,
+     weibull.gamma.gap5.models, 
+     weibull.gamma.gap10.models,
+     weibull.gamma.gap20.models,
+     weibull.gamma.gap.2.models,
+     weibull.gamma.cal.models,
+     weibull.logn.gap.models,
+     weibull.logn.cal.models,
+     file = "Two_Terminal_Event_Models.rdata"
+)
+```

@@ -1,0 +1,198 @@
+---
+title: "Simulation of Gap Time Competing Joint Model (Gap Times)"
+output: html_document
+---
+```{r, echo =FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(frailtypack); library(tidyverse)
+source("../delirium_package/R/competing_simulate_data.R")
+source("../delirium_package/R/random_weibull.R")
+source("../delirium_package/R/extract_frailtypack_coef_weibullgap.R")
+```
+
+
+Simulate gap times data based on REDUCE trial estimates for calendar times. 
+In the code below, I make the mistake of simulating from the gap time framework, 
+but fitting the calendar times model.
+
+# Competing Joint Model
+
+$$
+    r_{ij}(t|w_i, X_{ij}) = r_0(t) \exp(X_{i} \gamma_r + w_i) \\
+    \lambda_{i}^{(1)}(t|w_i, X_{ij}) = \lambda_0^{(1)}(t) \exp(X_{i} \gamma_1 + \alpha_{1} w_i) \\
+    \lambda_{i}^{(2)}(t|w_i, X_{ij}) = \lambda_0^{(2)}(t) \exp(X_{i} \gamma_2 + \alpha_{2} w_i) \\
+        r_0(t) =  \frac{\eta_r \cdot t^{\eta_r-1}}{\beta_r^{\eta_r}} \text{(weibull hazard)}\\
+    \lambda_0^{(1)}(t) = \frac{\beta_1 \cdot t^{\beta_1-1}}{\eta_1^{\beta_1}} \text{(weibull hazard)}\\
+    \lambda_0^{(2)}(t) = \frac{\beta_2 \cdot t^{\beta_2-1}}{\eta_2^{\beta_2}} \text{(weibull hazard)}\\
+    w_i \sim_{IID} N(0,\sigma^2)
+$$
+
+$$
+    \textbf{Simulation Values: (REDUCE Calendar Time Estimates from 7/21/21)}\\
+    \gamma_r = -0.041 , \gamma_1 = 0.115 , \gamma_2 = 0.172 \text{  (treatment effects)}\\
+    \eta_r = 87.62, \eta_1 = 18.48, \eta_2 = 8.4 \text{  (weibull scale)}\\
+    \beta_r = 0.40, \beta_1 = 2.13, \beta_2 = 2.06 \text{  (weibull shape)}\\
+    \alpha_1 = -0.88;  
+    \alpha_2 = -2.9; 
+    \theta = 0.44 \\
+    \text{Maximum Observation (Censoring) Time } = 28
+$$
+
+# Test Shared Model 
+
+```{r, fig.height = 14, fig.width=18}
+set.seed(031821)
+data <- 
+simulate.competing.data(n = 1200,
+		truncate = 28,
+		par0 = c(betaR = 0.40, etaR = 87.62,
+         betaD = 2.13, etaD = 18.48,         
+         betaD2 = 2.06, etaD2 = 8.4,
+         theta = 0.44, alpha1 = -0.88, alpha2 = -2.9,
+         trtR = -0.041, trtD = 0.115, trtD2 = 0.172))
+
+mod0 <- 
+multivPenal(
+formula = Surv(t0, t, event)~cluster(id)+trt+terminal(terminal1)+terminal2(terminal2),
+formula.terminalEvent=~trt,
+formula.terminalEvent2=~trt,
+data=data, 
+jointGeneral = F,
+initialize = FALSE, 
+save.progress = T,
+hazard = "Weibull",
+gapTimes=F,
+maxit = 100,
+init.hazard = c(1,1,1,1,1,1),
+init.Theta = 1,
+init.Alpha1 = 0,
+init.Alpha2 = 0,
+init.B = c(0,0,0))
+
+mod0$critCV
+mod0$summary.table
+```
+
+# Simulate Data and Fit General Model
+
+In this version, we will use the true data generating values as the starting point for the optimizer.
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.height = 8, fig.width = 12}
+set.seed(012921)
+nsim = 1000
+par0 = rep(each = nsim, list(
+       c(betaR = 0.40, etaR = 87.62,
+         betaD = 2.13, etaD = 18.48,         
+         betaD2 = 2.06, etaD2 = 8.4,
+         theta = 0.44, alpha1 = -0.88, alpha2 = -2.9,
+         trtR = -0.041, trtD = 0.115, trtD2 = 0.172)))
+
+####################################################################
+# Generate Data
+if(!file.exists("../package_test_output/CompetingJointModels_20210721.rdata")){
+data0 <- 
+map(par0, 
+    ~simulate.competing.data(n = 500,truncate = 2,par0 = .))
+
+# Fit models
+mod.joint.a <- list()
+
+for(i in 1:length(par0)){
+mod.joint.a[[i]] <-
+multivPenal(formula = Surv(t0, t, event) ~ trt + cluster(id) +
+		terminal(terminal1) + terminal2(terminal2),
+formula.terminalEvent = ~trt, 
+formula.terminalEvent2= ~trt,
+jointGeneral = F,
+data = data0[[i]],
+gapTimes=FALSE,
+hazard = "Weibull",
+maxit = 100, 
+initialize = F,
+init.hazard = c(1,50,1,20,1,20),
+init.Theta = 0.5,
+init.Alpha1 = 0,
+init.Alpha2 = 0,
+init.B = c(0,0,0))
+cat("Model ", i, "complete.\n")
+save(data0, mod.joint.a, file = "../package_test_output/CompetingJointModels_20210721.rdata")
+}
+} else load(file = "../package_test_output/CompetingJointModels_20210721.rdata")
+```
+
+
+
+
+```{r, fig.height = 8, fig.width = 12}
+####################################################################
+# Combine  Results
+truth =
+tibble(Parameter = mod.joint.a[[1]]$summary.table$Parameter,
+truth = c(betaR = 0.40, etaR = 87.62,
+         betaD = 2.13, etaD = 18.48,         
+         betaD2 = 2.06, etaD2 = 8.4,
+         theta = 0.44, alpha1 = -0.88, alpha2 = -2.9,
+         trtR = -0.041, trtD = 0.115, trtD2 = 0.172)
+       )
+
+results <- 
+tibble(data = 1:(nsim),
+       est = map(mod.joint.a, ~.$summary.table),
+       error = map(mod.joint.a, ~.$critCV[2]) %>% unlist %>% 
+           factor(labels = c("None","Max Iter", "Calculation")),
+       anyerror = map(mod.joint.a, ~.$critCV[2]!=1)%>% unlist,
+       error2 = map(mod.joint.a, ~.$critCV[2] ==2) %>% unlist,
+       error4 = map(mod.joint.a, ~.$critCV[2] ==4) %>% unlist) %>% 
+unnest(c(est))
+
+# Plot Results
+results %>% 
+#filter(!error) %>%
+ggplot()+
+geom_point(aes(y = data, x = Estimate, color = factor(error))) +
+facet_wrap("Parameter", scales = "free") +
+geom_vline(data = truth, aes(xintercept = truth), color = "red") +
+scale_color_manual(values = c("black", "blue", "red"))+
+theme_bw()+
+labs(title = "Joint Model Simulation Results under Different Values of Theta, Alpha1 (R = 1000, n = 500)")
+```
+
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+tab_start <-
+results %>%mutate(Truth = rep(truth$truth,nsim)) %>%
+group_by(Parameter) %>%
+summarise(Truth = Truth[1], Mean = mean(Estimate[!anyerror]),
+          SD = sd(Estimate[!anyerror], na.rm=T),
+          Est.SD = mean(Estimate.SE[!anyerror], na.rm=T), .groups = "drop"
+) %>%
+pivot_longer(cols = Mean:Est.SD) %>%
+mutate(value = round(value, 3)) %>%
+pivot_wider(names_from = c(name), values_from = value)
+
+library(gt)
+gt(tab_start, rowname_col = "Parameter")%>%
+tab_stubhead(label = "Parameter")%>%
+tab_header(
+    title = md("**Joint Model Frailty Pack Fits (R = 1,000, n = 1,200)**"))%>%
+cols_label(
+    Truth = html("True Value"),
+    Mean = html("Avg. Estimate"),
+    SD = html("SE"),
+    Est.SD = html("Avg. Est. SE")
+)
+```
+
+# Errors
+
+```{r}
+mean(results$anyerror)
+mean(results$error2)
+mean(results$error4)
+```
+
+# Identifiability Conditions for the General Model
+
+If $\alpha_1 , \alpha_2 = 0$, then, essentially, the model consists of only one random effect $u_i + w_i$, so $u_i$ and $w_i$ are not distinguishable, and separate variance components cannot be estimated.
+
+If one of $\alpha_1$ or $\alpha_2$ are 0, then we might also have some identifiability problems.

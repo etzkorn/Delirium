@@ -1,0 +1,277 @@
+---
+title: "Simulation of Classic Joint Model"
+output: html_document
+---
+```{r}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(frailtypack); library(tidyverse)
+source("../delirium_package/R/simulate_competing_data.R")
+source("../delirium_package/R/random_weibull.R")
+source("../delirium_package/R/extract_frailtypack_coef_weibullgap.R")
+```
+
+In this version, we are going to set the starting values for the optimizer far from the true values.
+
+# Competing Joint Model
+
+$$
+    r_{ij}(t|w_i, X_{ij}) = r_0(t) \exp(X_{i} \gamma_r + w_i) \\
+    r_0(t) =  \frac{\eta_r \cdot t^{\eta_r-1}}{\beta_r^{\eta_r}} \text{(weibull hazard)}\\
+    \lambda_{i}^{(1)}(t|w_i, X_{ij}) = \lambda_0^{(1)}(t) \exp(X_{i} \gamma_1 + \alpha_{1} w_i) \\
+    \lambda_{i}^{(2)}(t|w_i, X_{ij}) = \lambda_0^{(2)}(t) \exp(X_{i} \gamma_2 + \alpha_{2} w_i) \\
+    \lambda_0^{(1)}(t) = \frac{\eta_1 \cdot t^{\eta_1-1}}{\beta_1^{\eta_1}} \text{(weibull hazard)}\\
+    \lambda_0^{(2)}(t) = \frac{\eta_2 \cdot t^{\eta_2-1}}{\beta_2^{\eta_2}} \text{(weibull hazard)}\\
+    w_i \sim_{IID} N(0,\theta)
+$$
+
+$$
+    \textbf{Simulation Values:}\\
+    \gamma_r = 15 , \gamma_1 = 15 , \gamma_2 = 15 \text{(treatment effects)}\\
+    \eta_r = 3, \eta_1 = 10, \eta_2 = 10 \text{(weibull scale)}\\
+    \beta_r = 4, \beta_1 = 4, \beta_2 = 4 \text{(weibull shape, exponential)}\\
+    \alpha_1 = 2;  
+    \alpha_2 = -2; 
+    \theta = 5 \\
+    \text{Maximum Observation (Censoring) Time }=2
+$$
+
+$$
+    \textbf{Starting Values:}\\
+    \gamma_r = 0 , \gamma_1 = 0 , \gamma_2 = 0 \text{(treatment effects)}\\
+    \eta_r = 0.5, \eta_1 = 1, \eta_2 = 1 \text{(weibull scale)}\\
+    \beta_r = 1, \beta_1 = 1, \beta_2 = 1 \text{(weibull shape, exponential)}\\
+    \alpha_1 = 0,
+    \alpha_2 = 0,
+    \theta = 0.25 
+$$
+
+Notes:
+
+A value of 4 for the shape (beta) parameters seemed to be ok, but a value of 5 was too high.
+
+Values of -2 and 2 for the alpha parameters were ok, but -3 and 3 were too large.
+
+Values of 15 for the treatment effects were ok, but 20 was too large.
+
+# Test One
+
+```{r, fig.height = 14, fig.width=18}
+set.seed(012921)
+if(file.exists("multiv_model_progress.dat")) file.remove("multiv_model_progress.dat")
+if(file.exists("multiv_model_parameters.dat")) file.remove("multiv_model_parameters.dat")
+if(file.exists("multiv_model_inverse.dat")) file.remove("multiv_model_inverse.dat")
+if(file.exists("multiv_model_derivative.dat")) file.remove("multiv_model_derivative.dat")
+
+data <- 
+simulate.competing.data(n = 500,
+		truncate = 2,
+		par0 = c(betaR = 1, etaR = .5,
+         betaD = 1, etaD = 1,         
+         betaD2 = 1, etaD2 = 1,
+         theta = .5, alpha1 = 0, alpha2 = 0,
+         trtR = 0, trtD = 0, trtD2 = 0))
+
+mod0 <- 
+multivPenal(
+formula = Surv(t0, t, event)~cluster(id)+trt+terminal(terminal1)+terminal2(terminal2),
+formula.terminalEvent=~trt,
+formula.terminalEvent2=~trt,
+data=data, 
+initialize = FALSE, 
+save.progress = T,
+hazard = "Weibull",
+recurrentAG=F,
+maxit = 100,
+init.hazard = c(10,10,10,10,10,10),
+init.Theta = 3,
+init.Alpha1 = 20,
+init.Alpha2 = 20,
+init.B = c(-5,-5,-5))
+
+mod0$critCV
+```
+
+```{r, fig.height = 14, fig.width=18}
+par <- 
+read_file(file = "../package_tests/multiv_model_parameters.dat") %>%
+	strsplit("\\s+") %>% unlist %>% as.numeric
+df <- as.numeric(par)[-1] %>%
+	matrix(ncol = 14, byrow = T) %>%
+	as.data.frame
+
+colnames(df) <- c("n","LL", "ln.betaR.5", "ln.etaR.5", "ln.betaD.5", "ln.etaD.5",
+	      "ln.betaD2.5", "ln.etaD2.5", "ln.theta.5",
+	      "alpha1", "alpha2",
+	      "trtR", "trtD", "trtD2")
+df <- df %>% as_tibble
+
+df %>% gather("par","val",-n) %>%
+ggplot() +
+geom_line(aes(x = n, y = val)) +
+geom_point(aes(x = n, y = val)) +
+facet_wrap("par", scales = "free_y") +
+theme_bw(30) 
+```
+
+
+# Vary Parameters (Theta Alpha)
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.height = 8, fig.width = 12}
+set.seed(012921)
+nsim = 100
+par0 = rep(each = nsim, list(
+       c(betaR = 1, etaR = 0.5,
+         betaD = 1, etaD = 1,         
+         betaD2 =1, etaD2 = 1,
+         theta = 0.5, alpha1 = 0, alpha2 = 0,
+         trtR = 0, trtD = 0, trtD2 = 0)
+       ))
+truth =
+tibble(Parameter = c("betaR", "etaR",
+	          "betaD", "etaD", "betaD2", "etaD2","theta","alpha1","alpha2",
+		"trtR", "trtD", "trtD2"),
+truth = c(betaR = 1, etaR = 0.5,
+         betaD = 1, etaD = 1,         
+         betaD2 =1, etaD2 = 1,
+         theta = 0.5, alpha1 = 0, alpha2 = 0,
+         trtR = 0, trtD = 0, trtD2 = 0), 
+start2 = c(betaR = 3, etaR = 3,
+         betaD = 3, etaD = 3,         
+         betaD2 =3, etaD2 = 3,
+         theta = 2, alpha1 = 1, alpha2 = -1,
+         trtR = 2, trtD = 2, trtD2 = 2)
+       )
+####################################################################
+# Generate Data
+if(!file.exists("Test_Saves/CompetingJointModels_012621.rdata")){
+data0 <- 
+map(par0, 
+    ~simulate.competing.data(n = 500,truncate = 2,par0 = .))
+
+# Fit models
+mod.joint.a <- list()
+mod.joint.b <- list()
+
+for(i in 1:length(par0)){
+mod.joint.a[[i]] <-
+multivPenal(formula = Surv(t0, t, event) ~ trt + cluster(id) +
+		terminal(terminal1) + terminal2(terminal2),
+formula.terminalEvent = ~trt, 
+formula.terminalEvent2= ~trt,
+data = data0[[i]],
+recurrentAG=FALSE,
+hazard = "Weibull",
+maxit = 100, initialize = F)
+cat("Model ", i, "complete.\n")
+}
+
+for(i in 1:length(par0)){
+mod.joint.b[[i]] <-
+multivPenal(formula = Surv(t0, t, event) ~ trt + cluster(id) +
+		terminal(terminal1) + terminal2(terminal2),
+formula.terminalEvent = ~trt, 
+formula.terminalEvent2= ~trt,
+data = data0[[i]],
+recurrentAG=FALSE,
+hazard = "Weibull",
+maxit = 100, initialize = F,
+init.hazard = c(3,3,3,3,3,3),
+init.Theta = 2,
+init.Alpha1 = 1,
+init.Alpha2 = -1,
+init.B = c(2,2,2))
+
+cat("Model ", i, "complete.\n")
+}
+
+save(data0, mod.joint.a, mod.joint.b, file = "Test_Saves/CompetingJointModels_012621.rdata")
+} else load(file = "Test_Saves/CompetingJointModels_012621.rdata")
+
+####################################################################
+# Combine  Results
+results <- 
+tibble(data = 1:(nsim),
+       par0 = par0,
+       est = map(mod.joint.a, ~.$b),
+       error = map(mod.joint.a, ~.$critCV[2] !=1) %>% unlist,
+       est.b = map(mod.joint.b, ~.$b),
+       error.b = map(mod.joint.b, ~.$critCV[2] !=1) %>% unlist) %>% 
+mutate(par0 = map(par0, ~tibble(par0 = ., Parameter = names(.)))) %>%
+unnest(c(est, est.b ,par0)) %>%
+mutate(est = ifelse(Parameter %in% c("betaR", "etaR", "betaD","etaD","betaD2","etaD2","theta"),
+	        exp(est)^2, est),
+       est.b = ifelse(Parameter %in% c("betaR", "etaR", "betaD","etaD","betaD2","etaD2","theta"),
+	        exp(est.b)^2, est.b))
+
+# Plot Results
+results %>% 
+#filter(!error) %>%
+ggplot()+
+geom_point(aes(y = data, x = est, color = error)) +
+facet_wrap("Parameter", scales = "free") +
+geom_vline(data = truth, aes(xintercept = truth), color = "red") +
+scale_color_manual(values = c("black", "red"))+
+theme_bw()+
+labs(title = "Joint Model Simulation Results under Different Values of Theta, Alpha1 (R = 100, n = 500)",
+     caption = "Note: For all simulations, etaR = 0.5; betaR, betaD, etaD, betaD2, etaD2 = 1; trtR = 0.5; trtD, trtD2 = 0")
+
+# Plot Results
+results %>% 
+#filter(!error) %>%
+ggplot()+
+geom_point(aes(y = data, x = est.b, color = error.b)) +
+facet_wrap("Parameter", scales = "free") +
+geom_vline(data = truth, aes(xintercept = truth), color = "red") +
+scale_color_manual(values = c("black", "red"))+
+theme_bw()+
+labs(title = "Joint Model Simulation Results under Different Values of Theta, Alpha1 (R = 100, n = 500)",
+     caption = "Note: For all simulations, etaR = 0.5; betaR, betaD, etaD, betaD2, etaD2 = 1; trtR = 0.5; trtD, trtD2 = 0")
+```
+
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.height = 6, fig.width = 10}
+results %>% 
+#filter(!error) %>%
+ggplot()+
+geom_point(aes(y = est.b, x = est, color = error.b)) +
+facet_wrap("Parameter", scales = "free") +
+geom_point(data = truth, aes(x = truth, y = truth), color = "blue", shape = 3, size = 10) +
+#geom_point(data = truth, aes(x = truth, y = start2), color = "red", shape = 3, size = 10) +
+scale_color_manual(values = c("black", "red"))+
+geom_abline(slope = 1, intercept = 0, color = "blue") +
+theme_bw()+
+labs(title = "Joint Model Simulation Results under Different Values of Theta, Alpha1 (R = 100, n = 500)",
+     caption = "Note: For all simulations, etaR = 0.5; betaR, betaD, etaD, betaD2, etaD2 = 1; trtR = 0.5; trtD, trtD2 = 0")
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+tab_start <-
+results %>%
+group_by(Parameter) %>%
+summarise(Truth = mean(par0[!error]),
+          Mean = mean(est[!error]),
+          Bias = mean(est[!error] - par0[!error], na.rm=T),
+          RMSE = sqrt(mean((est[!error] - par0[!error])^2, na.rm=T)),
+          SD = sd(est[!error], na.rm=T),
+          Bias_SD = Bias / SD,
+          Failure_Percent = 100*mean(error)
+) %>%
+pivot_longer(cols = Mean:Failure_Percent) %>%
+mutate(value = round(value, 3)) %>%
+pivot_wider(names_from = c(name), values_from = value)
+
+library(gt)
+gt(data = tab_start, rowname_col = "Parameter")%>%
+tab_stubhead(label = "Parameter")%>%
+tab_header(
+    title = md("**Joint Model Frailty Pack Fits (R = 300, n = 500)**"))%>%
+cols_label(
+    Truth = html("True Value"),
+    Mean = html("Avg. Estimate"),
+    RMSE = html("RMSE"),
+    Bias = html("Bias"),
+    SD = html("SE"),
+    Bias_SD = html("Bias / SE"),
+    Failure_Percent = html("Failure %")
+)
+```

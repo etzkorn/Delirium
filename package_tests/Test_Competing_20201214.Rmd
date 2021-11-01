@@ -1,0 +1,322 @@
+---
+title: "Examples of Univariate and Multivariate Terminal Events in Joint Model"
+author: "Lacey Etzkorn"
+date: "8/31/2020"
+output: html_document
+---
+
+```{r, include=FALSE, message = FALSE ,warning = FALSE}
+rm(list = ls())
+knitr::opts_chunk$set(echo = FALSE)
+library(frailtypack); library(tidyverse)
+source("../delirium_package/R/simulate_competing_data.R")
+source("../delirium_package/R/random_weibull.R")
+source("../delirium_package/R/extract_frailtypack_coef_weibullgap.R")
+set.seed(080492)
+par0 = rep(each = 1, list(
+       c(betaR = 1, etaR = .5,
+         betaD = 1, etaD = 1,         
+         betaD2 = 1, etaD2 = 1,
+         theta = 0.1, alpha1 = 0.1, alpha2 = 0,
+         trtR = 0.5, trtD = 0, trtD2 = 0),
+      c(betaR = 1, etaR = .5,
+         betaD = 1, etaD = 1,
+         betaD2 = 1, etaD2 = 1,         
+         theta = 0.5, alpha1 = 0.1, alpha2 = 0,
+         trtR = 0.5, trtD = 0, trtD2 = 0),
+       c(betaR = 1, etaR = .5,
+         betaD = 1, etaD = 1,
+         betaD2 = 1, etaD2 = 1,         
+         theta = 0.1, alpha1 = 1, alpha2 = 0,
+         trtR = 0.5, trtD = 0, trtD2 = 0),
+      c(betaR = 1, etaR = .5,
+         betaD = 1, etaD = 1,
+         betaD2 = 1, etaD2 = 1,         
+         theta = 0.5, alpha1 = 1, alpha2 = 0,
+         trtR = 0.5, trtD = 0, trtD2 = 0)
+       ))
+
+```
+
+# Weibull Gap Models
+
+## Test One Model
+
+```{r, fig.height = 14, fig.width=18}
+if(file.exists("multiv_model_progress.dat")) file.remove("multiv_model_progress.dat")
+if(file.exists("multiv_model_parameters.dat")) file.remove("multiv_model_parameters.dat")
+if(file.exists("multiv_model_inverse.dat")) file.remove("multiv_model_inverse.dat")
+if(file.exists("multiv_model_derivative.dat")) file.remove("multiv_model_derivative.dat")
+
+data0 <- 
+map(par0, 
+    ~simulate.competing.data(n = 500,truncate = 1,par0 = .))
+
+mod0 <- 
+multivPenal(
+formula = Surv(t0, t, event)~cluster(id)+trt+terminal(terminal1)+terminal2(terminal2),
+formula.terminalEvent=~trt,
+formula.terminalEvent2=~trt,
+data=data0[[3]], initialize = FALSE, 
+hazard = "Weibull",
+recurrentAG=F,
+maxit = 100)
+
+mod0$critCV
+
+par <- read_file(file = "../package_tests/multiv_model_parameters.dat") %>%
+	strsplit("\\s+") %>% unlist %>% as.numeric
+df <- as.numeric(par)[-1] %>%
+	matrix(ncol = 14, byrow = T) %>%
+	as.data.frame
+
+colnames(df) <- c("n","LL", "betaR.5", "etaR.5", "betaD.5", "etaD.5",
+	      "betaD2.5", "etaD2.5", "theta.5",
+	      "alpha1", "alpha2",
+	      "trtR", "trtD", "trtD2")
+df <- df %>% as_tibble
+
+df %>% gather("par","val",-n) %>%
+ggplot() +
+geom_line(aes(x = n, y = val)) +
+geom_point(aes(x = n, y = val)) +
+facet_wrap("par", scales = "free_y") +
+theme_bw(30) 
+```
+
+```{r}
+df %>% 
+filter(alpha1<7)%>%
+ggplot() +
+geom_line(aes(x = alpha1, y = LL)) +
+geom_point(aes(x = alpha1, y = LL)) +
+theme_bw(30) 
+```
+
+## NCC Data, Univariate Model
+
+```{r, fig.height = 10, fig.width=12, fig.width=9}
+file.remove("joint_model_parameters.dat")
+joint.ncc <- 
+frailtyPenal(
+Surv(gaptime,event)~cluster(id)+cov1+terminal(death),
+formula.terminalEvent=~cov1,
+data=dataNCC,
+hazard = "Weibull",
+recurrentAG=FALSE)
+
+par <- read_file(file = "joint_model_parameters.dat") %>%
+	strsplit("\\s+") %>% unlist %>% as.numeric
+df <- as.numeric(par)[-1] %>%
+	matrix(ncol = 9, byrow = T) %>%
+	as.data.frame
+
+colnames(df) <- c("LL", "betaR.5", "etaR.5", "betaD.5", "etaD.5",
+	      "theta.5", "alpha1", "trtR", "trtD")
+df <-
+	df %>%
+	as_tibble %>%
+	mutate(n = 1:n()) %>%
+	gather("par","val",-n)
+
+df %>% 
+#filter( n < 1000, n > 500) %>%
+ggplot() +
+geom_line(aes(x = n, y = val)) +
+geom_point(aes(x = n, y = val)) +
+facet_wrap("par", scales = "free_y") +
+theme_bw(30)
+```
+
+## NCC Data, Multivariate Model
+
+```{r, fig.height = 10, fig.width=12, eval = FALSE}
+file.remove("frailty_model_parameters.dat")
+data(dataNCC)
+dataNCC <- dataNCC %>% mutate(discharge = 0)
+dataNCC <- dataNCC %>%
+	mutate(id = id + max(id),
+	       discharge = death, 
+	       death = 0) %>% 
+	bind_rows(dataNCC)
+
+multiv.ncc <- 
+multivPenal(
+formula = Surv(t.start, t.stop,event)~cluster(id)+cov1+terminal(death)+terminal2(discharge),
+formula.terminalEvent=~cov1,
+formula.terminalEvent2=~cov1,
+data=dataNCC,
+hazard = "Weibull",
+recurrentAG=FALSE,
+maxit = 350)
+
+par <- read_file(file = "frailty_model_parameters.dat") %>%
+	strsplit("\\s+") %>% unlist %>% as.numeric
+df <- as.numeric(par)[-1] %>%
+	matrix(ncol = 13, byrow = T) %>%
+	as.data.frame
+
+colnames(df) <- c("LL", "betaR.5", "etaR.5", "betaD.5", "etaD.5",
+	      "betaD2.5", "etaD2.5", "theta.5",
+	      "alpha1", "alpha2",
+	      "trtR", "trtD", "trtD2")
+df <-
+	df %>%
+	as_tibble %>%
+	mutate(n = 1:n()) %>%
+	gather("par","val",-n)
+
+df %>% 
+filter( n < 4000) %>%
+ggplot() +
+	geom_line(aes(x = n, y = val)) +
+	facet_wrap("par", scales = "free_y") +
+	theme_bw(30) 
+```
+
+## Tumor Data, Univariate Model
+
+```{r tumoruni, fig.height = 10, fig.width=12}
+ data <- dataMultiv
+ colnames(data) <- tolower(colnames(data))
+ids <- sample(unique(data$patient),size = 200, replace = F)
+ data <- data %>%
+ 	filter(patient %in% ids,
+ 	       indicmeta != 1) %>%
+ 	group_by(patient) %>%
+ 	mutate(time0 = c(0,time1[-n()]),
+ 	       timegap = time1 - time0,
+ 	       discharge = 1-indicdeath-indicrec) %>%
+ 	dplyr::select(-indicmeta, -obs) %>%
+ 	ungroup()
+ 
+file.remove("joint_model_parameters.dat")
+joint.tumor<- frailtyPenal(Surv(time0, time1,indicrec) ~ v1 + cluster(patient) + terminal(indicdeath),
+	          formula.terminalEvent =  ~ v1,
+	          data = data,
+	          recurrentAG=F,
+	          hazard="Weibull")
+par <- read_file(file = "joint_model_parameters.dat") %>%
+	strsplit("\\s+") %>% unlist %>% as.numeric
+df <- as.numeric(par)[-1] %>%
+	matrix(ncol = 9, byrow = T) %>%
+	as.data.frame
+
+colnames(df) <- c("LL", "betaR.5", "etaR.5", "betaD.5", "etaD.5",
+	      "theta.5", "alpha1", "trtR", "trtD")
+df <-
+	df %>%
+	as_tibble %>%
+	mutate(n = 1:n()) %>%
+	gather("par","val",-n)
+
+df %>% 
+#filter( n < 900, n > 700) %>%
+ggplot() +
+geom_line(aes(x = n, y = val)) +
+geom_point(aes(x = n, y = val)) +
+facet_wrap("par", scales = "free_y") +
+theme_bw(30)
+```
+
+## Tumor Recurrence Data, Multivariate Model
+
+```{r tumormulti, fig.height=14, fig.width=18}
+data <- data %>% mutate(discharge = 0)
+data <- data %>%
+	mutate(patient = patient + max(patient),
+	       discharge = indicdeath, 
+	       indicdeath = 0) %>% 
+	bind_rows(data) %>%
+	mutate(patient = dense_rank(patient)) %>%
+	arrange(patient, time1)
+
+if(!file.exists("recurrence_multiv_model_parameters.dat")){
+if(file.exists("frailty_model_parameters.dat"))file.remove("frailty_model_parameters.dat")
+multiv0<- multivPenal(Surv(time0, time1,indicrec) ~ v1 + cluster(patient) + terminal(indicdeath)+ terminal2(discharge),
+	          formula.terminalEvent =  ~ v1,
+	          formula.terminalEvent2 =  ~ v1,
+	          data = data,
+	          recurrentAG=F,
+	          hazard="Weibull",
+	          maxit = 1000)
+file.rename(from = "frailty_model_parameters.dat", 
+	 to =  "recurrence_multiv_model_parameters.dat")
+}
+par <- read_file(file = "recurrence_multiv_model_parameters.dat") %>%
+	strsplit("\\s+") %>% unlist %>% as.numeric
+df <- as.numeric(par)[-1] %>%
+	matrix(ncol = 14, byrow = T) %>%
+	as.data.frame
+
+colnames(df) <- c("n","LL", "betaR.5", "etaR.5", "betaD.5", "etaD.5",
+	      "betaD2.5", "etaD2.5", "theta.5",
+	      "alpha1", "alpha2",
+	      "trtR", "trtD", "trtD2")
+df <-
+	df %>%
+	as_tibble %>%
+	mutate(n = 1:n()) %>%
+	gather("par","val",-n)
+
+df %>% 
+filter(n < 50) %>%
+ggplot() +
+geom_line(aes(x = n, y = val)) +
+geom_point(aes(x = n, y = val)) +
+facet_wrap("par", scales = "free_y") +
+theme_bw(30) 
+```
+
+### Examine the Tail of the Trajectory More Closely
+
+```{r, echo = FALSE, fig.height=14, fig.width=18}
+df %>% 
+filter(n > 20) %>%
+ggplot() +
+geom_line(aes(x = n, y = val)) +
+geom_point(aes(x = n, y = val)) +
+facet_wrap("par", scales = "free_y") +
+theme_bw(30) 
+```
+
+## Try Jumping the Parameter
+
+```{r tumormulti, fig.height=14, fig.width=18}
+if(!file.exists("recurrence_multiv_model_parameters2.dat")){
+if(file.exists("frailty_model_parameters.dat"))file.remove("frailty_model_parameters.dat")
+multiv0 <- multivPenal(Surv(time0, time1,indicrec) ~ v1 + cluster(patient) + terminal(indicdeath)+ terminal2(discharge),
+	          formula.terminalEvent =  ~ v1,
+	          formula.terminalEvent2 =  ~ v1,
+	          data = data,
+	          recurrentAG=F,
+	          hazard="Weibull",
+	          maxit = 1000)
+file.rename(from = "frailty_model_parameters.dat", 
+	 to =  "recurrence_multiv_model_parameters2.dat")
+}
+par <- read_file(file = "recurrence_multiv_model_parameters.dat") %>%
+	strsplit("\\s+") %>% unlist %>% as.numeric
+df <- as.numeric(par)[-1] %>%
+	matrix(ncol = 14, byrow = T) %>%
+	as.data.frame
+
+colnames(df) <- c("n","LL", "betaR.5", "etaR.5", "betaD.5", "etaD.5",
+	      "betaD2.5", "etaD2.5", "theta.5",
+	      "alpha1", "alpha2",
+	      "trtR", "trtD", "trtD2")
+df <-
+	df %>%
+	as_tibble %>%
+	mutate(n = 1:n()) %>%
+	gather("par","val",-n)
+
+df %>% 
+filter(n > 50) %>%
+ggplot() +
+geom_line(aes(x = n, y = val)) +
+geom_point(aes(x = n, y = val)) +
+facet_wrap("par", scales = "free_y") +
+theme_bw(30) 
+```
+

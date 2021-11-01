@@ -1,0 +1,450 @@
+---
+title: "Simulation of Classic Joint Model"
+output: html_document
+---
+
+## Estimation Model
+
+$$
+    r_{ij}(t|w_i, X_{ij}) = r_0(t) \exp(X_{i} \gamma_r + w_i) \\
+    \lambda_{i}^{(1)}(t|w_i, X_{ij}) = \lambda_0^{(1)}(t) \exp(X_{i} \gamma_1 + \alpha_{1} w_i) \\
+    \lambda_0^{(1)}(t) = \frac{\eta_1 \cdot t^{\eta_1-1}}{\beta_1^{\eta_1}} \text{(weibull hazard)}\\
+    r_0(t) =  \frac{\eta_r \cdot t^{\eta_r-1}}{\beta_r^{\eta_r}} \text{(weibull hazard)}\\
+    w_i \sim_{IID} N(0,\theta)
+$$
+
+## Simulation Model
+
+$$
+    r_{ij}(t|w_i, X_{ij}) = r_0(t) \exp(X_{i} \gamma_r + w_i) \\
+    \lambda_{i}^{(1)}(t|w_i, X_{ij}) = \lambda_0^{(1)}(t) \exp(X_{i} \gamma_1 + \alpha_{1} w_i) \\
+    \lambda_{i}^{(2)}(t|w_i, X_{ij}) = \lambda_0^{(2)}(t) \exp(X_{i} \gamma_2 + \alpha_{2} w_i)\\
+    \lambda_0^{(1)}(t) = \frac{\eta_1 \cdot t^{\eta_1-1}}{\beta_1^{\eta_1}} \text{(weibull hazard)}\\
+    \lambda_0^{(2)}(t) = \frac{\eta_2 \cdot t^{\eta_2-1}}{\beta_2^{\eta_2}} \text{(weibull hazard)}\\
+    r_0(t) =  \frac{\eta_r \cdot t^{\eta_r-1}}{\beta_r^{\eta_r}} \text{(weibull hazard)}\\
+    w_i \sim_{IID} N(0,\theta)\\
+    \textbf{Simulation Values:}\\
+    \gamma_r, \gamma_1, \gamma_2 = 0 \text{(treatment effects)}\\
+    \eta_r = 0.05; \eta_1, \eta_2 = 1 \text{(weibull scale)}\\
+    \beta_r = 1; \beta_1, \beta_2 = 1 \text{(weibull shape, exponential)}\\
+    \alpha_2 = 0, 
+    \alpha_1 = 0 \text{ or } 0.1\\
+    \theta = 0.5 \text{ or } 2 \\
+    \text{Maximum Observation Time }=2
+$$
+
+
+# Vary Parameters (Theta Alpha)
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.height = 8, fig.width = 12}
+library(frailtypack); library(tidyverse)
+source("../frailtypack/R/simulate_competing_data.R")
+source("../delirium_package/R/random_weibull.R")
+source("../delirium_package/R/extract_frailtypack_coef_weibullgap.R")
+set.seed(111720)
+par0 = rep(each = 100,
+        list(
+       c(betaR = 1, etaR = .5,
+         betaD = 1, etaD = 1,
+         betaD2 = 1, etaD2 = 1,
+         theta = 2, alpha1 = 0, alpha2 = 0,
+         trtR = 0, trtD = 0, trtD2 = 0),
+       c(betaR = 1, etaR = .5,
+         betaD = 1, etaD = 1,
+         betaD2 = 1, etaD2 = 1,
+         theta = 2, alpha1 = 0.1, alpha2 = 0,
+         trtR = 0, trtD = 0, trtD2 = 0),
+       c(betaR = 1, etaR = .5,
+         betaD = 1, etaD = 1,
+         betaD2 = 1, etaD2 = 1,
+         theta = .5, alpha1 = 0, alpha2 = 0,
+         trtR = 0, trtD = 0, trtD2 = 0),
+       c(betaR = 1, etaR = .5,
+         betaD = 1, etaD = 1,
+         betaD2 = 1, etaD2 = 1,
+         theta = .5, alpha1 = 0.1, alpha2 = 0,
+         trtR = 0, trtD = 0, trtD2 = 0))
+       )
+truth =
+expand.grid(theta = c(0.5, 2),
+	alpha1 = c(0, 0.1),
+	Parameter = c("betaR", "etaR",
+	          "betaD", "etaD", "theta","alpha1",
+		"trtR", "trtD")) %>%
+mutate(truth = rep(c(1,0.5, 1,1,-1,-1,0,0), each = 4),
+       label= paste0("Theta = ", theta, ", Alpha1 = ", alpha1),
+       truth = ifelse(Parameter == "theta", theta, truth),
+       truth = ifelse(Parameter == "alpha1", alpha1, truth))
+
+```
+
+
+```{r, fig.height = 8, fig.width = 12, echo = FALSE}
+if(!file.exists("JointModelsA_113020.rdata")){
+data0 <- 
+map(par0, 
+    ~simulate.competing.data(n = 500,truncate = 2,par0 = .))
+
+####################################################################
+# Single Terminal Event = Second event is censored
+
+mod.joint.a <-
+map(data0, 
+~frailtyPenal(formula = Surv(g, event) ~ trt + cluster(id) +
+		terminal(terminal1),
+	formula.terminalEvent = ~trt,
+	data = .,
+	recurrentAG=FALSE,
+	hazard = "Weibull",
+	maxit = 100,
+	RandDist = "LogN"))
+save(data0, mod.joint.a, file = "JointModelsA_113020.rdata")
+} else load(file = "JointModelsA_113020.rdata")
+
+####################################################################
+# Combine  Results
+results <- 
+tibble(data = 1:400,
+       par0 = par0,
+       label = rep(c("Theta = 2, Alpha1 = 0", 
+       	      "Theta = 2, Alpha1 = 0.1",
+       	      "Theta = 0.5, Alpha1 = 0",
+       	      "Theta = 0.5, Alpha1 = 0.1"), each = 100),
+       fits =  mod.joint.a,
+       error = unlist(map(fits, ~.$istop != 1)),
+       est = map(fits, extract.fp.coef)
+       ) %>% 
+mutate(par0 = map(par0, ~.[-c(5,6,9,12)]),
+       par0 = map(par0, ~tibble(par0 = .))) %>%
+unnest(c(est,par0)) %>%
+select(-fits)
+
+# Plot Results
+results %>% 
+filter(!error) %>%
+ggplot()+
+geom_point(aes(y = data, x = Estimate)) +
+facet_grid(label~Parameter, scales = "free") +
+geom_vline(data = truth, aes(xintercept = truth), color = "red") +
+theme_bw()+
+labs(title = "Joint Model Simulation Results under Different Values of Theta, Alpha1 (R = 100, n = 500)",
+     caption = "Note: For all simulations, etaR = 0.5; betaR, betaD, etaD = 1; trtR, trtD = 0")
+```
+
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+tab_start <-
+results %>%
+group_by(label, Parameter) %>%
+summarise(Truth = mean(par0),
+          Mean = mean(Estimate[!error]),
+          Bias = mean(Estimate[!error] - par0[!error], na.rm=T),
+          RMSE = sqrt(mean((Estimate[!error] - par0[!error])^2, na.rm=T)),
+          SD = sd(Estimate[!error], na.rm=T),
+                    EstSE = mean(SE[!error]),
+          Bias_SD = Bias / SD,
+          Failure_Percent = 100*mean(error)
+) %>%
+pivot_longer(cols = Truth:Failure_Percent) %>%
+mutate(value = round(value, 3)) %>%
+pivot_wider(names_from = c(name), values_from = value)
+
+library(gt)
+gt(data = tab_start, rowname_col = "Parameter")%>%
+tab_stubhead(label = "Parameter")%>%
+tab_header(
+    title = md("**Joint Model Frailty Pack Fits (R = 100, n = 500)**"))%>%
+cols_label(
+    Truth = html("True Value"),
+    Mean = html("Avg. Estimate"),
+    RMSE = html("RMSE"),
+    Bias = html("Bias"),
+    SD = html("SE"),
+    EstSE = html("Avg. Est. SE"),
+    Bias_SD = html("Bias / SE"),
+    Failure_Percent = html("Failure %")
+)
+```
+
+
+### Data Summaries
+
+```{r, message=FALSE, warning = FALSE, echo = FALSE}
+tibble(data0 = data0,
+       par = rep(c("Theta = 2, Alpha = 0", 
+       	      "Theta = 2, Alpha = 0.1",
+       	      "Theta = 0.5, Alpha = 0",
+       	      "Theta = 0.5, Alpha = 0.1"), each = 100)) %>%
+mutate(events = 
+  map(data0,
+    ~group_by(., id) %>% 
+     summarise(t = max(t)) %>%
+     ungroup))%>%
+unnest(events) %>% 
+ggplot()+
+geom_freqpoly(aes(x = t, color = par))+ 
+ggtitle("Total Observation Time")
+```
+
+```{r, message=FALSE, warning = FALSE, echo = FALSE}
+tibble(data0 = data0,
+       par = rep(c("Theta = 2, Alpha = 0", 
+       	      "Theta = 2, Alpha = 0.1",
+       	      "Theta = 0.5, Alpha = 0",
+       	      "Theta = 0.5, Alpha = 0.1"), each = 100)) %>%
+mutate(events = 
+  map(data0,
+    ~group_by(., id) %>% 
+     summarise(n.events = n()-1) %>%
+     ungroup))%>%
+unnest(events) %>% 
+group_by(n.events, par) %>%
+summarise(freq = n()/50000) %>%
+group_by(par) %>%
+mutate(mean.events = sum(n.events * freq)) %>% 
+ggplot()+
+geom_line(aes(x = n.events, y = freq))+ 
+geom_vline(aes(xintercept = mean.events), color = "blue")+ 
+facet_wrap("par") +
+geom_text(aes(x = mean.events + 10, y = 0.1, label = round(mean.events,1))) +
+ggtitle("Events per Person, Distribution and Average (blue)")
+```
+
+# Allow for Smooth Hazard Function
+
+```{r, fig.height = 8, fig.width = 12, echo = FALSE}
+if(file.exists("../package_tests/JointModelsB_113020.rdata")){
+load("../package_tests/JointModelsB_113020.rdata")
+}else{
+mod.joint.b <-
+map(data0, 
+~frailtyPenal(formula = Surv(g, event) ~ trt + cluster(id) +
+		terminal(terminal1),
+	formula.terminalEvent = ~trt,
+	data = .,
+	recurrentAG=F,
+	hazard = "Splines",
+	maxit = 100,
+	RandDist = "LogN", 
+	n.knots = 4, kappa = c(100,100)))
+save(mod.joint.b, file = "../package_tests/JointModelsB_113020.rdata")
+}
+results <- 
+tibble(data = 1:400,
+       par0 = par0,
+       label = rep(c("Theta = 2, Alpha1 = 0", 
+       	      "Theta = 2, Alpha1 = 0.1",
+       	      "Theta = 0.5, Alpha1 = 0",
+       	      "Theta = 0.5, Alpha1 = 0.1"), each = 100),
+       fits =  mod.joint.b,
+       error = unlist(map(fits, ~.$istop != 1)),
+       est = map(fits, ~extract.fp.coef(., weibull=F))
+       ) %>% 
+mutate(par0 = map(par0, ~.[c(7:8,10:11)]),
+       par0 = map(par0, ~tibble(par0 = .))) %>%
+select(-fits) %>%
+unnest(c(est,par0))
+
+truth =
+expand.grid(theta = c(0.5, 2),
+	alpha1 = c(0, 0.1),
+	Parameter = c("betaR", "etaR",
+	          "betaD", "etaD", "theta","alpha1",
+		"trtR", "trtD")) %>%
+mutate(truth = rep(c(1,0.5, 1,1,-1,-1,0,0), each = 4),
+       label= paste0("Theta = ", theta, ", Alpha1 = ", alpha1),
+       truth = ifelse(Parameter == "theta", theta, truth),
+       truth = ifelse(Parameter == "alpha1", alpha1, truth)) %>%
+filter(Parameter %in% c("theta","alpha1","trtR", "trtD"))
+
+
+# Plot Results
+results %>% 
+filter(!error) %>%
+ggplot()+
+geom_point(aes(y = data, x = Estimate)) +
+facet_grid(label~Parameter, scales = "free") +
+geom_vline(data = truth,aes(xintercept = truth), color = "red") +
+theme_bw()+
+labs(title = "Simulation Results under Different Values of Theta, Alpha1 (n = 500, R = 100)",
+     caption = "Note: For all simulations, etaR = 0.5; betaR, betaD, etaD = 1; trtR, trtD = 0")
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+tab_start <-
+results %>%
+group_by(label, Parameter) %>%
+summarise(Truth = mean(par0),
+          Mean = mean(Estimate[!error]),
+          RMSE = sqrt(mean((Estimate[!error] - par0[!error])^2, na.rm=T)),
+          Bias = mean(Estimate[!error] - par0[!error], na.rm=T),
+          SD = sd(Estimate[!error], na.rm=T),
+          EstSE = mean(SE[!error], na.rm = T),
+          Bias_SD = Bias / SD,
+          Failure_Percent = 100*mean(error)
+) %>%
+pivot_longer(cols = Truth:Failure_Percent) %>%
+mutate(value = round(value, 3)) %>%
+pivot_wider(names_from = c(name), values_from = value)
+
+library(gt)
+gt(data = tab_start, rowname_col = "Parameter")%>%
+tab_stubhead(label = "Parameter")%>%
+tab_header(
+    title = md("**Joint Model Frailty Pack Fits, Splines Model(R = 100, n = 500)**"))%>%
+cols_label(
+    Truth = html("True Value"),
+    Mean = html("Avg. Estimate"),
+    RMSE = html("RMSE"),
+    Bias = html("Bias"),
+    SD = html("SE"),
+    EstSE = html("Avg. Est. SE"),
+    Bias_SD = html("Bias / SE"),
+    Failure_Percent = html("Failure %")
+)
+```
+
+
+# Vary Sample Size
+
+Removed for now.
+
+```{r, eval = FALSE, echo = FALSE, message = FALSE, warning = FALSE, fig.height = 8, fig.width = 12}
+n = rep(c(100,500,2500), each  = 50)
+
+par0 = c(betaR = 1, etaR = 0.05,
+         betaD = 1, etaD = 1,
+         betaD2 = 1, etaD2 = 1,
+         theta = 2, alpha1 = 0, alpha2 = 0,
+         trtR = 0, trtD = 0, trtD2 = 0)
+truth = 
+tibble(values = c(1,.05, 1,1,0.5,rep(0,3)),
+       Parameter = c("betaR", "etaR",
+	          "betaD", "etaD",
+		"theta","alpha1",
+		"trtR", "trtD"))
+
+if(!file.exists("JointModelsC_111820.rdata")){
+data0 <- 
+map(n, ~simulate.competing.data(n = .,truncate = 4,par0 = par0))
+
+mod.joint.c <-
+map(data0, 
+~frailtyPenal(formula = Surv(g, event) ~ trt + cluster(id) +
+		terminal(terminal1),
+	formula.terminalEvent = ~trt,
+	data = .,
+	recurrentAG=FALSE,
+	hazard = "Weibull",
+	maxit = 100,
+	RandDist = "LogN"))
+save(data0, mod.joint.c, file = "JointModelsC_111820.rdata")
+}else load(file = "JointModelsC_111820.rdata")
+
+
+# Combine  Results
+results <- 
+tibble(data = c(1:300),
+       par0 = rep(list(par0),300),
+       n = n,
+       model = rep("Censored", 300),
+       fits =  mod.joint.c,
+       error = unlist(map(fits, ~.$istop != 1)),
+       est = map(fits, extract.fp.coef)
+       ) %>% 
+mutate(par0 = map(par0, ~.[-c(5,6,9,12)]),
+       par0 = map(par0, ~tibble(par0 = ., Parameter = names(.)))) %>%
+unnest(est, par0) %>%
+select(-fits)
+
+# Plot Results
+results %>% filter(!error) %>%
+ggplot()+
+geom_point(aes(y = data, x = Estimate), alpha = 0.5) +
+facet_grid(n~Parameter, scales = "free") +
+geom_vline(data = truth,aes(xintercept = values), color = "red") +
+theme_bw()+
+labs(title = "Simulation Results under Different Sample Sizes (R = 100)",
+     caption = "Note: For all simulations, etaR = 0.5; betaR, betaD, etaD, betaD2, etaD2 = 1; alpha2, trtR, trtD, trtR = 0")
+```
+
+```{r, eval = FALSE, echo = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
+tab_start <-
+results %>%
+group_by(model, n, Parameter) %>%
+summarise(Truth = mean(par0),
+          RMSE = sqrt(mean((Estimate[!error] - par0[!error])^2, na.rm=T)),
+          Bias = mean(Estimate[!error] - par0[!error], na.rm=T),
+          SD = sd(Estimate[!error], na.rm=T),
+          Bias_SD = Bias / SD,
+          Failure_Percent = 100*mean(error)
+) %>%
+pivot_longer(cols = Truth:Failure_Percent) %>%
+mutate(value = round(value, 3)) %>%
+pivot_wider(names_from = c(model, name), values_from = value)
+
+library(gt)
+gt(data = tab_start, rowname_col = "Parameter")%>%
+tab_stubhead(label = "Parameter")%>%
+tab_header(
+    title = md("**Joint Model Frailty Pack Fits for Varied Sample Sizes (R = 100, n = 500)**"))%>%
+cols_label(
+    Censored_Truth = html("True Value"),
+    Censored_RMSE = html("RMSE"),
+    Censored_Bias = html("Bias"),
+    Censored_SD = html("SE"),
+    Censored_Bias_SD = html("Bias / SE"),
+    Censored_Failure_Percent = html("Failure %")
+)
+```
+
+
+### Code for Obtaining Standard Error Estimates
+
+```
+	b <- model$b
+	b<- (b[(length(b) - 3):length(b)])
+	b[1] <- b[1]^2
+	SE <- sqrt(diag(model$varHIHtotal))
+	SE <- (SE[(length(SE) - 3):length(SE)]) # obtain only theta, alpha, and coef
+	SE[1] <- SE[1]*2*(b^.5)[1] # delta method for theta only
+```
+
+# Try Shared Model Only
+
+Removed for now.
+
+```{r, eval = FALSE, include = FALSE}
+mod.joint.b <-
+map(data0, 
+~frailtyPenal(formula = Surv(g, event) ~ trt + cluster(id),
+	data = .,
+	recurrentAG=FALSE,
+	hazard = "Weibull",
+	maxit = 100,
+	RandDist = "LogN"))
+save(data0, mod.joint.b, file = "JointModelsB_113020.rdata")
+
+results.b <- 
+tibble(data = 1:150,
+       fits =  mod.joint.b,
+       n = rep(c(100,500,2500), each  = 50),
+       error = unlist(map(fits, ~.$istop != 1)),
+       est = map(fits, ~c((.$b[1:3])^2,.$b[4]))
+       ) %>% 
+unnest(c(est)) %>%
+mutate(par = rep(c("betaR","etaR","theta","trtR"),150)) %>%
+select(-fits)
+
+truth = truth[c(1:2,5,7),] %>% rename(par = Parameter)
+results.b %>% 
+filter(!error) %>%
+ggplot()+
+geom_point(aes(y = data, x = est)) +
+facet_grid(n~par, scales = "free") +
+geom_vline(data = truth, aes(xintercept = values), color = "red") +
+theme_bw()+
+labs(title = "Simulation Results for Shared Frailty Model",
+     caption = "Note: For all simulations, etaR = 0.5; betaR, betaD, etaD, betaD2, etaD2 = 1; alpha2, trtR, trtD, trtD2 = 0")
+```
+

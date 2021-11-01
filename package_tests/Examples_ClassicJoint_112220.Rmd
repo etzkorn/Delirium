@@ -1,0 +1,45 @@
+---
+title: "Examples of Univariate and Multivariate Terminal Events in Joint Model"
+author: "Lacey Etzkorn"
+date: "11/22/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(frailtypack); library(tidyverse)
+data(dataMultiv)
+data(readmission)
+data(dataNCC)
+```
+
+
+# Readmission Data, Univariate Model
+
+```{r, fig.height = 10, fig.width=12}
+joint.readmission <- 
+frailtyPenal(
+Surv(time,event)~cluster(id)+sex+terminal(death),
+formula.terminalEvent=~sex,
+data=readmission,
+hazard = "Splines",
+recurrentAG=FALSE,
+n.knots = 10, kappa = c(1000,1000))
+joint.readmission
+```
+
+
+# NCC Data, Univariate Model
+
+```{r, fig.height = 10, fig.width=12, fig.width=9}
+joint.ncc <- 
+frailtyPenal(
+Surv(gaptime,event)~cluster(id)+cov1+terminal(death),
+formula.terminalEvent=~cov1,
+data=dataNCC,
+hazard = "Splines",
+recurrentAG=FALSE,
+n.knots = 5, 
+kappa = c(1000,1000))
+joint.ncc
+```

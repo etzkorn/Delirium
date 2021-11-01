@@ -1,0 +1,359 @@
+---
+title: "Simulation of Competing (Gap) Joint Model"
+output: html_document
+---
+```{r setup, warning = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(frailtypack); library(tidyverse)
+source("../delirium_package/R/competing_simulate_data.R")
+source("../delirium_package/R/random_weibull.R")
+source("../delirium_package/R/extract_frailtypack_coef_weibullgap.R")
+```
+
+Increase theta (2) to see if we can better estimate alpha parameters.
+Alpha1 and alpha2 are now in opposite directions.
+
+We simulate an artificial data set where shape parameters match estimates from the reduce trial.
+Scale parameters are chosen by us (20,25,10).
+Simulated treatment effects are all 0.
+
+# Competing Joint Model
+
+$$
+    r_{ij}(t|w_i, X_{ij}) = r_0(t) \exp(X_{i} \gamma_r + \frac 12 [w_i + u_i]) \\
+    \lambda_{i}^{(1)}(t|w_i, X_{ij}) = \lambda_0^{(1)}(t) \exp(X_{i} \gamma_1 + \alpha_{1} w_i) \\
+    \lambda_{i}^{(2)}(t|w_i, X_{ij}) = \lambda_0^{(2)}(t) \exp(X_{i} \gamma_2 + \alpha_{2} u_i) \\
+        r_0(t) =  \frac{\eta_r \cdot t^{\eta_r-1}}{\beta_r^{\eta_r}} \text{(weibull hazard)}\\
+    \lambda_0^{(1)}(t) = \frac{\beta_1 \cdot t^{\beta_1-1}}{\eta_1^{\beta_1}} \text{(weibull hazard)}\\
+    \lambda_0^{(2)}(t) = \frac{\beta_2 \cdot t^{\beta_2-1}}{\eta_2^{\beta_2}} \text{(weibull hazard)}\\
+    w_i \sim_{IID} N(0,\sigma^2)
+$$
+$$
+    \textbf{Simulation Values:}\\
+    \gamma_r = 0, \gamma_1 = 0, \gamma_2 = 0 \text{  (treatment effects)}\\
+    \eta_r =20, \eta_1 = 25, \eta_2 = 10 \text{  (weibull scale)}\\
+    \beta_r = 1, \beta_1 = 1.8, \beta_2 = 1.15 \text{  (weibull shape)}\\
+    \alpha_1 = -0.1;  
+    \alpha_2 = 0.25; 
+    \theta = 2 \\
+    \text{Maximum Observation (Censoring) Time } = 28
+$$
+
+
+# Test Shared Model 
+
+```{r, fig.height = 14, fig.width=18}
+set.seed(080621)
+par00 = c(betaR = 1, etaR = 8,
+         betaD = 1.8, etaD = 25,         
+         betaD2 = 1.15, etaD2 = 10,
+         theta = 0.5, alpha1 = 0.15, alpha2 = -0.3,
+         trtR = -0.1, trtD = -0.05, trtD2 = 0.075)
+
+# put in treatment effects
+# opposite directions for alpha
+#alpha1 = 0.15
+#alpha2 = -0.3
+
+data <- 
+simulate.competing.data(n = 1200, truncate = 28, par0 = par00)
+
+data %>% 
+group_by(id) %>% 
+summarise(del = any(event==1), 
+          death = any(terminal1==1), 
+          discharge = any(terminal2==1)) %>% 
+summarise(mean(del), mean(death), mean(discharge), 
+          mean(death*del)/mean(death), mean((discharge*del))/mean(discharge)) %>% 
+t
+```
+
+
+```{r}
+mod0 <- 
+multivPenal(
+formula = Surv(t0, t, event)~cluster(id)+trt+terminal(terminal1)+terminal2(terminal2),
+formula.terminalEvent=~trt,
+formula.terminalEvent2=~trt,
+data=data, 
+jointGeneral = F,
+initialize = FALSE, 
+save.progress = T,
+hazard = "Weibull",
+gapTimes=T,
+maxit = 200,
+init.hazard = c(1,1,1,1,1,1),
+init.Theta = 1,
+init.Alpha1 = 0,
+init.Alpha2 = 0,
+init.B = c(0,0,0))
+
+mod0$critCV
+mod0$summary.table
+```
+
+# Simulate Data and Fit Shared Competing Model
+
+In this version, we will use the true data generating values as the starting point for the optimizer.
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.height = 8, fig.width = 12}
+set.seed(210806)
+nsim = 500
+par0 = rep(each = nsim, list(par00))
+
+####################################################################
+# Generate Data
+if(!file.exists("../package_test_output/CompetingJointModels_20210805.rdata")){
+data0 <- 
+map(par0, 
+    ~simulate.competing.data(n = 1200,truncate = 2,par0 = .))
+
+# Fit models
+mod.joint.a <- list()
+
+for(i in 1:length(par0)){
+mod.joint.a[[i]] <-
+multivPenal(formula = Surv(t0, t, event) ~ trt + cluster(id) +
+		terminal(terminal1) + terminal2(terminal2),
+formula.terminalEvent = ~trt, 
+formula.terminalEvent2= ~trt,
+jointGeneral = F,
+data = data0[[i]],
+gapTimes=T,
+hazard = "Weibull",
+maxit = 100, 
+initialize = F,
+init.hazard = par00[1:6],
+init.Theta = par00[7],
+init.Alpha1 = par00[8],
+init.Alpha2 = par00[9],
+init.B = c(0,0,0))
+cat("Model ", i, "complete.\n")
+save(data0, mod.joint.a, file = "../package_test_output/CompetingJointModels_20210805.rdata")
+}
+} else load(file = "../package_test_output/CompetingJointModels_20210805.rdata")
+```
+
+# Fit Joint Models
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.height = 8, fig.width = 12}
+if(!file.exists("../package_test_output/JointModels_20210805.rdata")){
+# Fit models
+mod.joint.b <- list()
+mod.joint.c <- list()
+mod.joint.d <- list()
+
+for(i in 1:length(par0)){
+	
+### Death Only
+mod.joint.b[[i]] <-
+frailtyPenal(formula = Surv(g, event) ~ trt + cluster(id) +
+		terminal(terminal1) ,
+formula.terminalEvent = ~trt, 
+jointGeneral = F,
+data = data0[[i]],
+recurrentAG=F,
+hazard = "Weibull",RandDist = "LogN",
+maxit = 100)
+
+### Discharge Only
+mod.joint.c[[i]] <-
+frailtyPenal(formula = Surv(g, event) ~ trt + cluster(id) +
+		terminal(terminal2) ,
+formula.terminalEvent = ~trt, 
+jointGeneral = F,
+data = data0[[i]],
+recurrentAG=F,
+hazard = "Weibull",RandDist = "LogN",
+maxit = 100)
+
+### Death+Discharge
+data0[[i]]$terminal <- data0[[i]]$terminal1 + data0[[i]]$terminal2 
+mod.joint.d[[i]] <-
+frailtyPenal(formula = Surv(g, event) ~ trt + cluster(id) +
+		terminal(terminal) ,
+formula.terminalEvent = ~trt, 
+jointGeneral = F,
+data = data0[[i]],
+recurrentAG=F,
+hazard = "Weibull",RandDist = "LogN",
+maxit = 100)
+
+cat("Model ", i, "complete.\n")
+save(mod.joint.b, mod.joint.c,mod.joint.d, file = "../package_test_output/JointModels_20210805.rdata")
+}
+} else{
+	load(file = "../package_test_output/JointModels_20210805.rdata")
+}
+```
+
+# Verify Competing Joint Model Works
+
+```{r, fig.height = 8, fig.width = 12}
+####################################################################
+# Combine  Results
+truth =
+tibble(Parameter = mod.joint.a[[1]]$summary.table$Parameter,
+       truth = par00)
+
+results <- 
+tibble(data = 1:(nsim),
+       est = map(mod.joint.a, ~.$summary.table),
+       error = map(mod.joint.a, ~.$critCV[2]) %>% unlist %>% 
+           factor(labels = c("None","Maxit","Calculation")),
+       anyerror = map(mod.joint.a, ~.$critCV[2]!=1)%>% unlist,
+       error2 = map(mod.joint.a, ~.$critCV[2] ==2) %>% unlist,
+       error4 = map(mod.joint.a, ~.$critCV[2] ==4) %>% unlist) %>% 
+unnest(c(est))
+
+# Plot Results
+results %>% 
+#filter(!error) %>%
+ggplot()+
+geom_point(aes(y = data, x = Estimate, color = factor(error))) +
+facet_wrap("Parameter", scales = "free") +
+geom_vline(data = truth, aes(xintercept = truth), color = "red") +
+scale_color_manual("Error",values = c("black", "blue", "red"))+
+theme_bw()+
+labs(title = "Joint Model Simulation Results under Different Values of Theta, Alpha1 (R = 1000, n = 1200)")
+```
+
+```{r}
+results %>% filter(!anyerror) %>%
+#filter(!error) %>%
+ggplot()+
+geom_point(aes(y = data, x = Estimate)) +
+facet_wrap("Parameter", scales = "free") +
+geom_vline(data = truth, aes(xintercept = truth), color = "red") +
+theme_bw()+
+labs(title = "Joint Model Simulation Results under Different Values of Theta, Alpha1 (R = 1000, n = 1200)")
+```
+
+
+```{r}
+results %>% 
+    filter(grepl("Alpha", Parameter)) %>%
+    dplyr::select(data, Parameter, Raw) %>%
+    pivot_wider(id_cols = data, names_from = "Parameter", values_from = "Raw") %>%
+ggplot()+
+    geom_point(aes(x = `Alpha, Terminal1`, y = `Alpha, Terminal2`))
+```
+
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+tab_start <-
+results %>%mutate(Truth = rep(truth$truth,nsim)) %>%
+group_by(Parameter) %>%
+summarise(Truth = Truth[1], 
+          Mean = median(Estimate[!anyerror], trim = 0.005),
+          SD = mean((Estimate[!anyerror]-Mean)^2, na.rm=T, trim = 0.005)^.5,
+          Est.SD = mean(Estimate.SE[!anyerror], na.rm=T, trim = 0.005), .groups = "drop"
+) %>%
+pivot_longer(cols = Mean:Est.SD) %>%
+mutate(value = round(value, 3)) %>%
+pivot_wider(names_from = c(name), values_from = value)
+
+library(gt)
+gt(tab_start, rowname_col = "Parameter")%>%
+tab_stubhead(label = "Parameter")%>%
+tab_header(
+    title = md("**Joint Model Frailty Pack Fits (R = 1,000, n = 1,200)**"))%>%
+cols_label(
+    Truth = html("True Value"),
+    Mean = html("Avg. Estimate"),
+    SD = html("SE"),
+    Est.SD = html("Avg. Est. SE")
+)
+```
+
+## Errors
+
+```{r}
+mean(results$anyerror)
+mean(results$error2)
+mean(results$error4)
+```
+
+# Comparison with Joint Model
+
+```{r}
+Parameter = mod.joint.a[[1]]$summary.table$Parameter
+results <- list()
+for(i in 1:nsim){
+results[[i]]<- 
+tibble(sim = i,
+       Parameter = c(Parameter[c(1:4,7:8,10:11)], #model1a
+	         Parameter[c(1:2,5:6,7,9,10,12)],
+	         Parameter),
+       Estimates = c(mod.joint.b[[i]]$b[1:5]^2, mod.joint.b[[i]]$b[6:8], 
+       	         mod.joint.c[[i]]$b[1:5]^2, mod.joint.c[[i]]$b[6:8],
+       	         mod.joint.a[[i]]$summary.table$Estimate) %>% round(3),
+       SE = c(sqrt(diag(mod.joint.b[[i]]$varHtotal))[1:5]*2*sqrt(mod.joint.b[[i]]$b[1:5]), 
+       	  sqrt(diag(mod.joint.b[[i]]$varHtotal))[6:8], 
+       	  sqrt(diag(mod.joint.c[[i]]$varHtotal))[1:5]*2*sqrt(mod.joint.c[[i]]$b[1:5]),
+       	  sqrt(diag(mod.joint.c[[i]]$varHtotal))[6:8],
+       	  mod.joint.a[[i]]$summary.table$Estimate.SE) %>% round(3),
+       Error = c(rep(mod.joint.b[[1]]$istop != 1, 8),
+                 rep(mod.joint.c[[1]]$istop != 1, 8),
+                 rep(mod.joint.a[[1]]$critCV[2] != 1, 12))) %>%
+mutate(model = c(rep("Death",8), 
+       	         rep("Discharge",8), 
+       	         rep("Competing",12)))
+}
+
+results %>%
+do.call(what = "rbind") %>% 
+group_by(Parameter, model) %>%
+summarise(Mean = median(Estimates[!Error], trim = 0.005),
+          SD = sd(Estimates[!Error]),
+          Est.SD = median(SE[!Error], na.rm=T), .groups = "drop"
+) %>%
+pivot_longer(cols = Mean:Est.SD) %>%
+mutate(value = round(value, 3)) %>%
+pivot_wider(names_from = c(name), values_from = value) %>%
+pivot_wider(id_cols = Parameter, names_from = c(model), values_from = c(Mean, SD, Est.SD) ) %>%
+#arrange(Parameter)  %>%
+relocate(SD_Death, .after = Mean_Death)%>%
+relocate(SD_Discharge, .after = Mean_Discharge)%>%
+relocate(SD_Competing, .after = Mean_Competing)%>%
+relocate(SD_Death, .after = Mean_Death)%>%
+relocate(SD_Discharge, .after = Mean_Discharge)%>%
+relocate(SD_Competing, .after = Mean_Competing) %>%
+dplyr::select(-Est.SD_Competing:-Est.SD_Discharge) %>%
+arrange(c(5:6,1:3,7:12,4))%>%
+mutate(Truth = par00[c(10:12,7:9,2,4,6,1,3,5)]) %>%
+gt(rowname_col = "Parameter")%>%
+tab_stubhead(label = "Parameter")%>%
+tab_header(
+    title = md("**Simulation Results: Weibull Model Estimates**"))%>%
+cols_label(
+    Mean_Death = html("Joint: Death"),
+    Mean_Discharge = html("Joint: Discharge"),
+    Mean_Competing = html("Competing"),
+    Mean_Death = html("Joint (Death)"),
+    Mean_Discharge = html("Joint (Discharge)"),
+    Mean_Competing = html("Competing"),
+    SD_Death = html("(SE)"),
+    SD_Discharge = html("(SE)"),
+    SD_Competing = html("(SE)"),
+)%>%
+fmt_missing(columns = 1:8, missing_text = "")  %>%
+ tab_style(
+     style = list(
+       cell_borders(sides = "left")
+     ),
+     locations = list(
+       cells_body(
+         columns = vars(Truth)
+       )
+     )
+   ) %>% 
+text_transform(
+  locations = cells_body(columns = c(3,5,7)),
+  fn = function(x) ifelse(x == "","",paste0("(",x,")"))
+  )%>%
+cols_align(
+  align = "left",
+  columns = c(3,5,7)
+)
+```
