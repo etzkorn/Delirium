@@ -1,0 +1,85 @@
+---
+title: "Marginal_Maximization"
+author: "Lacey Etzkorn"
+date: "2/19/2020"
+output: html_document
+---
+
+```{r}
+library(delirium); library(tidyverse); library(statmod); library(frailtypack)
+```
+
+# Single Terminal Event using Optim
+
+```{r}
+data <- simulate.data(n = 100, frailty.center = "hazard")
+
+mod1 <- 
+weibull.gap.model.optim(data = data, covar.names = "trt", 
+		frailty.center = "hazard", frailty.distribution = "gamma",
+		par.start = c(beta.d0 = 0, beta.dtrt = 0, beta.x0 = 0, beta.xtrt = 0,
+		           log.kd = 0, log.kx = 0, log.theta = 0, alpha = 1))
+mod1a <- 
+weibull.gap.model.optim(data = data, covar.names = "trt", 
+		frailty.center = "hazard", frailty.distribution = "logN",
+		par.start = c(beta.d0 = 0, beta.dtrt = 0, beta.x0 = 0, beta.xtrt = 0,
+		           log.kd = 0, log.kx = 0, log.theta = 0, alpha = 1))
+mod1b <- 
+weibull.gap.model.optim(data = data, covar.names = "trt", 
+		frailty.center = "linear", frailty.distribution = "logN",
+		par.start = c(beta.d0 = 0, beta.dtrt = 0, beta.x0 = 0, beta.xtrt = 0,
+		           log.kd = 0, log.kx = 0, log.theta = 0, alpha = 1))
+mod1c <- frailtyPenal(data = data, 
+	          formula = Surv(g, event) ~ trt + cluster(id) + terminal(terminal),
+	          formula.terminalEvent = ~ trt, 
+	          RandDist = "LogN", hazard = "Weibull", recurrentAG = F
+	          )
+mod1c.par <- extract.fp.coef(mod1c)
+mod1c.par[5:7] <- log(mod1c.par[5:7])
+
+mod1d <- frailtyPenal(data = data, 
+	          formula = Surv(g, event) ~ trt + cluster(id) + terminal(terminal),
+	          formula.terminalEvent = ~ trt, 
+	          RandDist = "Gamma", hazard = "Weibull", recurrentAG = F,
+	          init.B = c(0,0), init.Alpha = 1, init.Theta = 1
+	          )
+mod1d.par <- extract.fp.coef(mod1d)
+mod1d.par[5:7] <- log(mod1d.par[5:7])
+# compare estimates
+cbind(gamma.hazard = mod1$estimates, 
+      logN.hazard = mod1a$estimates, 
+      logN.linear = mod1b$estimates, 
+      fp_logNhazard = mod1c.par,
+      fp_gammahazard = mod1c.par) %>% 
+round(3)
+```
+
+### 
+
+
+### Comparison of estimates
+
+According to our model, the intercept for $\beta_{xlinear0} \approx \beta_{xhazard0} - \sigma^2/2$
+
+```{r}
+mod1a$estimates["beta.x0"] - exp(mod1a$estimates["log.theta"])/2
+```
+
+```{r}
+mod1a$estimates["beta.d0"] - mod1a$estimates["alpha"] * exp(mod1a$estimates["log.theta"])/2
+```
+
+# Competing Terminal Events using Optim
+
+```{r}
+data2 <- simulate.competing.data(n = 100, frailty.center = "hazard")
+
+mod1 <- 
+competing.weibull.gap.model(data = data, covar.names = "trt", frailty.center = "hazard")
+mod1a <- 
+competing.weibull.gap.model(data = data, covar.names = "trt", frailty.center = "linear")
+
+cbind(mod1$estimates, mod1a$estimates) %>% round(3)
+```
+
+

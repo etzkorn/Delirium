@@ -1,0 +1,183 @@
+---
+title: "Check Data Generating Function"
+author: "Lacey Etzkorn"
+date: "11/30/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(frailtypack); library(tidyverse)
+source("../delirium_package/R/joint_simulate_data.R")
+source("../delirium_package/R/random_weibull.R")
+```
+
+
+# Alpha 1, Alpha 2
+
+```{r simulate}
+if(!file.exists("../delirium_package_code/Explore_DataGenerating_Function.rdata")){
+par0 = map2(as.list(rep(seq(-1, 1, length = 101),5)),
+           as.list(rep(seq(-1, 1, length = 5),each = 101)),
+           ~c(betaR = 1, etaR = 20,
+         betaD = 1, etaD = 10,
+         betaD2 = 1, etaD2 = 10,
+         theta = 2, alpha1 = .x, alpha2 = .y,
+         trtR = 0, trtD = 0, trtD2 = 0))
+data0 <- 
+map(par0, 
+    ~simulate.competing.data(n = 1200,truncate = 28,par0 = .))
+save(data0, file = "../delirium_package_code/Explore_DataGenerating_Function.rdata")
+}else  load(file = "../delirium_package_code/Explore_DataGenerating_Function.rdata")
+```
+
+# Plot Number of Events by Alpha1
+
+For a fixed alpha2, a negative correlation between alpha1 and the total number of recurrent events.
+
+```{r}
+summary.df = 
+tibble(alpha1 = rep(seq(-1, 1, length = 101),5),
+       alpha2 = rep(seq(-1, 1, length = 5),each = 101),
+       event.count = map(data0, ~summarise(., events = sum(event))) %>% unlist,
+       t1 = map(data0, ~summarise(., events = sum(terminal1))) %>% unlist,
+       t2 = map(data0, ~summarise(., events = sum(terminal1))) %>% unlist
+       ) 
+ggplot(summary.df,aes(x=alpha1, y = event.count, color = alpha2, group = alpha2))+
+geom_point() +
+stat_smooth()+
+ylim(0,4000)
+```
+
+
+```{r}
+# Plot Event Counts
+ggplot(summary.df2,aes(x=alpha1, y = t1, color = alpha2, group = alpha2))+
+geom_point() +
+stat_smooth(se = F)
+```
+
+If either alpha1 or alpha2 are 1, then we see no effect of the other alpha on the total number of recurrent events.
+
+This makes sense because if we expand the window over which we can observe terminal events by a certain factor (w), and we increase times between events by the same factor, we won't see a net increase in events.
+
+But why can one terminal event have a strong positive association with the rate of recurrent events, and the other have a strong negative association with the rate of recurrent events, but
+
+We expect there to be the most recurrent events when both alpha1 and alpha2 are -1, because this would mean the people with the most events also have long survival times. 
+
+
+# Plot Event Counts by Total Time observed for each terminal event
+
+```{r}
+cordf <- 
+map(data0,
+    ~ group_by(., id) %>%
+      summarise(n = sum(event),
+                t = max(t),
+                nt = n/t,
+                type = ifelse(any(terminal1==1),1,
+          	           ifelse(any(terminal2==1),2,0))) %>%
+      summarise(cor1 = cor(nt[type==1], t[type==1]),
+                cor2 = cor(nt[type==2], t[type==2]))
+) %>%
+do.call(what = "rbind")
+cordf$alpha <- seq(-1,1, length = 1000)
+
+ggplot(cordf) +
+geom_point(aes(x = alpha, y = cor1)) +
+stat_smooth(aes(x = alpha, y = cor1)) +
+geom_point(aes(x = alpha, y = cor2), color = "red", alpha = 0.5) +
+stat_smooth(aes(x = alpha, y = cor2)) +
+geom_hline(yintercept = 0)
+```
+
+Even when the second terminal event is independent of the frailty (alpha2 = 0), 
+we still see a correlation between time to terminal event 2 and the number of recurrent events among individuals 
+who experienced terminal event 2.
+
+If alpha1 = 1, and an individual survives a long time, but experiences event 2, that means they likely had a long time to event 1 (low frailty) and would have had fewer events than expected. Hence, we still see a negative correlation between time to event 2 and the number of recurrent events per unit time when alpha = 1.
+
+Even when alpha2 = 0, there is still going to be a correlation between the two observed event times. (i.e. if one event time is long, the other will have been longer.)
+
+```{r}
+{
+plot(cordf$cor1, cordf$cor2)
+abline(h = 0)
+abline(v = 0)
+abline(a = c(0,1))
+}
+```
+
+I think that when there is a relationship between the terminal event and rate of recurrent events,
+it is hard to tell which terminal event is related to the recurrent event.
+
+
+
+```{r}
+ggplot(data0[[101]]) +
+geom_density(aes(x = w, group = terminal1, fill = factor(terminal1)), alpha = 0.5)
+```
+
+
+# Decrease Theta
+
+```{r simulate2}
+if(!file.exists("../delirium_package_code/Explore_DataGenerating_Function2.rdata")){
+par0 = map2(as.list(rep(seq(-1, 1, length = 101),5)),
+           as.list(rep(seq(-1, 1, length = 5),each = 101)),
+           ~c(betaR = 1, etaR = 5,
+         betaD = 1, etaD = 10,
+         betaD2 = 1, etaD2 = 10,
+         theta = 0.5, alpha1 = .x, alpha2 = .y,
+         trtR = 0, trtD = 0, trtD2 = 0))
+data0 <- 
+map(par0, 
+    ~simulate.competing.data(n = 1200,truncate = 28,par0 = .))
+save(data0, file = "../delirium_package_code/Explore_DataGenerating_Function2.rdata")
+}else  load(file = "../delirium_package_code/Explore_DataGenerating_Function2.rdata")
+
+summary.df2 = 
+tibble(alpha1 = rep(seq(-1, 1, length = 101),5),
+       alpha2 = rep(seq(-1, 1, length = 5),each = 101),
+       event.count = map(data0, ~summarise(., events = sum(event))) %>% unlist,
+       t1 = map(data0, ~summarise(., events = sum(terminal1))) %>% unlist,
+       t2 = map(data0, ~summarise(., events = sum(terminal1))) %>% unlist
+       )
+
+# Plot Event Counts
+ggplot(summary.df2,aes(x=alpha1, y = event.count, color = alpha2, group = alpha2))+
+geom_point() +
+stat_smooth()
+```
+
+```{r}
+# Plot Event Counts
+ggplot(summary.df2,aes(x=alpha1, y = t1, color = alpha2, group = alpha2))+
+geom_point() +
+stat_smooth(se = F)
+```
+It does not look like the number of events changes with alpha1 and alpha2.
+
+```{r}
+summary.df2 %>% filter(alpha2==1) %>%
+ggplot(aes(x=alpha1, y = event.count))+
+geom_point() +
+stat_smooth()
+```
+
+
+
+```{r}
+library(mgcv)
+mod1 <- 
+gam(data = data, formula = g~trt + s(id, bs = "re"), 
+    weights = data$event, #indicator for censoring
+    family = cox.ph())
+
+mod1 <- 
+gamm(data = data, formula = g~trt, random = list(id = ~ 1),
+     weights = data$event, #indicator for censoring
+     family = cox.ph())
+
+summary(mod1)
+```

@@ -1,0 +1,26 @@
+{
+    "id": "DCCCFA4F",
+    "path": "~/Documents/Research/Delirium/delirium_package/R/joint_marg_likelihood_weibull_gap.R",
+    "project_path": "R/joint_marg_likelihood_weibull_gap.R",
+    "type": "r_source",
+    "hash": "934798732",
+    "contents": "",
+    "dirty": false,
+    "created": 1623804615178.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "21,49",
+        "scrollLine": "17"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1623804668,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1623804668869,
+    "read_only": false,
+    "read_only_alternatives": []
+}

@@ -1,0 +1,76 @@
+---
+title: "Check Data Generating Function"
+author: "Lacey Etzkorn"
+date: "11/30/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(frailtypack); library(tidyverse)
+source("../delirium_package/R/joint_simulate_data.R")
+source("../delirium_package/R/random_weibull.R")
+```
+
+
+```{r simulate}
+data0 <- simulate.competing.data(
+	n = 5000,truncate = 28,
+	par0 = c(betaR = 1, etaR = 20,
+         betaD = 1, etaD = 10,
+         betaD2 = 1, etaD2 = 10,
+         theta = 2, alpha1 = 0, alpha2 = 0,
+         trtR = 0, trtD = 0, trtD2 = 0))
+```
+
+# Plot Frailties
+
+```{r}
+data0 %>% group_by(id) %>% summarise(w=w[1]) %>%
+arrange(w) %>%
+ggplot()+
+geom_point(aes(x = w, y = qnorm(seq(0,1,length = 5000),0,sd = sqrt(2))))+
+ggtitle("QQ Plot of Normal Frailties")
+```
+
+
+# Plot Number of Events
+
+```{r}
+data0 %>% 
+group_by(id) %>%
+summarise(events = n() - 1, w= w[1]) %>%
+ungroup %>%
+ggplot()+
+geom_point(aes(x = w, y = events))+
+stat_smooth(aes(x = w, y = events))+
+ggtitle("Frailty by Events") 
+```
+
+# Plot Gap Times
+
+```{r}
+data0 %>% 
+group_by(id) %>%
+filter(event == 1) %>%
+ungroup %>%
+arrange(g) %>%
+ggplot()+
+geom_point(aes(x = g, 
+	  y = qweibull(seq(0,1, length = nrow(data0)-5000), shape = 1, scale = 0.05)))+
+ggtitle("QQ Plot of Raw Gap Times") 
+```
+
+
+```{r}
+data0 %>% 
+group_by(id) %>%
+filter(event == 1) %>%
+ungroup %>%
+arrange(g*exp(w)) %>%
+ggplot()+
+geom_line(aes(x = g*exp(w), 
+	  y = qweibull(seq(0,1, length = nrow(data0)-5000), shape = 1, scale = 0.05)))+
+ggtitle("QQ Plot of Scaled Gap Times [g*exp(w)]") +
+ylab("Expected Quantiles")
+```

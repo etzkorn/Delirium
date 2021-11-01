@@ -1,0 +1,250 @@
+---
+title: "Reduce Analysis"
+author: "Lacey Etzkorn"
+date: "2/9/2021"
+output: html_document
+---
+
+```{r, echo = FALSE,message = FALSE}
+library(frailtypack); library(gt); library(tidyverse)
+knitr::opts_chunk$set(echo = FALSE,message = FALSE)
+
+if(!file.exists("../reduce_analysis/REDUCE_Weibull_Models.rdata")){
+load(file = "../reduce_analysis/processed_data.rdata")
+	
+#############################
+# GAP Time Models
+model0a <-
+frailtyPenal(data = df2,
+	 formula = Surv(tstart, tstop, delirium) ~ treatment +
+	 	terminal(death) + cluster(id),
+	 formula.terminalEvent = ~ treatment ,
+	 recurrentAG = T, hazard = "Weibull",RandDist = "LogN")
+model0b <-
+frailtyPenal(data = df2,
+	 formula = Surv(tstart, tstop, delirium) ~ treatment +
+	 	terminal(discharge) + cluster(id),
+	 formula.terminalEvent = ~ treatment ,
+	 recurrentAG = FALSE,hazard = "Weibull",RandDist = "LogN")
+
+model0c <-
+multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
+		terminal(death) + terminal2(discharge) + cluster(id),
+	formula.terminalEvent = ~treatment,
+	formula.terminalEvent2= ~treatment,
+	data = df2,
+	gapTimes = F,
+	jointGeneral = F,
+	hazard = "Weibull",
+	maxit = 2, 
+	save.progress = T,
+	initialize = F,
+	init.hazard = c(0.85,25,1.5,60,1,13.5),
+	init.Theta = 4,
+	init.Alpha1 = -0.27,
+	init.Alpha2 = -0.53,
+	init.B = c(0,0,0))
+model0d <-
+multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
+		terminal(death) + terminal2(discharge) + cluster(id),
+	formula.terminalEvent = ~treatment,
+	formula.terminalEvent2= ~treatment,
+	data = df2,
+	recurrentAG=FALSE, 
+	jointGeneral = T,
+	hazard = "Weibull",
+	maxit = 100, 
+	initialize = F,
+	init.hazard = c(0.85,25,1.5,60,1,13.5),
+	init.Theta = c(4.75, 4,0.1),
+	init.Alpha1 = -0.27,
+	init.Alpha2 = -0.53,
+	init.B = c(0,0,0))
+#############################
+# Calendar Time Models
+model1a <-
+frailtyPenal(data = df2,
+	 formula = Surv(tstart, tstop, delirium) ~ treatment +
+	 	terminal(death) + cluster(id),
+	 formula.terminalEvent = ~treatment,
+	 recurrentAG = T,hazard = "Weibull",RandDist = "LogN")
+model1b <-
+	frailtyPenal(data = df2,
+		 formula = Surv(tstart, tstop, delirium) ~ treatment +
+		 	terminal(discharge) + cluster(id),
+		 formula.terminalEvent = ~treatment,
+		 recurrentAG = T,hazard = "Weibull",RandDist = "LogN")
+
+model1c <-
+multivPenal(formula = Surv(tstart, tstop, delirium) ~ arm3 +
+		terminal(death) + terminal2(discharge) + cluster(id),
+	formula.terminalEvent = ~arm3,
+	formula.terminalEvent2= ~ arm3,
+	data = df2,
+	recurrentAG=T,
+	hazard = "Weibull",
+	maxit = 100, initialize = F,
+	init.hazard = c(1.4,13,1.8,26,1.13,8.4),
+	init.Theta = 4.9,
+	init.Alpha1 = -0.07,
+	init.Alpha2 = -0.31,
+	init.B = c(-0.57,0.03,0.2))
+model1d <-
+multivPenal(formula = Surv(tstart, tstop, delirium) ~  arm3 +
+		terminal(death) + terminal2(discharge) + cluster(id),
+	formula.terminalEvent = ~ arm3,
+	formula.terminalEvent2= ~ arm3,
+	data = df2,
+	recurrentAG=T, 
+	jointGeneral = T,
+	hazard = "Weibull",
+	maxit = 100, 
+	initialize = F,
+	init.hazard = c(0.83,22.1,1.85,24,1.13,8.4),
+	init.Theta = c(5.12, 4.6,0.1),
+	init.Alpha1 = -0.09,
+	init.Alpha2 = -0.31)
+save(model0a, model0b, model0c, model0d, model1a, model1b, model1c, model1d,
+     file = "../reduce_analysis/REDUCE_Weibull_Models.rdata")
+}else load("../reduce_analysis/REDUCE_Weibull_Models.rdata")
+
+list(model0c, model0d) %>%
+map(~.$summary.table) %>%
+do.call(what = "bind_rows") %>%
+mutate(model = c(rep("Shared",n()/2 - 1), rep("General",n()/2 +1))) %>%
+dplyr::select(model, Parameter, Estimate, Estimate.SE, p )
+```
+
+```{r}
+model0e <-
+frailtyPenal(data = df2,
+	 formula = Surv(tstart, tstop, delirium) ~  treatment + cluster(id) +terminal(discharge),
+	 formula.terminalEvent = ~ treatment,
+	 recurrentAG = T,
+	 n.knots = 8, kappa = c(10,10),
+	 hazard = "Splines",
+	 RandDist = "Gamma")
+#0.27537719 0.41335923 0.55758754 0.66832330 0.69284427 0.67371538 0.64126287
+#0.65728604 0.65751890 0.55223182 0.42489701 0.29064550
+
+# [1]  0.27809993745019  0.41499039670849  0.55502149382771  0.64931038355953
+# [5]  0.65789992864952  0.62548616597450  0.58317179750094  0.60243554228898
+# [9]  0.60187846014393  0.50284444403089  0.37989955724960  0.25674549478194
+model0f <-
+multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
+		terminal(death) + terminal2(discharge) + cluster(id),
+	formula.terminalEvent = ~treatment,
+	formula.terminalEvent2= ~treatment,
+	data = df2,
+	recurrentAG=FALSE,
+	jointGeneral = F,
+	hazard = "Splines",
+	n.knots = as.integer(c(5,5,5)), 
+	kappa = c(10000,10000,10000),
+	maxit = 100, 
+	initialize = F,
+	init.hazard = c(rep(1,21)),
+	init.Theta = 0.425,
+	init.Alpha1 = -0.27,
+	init.Alpha2 = -0.53,
+	init.B = c(0.29,0,0))
+```
+
+
+```{r}
+Parameter <- model0d$summary.table$Parameter
+
+tibble(Parameter = c(Parameter[c(1:4,7,10,12:15)],
+	         Parameter[c(1:2,5:6,8,11,12:13,16:17)],
+	         Parameter[c(1:7,10:14)],
+	         Parameter,
+	         Parameter[c(1:4,7,10,12:13)],
+	         Parameter[c(1:2, 5:6,8,11,12,14)],
+	         Parameter[c(1:7,10:14)],
+	         Parameter),
+       Estimates = c(model1a$b[1:5]^2, 
+       	           model1a$b[6:10], 
+       	           model1b$b[1:5]^2,
+       	           model1b$b[6:10],
+       	          model1c$summary.table$Estimate,
+       	          model1d$summary.table$Estimate,
+       	         model0a$b[1:5]^2, 
+       	           model0a$b[6:10], 
+       	           model0b$b[1:5]^2,
+       	           model0b$b[6:10],
+       	         model0c$summary.table$Estimate,
+       	         model0d$summary.table$Estimate) %>% round(3),
+       SE = c(sqrt(diag(model1a$varHtotal))[1:5]*2*sqrt(model1a$b[1:5]), 
+       	  sqrt(diag(model1a$varHtotal))[6:10], 
+       	  sqrt(diag(model1b$varHtotal))[1:5]*2*sqrt(model1b$b[1:5]),
+       	  sqrt(diag(model1b$varHtotal))[6:10],
+       	  model1c$summary.table$Estimate.SE,
+       	  model1d$summary.table$Estimate.SE,
+              sqrt(diag(model0a$varHtotal))[1:5]*2*sqrt(model0a$b[1:5]), 
+       	  sqrt(diag(model0a$varHtotal))[6:10], 
+       	  sqrt(diag(model0b$varHtotal))[1:5]*2*sqrt(model0b$b[1:5]),
+       	  sqrt(diag(model0b$varHtotal))[6:10],
+              model0c$summary.table$Estimate.SE,
+       	  model0d$summary.table$Estimate.SE) %>% round(3)) %>%
+mutate(times = rep(c("Calendar", "Gap"), each = n()/2),
+       model = rep(c(rep("Death",10), 
+       	         rep("Discharge",10), 
+       	         rep("Shared_Competing",12),
+       	         rep("General_Competing",14)),2)) %>%
+pivot_wider(id_cols = Parameter, names_from = c(times, model), values_from = c(Estimates, SE) ) %>%
+arrange(Parameter)  %>%
+relocate(SE_Calendar_Death, .after = Estimates_Calendar_Death)%>%
+relocate(SE_Calendar_Discharge, .after = Estimates_Calendar_Discharge)%>%
+relocate(SE_Calendar_Shared_Competing, .after = Estimates_Calendar_Shared_Competing)%>%
+relocate(SE_Calendar_General_Competing, .after = Estimates_Calendar_General_Competing) %>%
+relocate(SE_Gap_Death, .after = Estimates_Gap_Death)%>%
+relocate(SE_Gap_Discharge, .after = Estimates_Gap_Discharge)%>%
+relocate(SE_Gap_Shared_Competing, .after = Estimates_Gap_Shared_Competing)%>%
+relocate(SE_Gap_General_Competing, .after = Estimates_Gap_General_Competing) %>%
+gt(rowname_col = "Parameter")%>%
+tab_stubhead(label = "Parameter")%>%
+tab_header(
+    title = md("**REDUCE Trial: Weibull Model Estimates**"))%>%
+cols_label(
+    Estimates_Calendar_Death = html("Joint (Death)"),
+    Estimates_Calendar_Discharge = html("Joint (Discharge)"),
+    Estimates_Calendar_Shared_Competing = html("Competing Shared"),
+    Estimates_Calendar_General_Competing = html("Competing General"),
+    Estimates_Gap_Death = html("Joint (Death)"),
+    Estimates_Gap_Discharge = html("Joint (Discharge)"),
+    Estimates_Gap_Shared_Competing = html("Competing Shared"),
+    Estimates_Gap_General_Competing = html("Competing General"),
+    SE_Calendar_Death = html("SE"),
+    SE_Calendar_Discharge = html("SE"),
+    SE_Calendar_Shared_Competing = html("SE"),
+    SE_Calendar_General_Competing = html("SE"),
+    SE_Gap_Death = html("SE"),
+    SE_Gap_Discharge = html("SE"),
+    SE_Gap_Shared_Competing = html("SE"),
+    SE_Gap_General_Competing = html("SE"),
+)%>%fmt_missing(columns = 1:16, missing_text = "")  %>%
+tab_spanner(
+    label = "Gap Times",
+    columns = 2:9
+  ) %>% 
+tab_spanner(
+    label = "Calendar Times",
+    columns = 10:17
+  ) %>%
+tab_style(
+    style = list(
+      cell_borders(sides = "left")
+    ),
+    locations = list(
+      cells_body(
+        columns = vars(Estimates_Gap_Death)
+      )
+    )
+  ) %>% 
+text_transform(
+  locations = cells_body(columns = c(3,5,7,9,11,13,15,17)),
+  fn = function(x) ifelse(x == "","",paste0("(",x,")"))
+  )
+```
+
+

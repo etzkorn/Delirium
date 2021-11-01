@@ -1,0 +1,126 @@
+#' Simulate joint recurrent event and survival data
+#'
+#' @description Simulate times of recurrent events and terminal events using joint model. Recurrent events have weibull gap times.
+#'
+#' @param par0 named parameter vector
+#' @param n number of individuals in data
+#'
+#' @return tibble with variables
+#'
+#' @examples
+#' simulate.data(n =3)
+#' @export
+
+simulate.competing.data <- function(n = 100, truncate = 28, gap = T,
+			par0 = c(betaR = .1, etaR = 20,
+			         betaD = 1, etaD = 20,
+			         betaD2 = 1, etaD2 = 20,
+			         theta = .05,
+			         alpha1 = -.1, alpha2 = .1,
+			         trtR = 1, trtD = 0, trtD2 = 0)){
+	if(gap){
+	tibble(id = 1:n,
+	       trt = rbinom(n,1,.5),
+	       w = rnorm(n, 0, par0["theta"]^.5),
+	       y1 = rweibRH(n,
+	       	 shape = par0["betaD"],
+	       	 scale = par0["etaD"],
+	       	 rh = exp(w*par0["alpha1"] + par0["trtD"] * trt)),
+	       y2 = rweibRH(n,
+	       	 shape = par0["betaD2"],
+	       	 scale = par0["etaD2"],
+	       	 rh = exp(w*par0["alpha2"] + par0["trtD2"] * trt)),
+	       y = pmin(y1, y2, truncate),
+	       terminal1 = as.numeric(y1 < y2 & y1 < truncate),
+	       t =  map2(w,trt,
+	                 ~cumsum(rweibRH(150,
+	                 	    shape = par0["betaR"],
+	                 	    scale = par0["etaR"],
+	                 	    rh = exp(.x + par0["trtR"] * .y))))) %>%
+		dplyr::select(-y1, -y2) %>%
+		unnest(t) %>%
+		gather("event", "t", -id, -trt, -w, -terminal1) %>%
+		distinct() %>%
+		dplyr::arrange(id, t) %>%
+		dplyr::group_by(id) %>%
+		dplyr::filter(t <= t[event=="y"]) %>%
+		dplyr::mutate(terminal2 = as.numeric(event=="y" & terminal1==0 & t < truncate),
+		       terminal1 = as.numeric(event=="y" & terminal1==1 & t < truncate),
+		       event = as.numeric(event=="t"),
+		       g = diff(c(0,t)),
+	                   t0 = t - g)%>%
+		dplyr::ungroup() %>%
+		dplyr::select(id, trt, w, event, terminal1, terminal2, g,t, t0)
+	}else{
+		tibble(id = 1:n,
+		       trt = rbinom(n,1,.5),
+		       w = rnorm(n, 0, par0["theta"]^.5),
+		       y1 = rweibRH(n,
+		       	 shape = par0["betaD"],
+		       	 scale = par0["etaD"],
+		       	 rh = exp(w*par0["alpha1"] + par0["trtD"] * trt)),
+		       y2 = rweibRH(n,
+		       	 shape = par0["betaD2"],
+		       	 scale = par0["etaD2"],
+		       	 rh = exp(w*par0["alpha2"] + par0["trtD2"] * trt)),
+		       y = pmin(y1, y2, truncate),
+		       terminal1 = as.numeric(y1 < y2 & y1 < truncate),
+		       t =  map2(w,trt,
+		                 ~rweibRH(150,
+		                 	    shape = par0["betaR"],
+		                 	    scale = par0["etaR"],
+		                 	    rh = exp(.x + par0["trtR"] * .y)))) %>%
+			dplyr::select(-y1, -y2) %>%
+			unnest(t) %>%
+			gather("event", "t", -id, -trt, -w, -terminal1) %>%
+			distinct() %>%
+			dplyr::arrange(id, t) %>%
+			dplyr::group_by(id) %>%
+			dplyr::filter(t <= t[event=="y"]) %>%
+			dplyr::mutate(terminal2 = as.numeric(event=="y" & terminal1==0 & t < truncate),
+				  terminal1 = as.numeric(event=="y" & terminal1==1 & t < truncate),
+				  event = as.numeric(event=="t"),
+				  g = diff(c(0,t)),
+				  t0 = t - g)%>%
+			dplyr::ungroup() %>%
+			dplyr::select(id, trt, w, event, terminal1, terminal2, g,t, t0)
+	}
+}
+
+
+simulate.competing.data.paired <-
+function(n = 100, truncate = 28, gap = T,
+         par0 = c(betaR = .1, etaR = 20,
+                  betaD = 1, etaD = 20,
+                  theta = .05, alpha1 = -.1,
+                  trtR = 1, trtD = 0)){
+
+	      df <- tibble(id = 1:n,
+		       trt = rbinom(n,1,.5),
+		       w = rnorm(n, 0, par0["theta"]^.5),
+		       y = rweibRH(n,
+		       	 shape = par0["betaD"],
+		       	 scale = par0["etaD"],
+		       	 rh = exp(w*par0["alpha1"] + par0["trtD"] * trt)),
+		       terminal1 = as.numeric(y < truncate),
+		       t =  map2(w,trt,
+		                 ~cumsum(rweibRH(90,
+		                 	    shape = par0["betaR"],
+		                 	    scale = par0["etaR"],
+		                 	    rh = exp(w + par0["trtR"] * trt))))) %>%
+			unnest(t) %>%
+			gather("event", "t", -id, -trt, -w, -terminal1) %>%
+			distinct() %>%
+			dplyr::arrange(id, t) %>%
+			dplyr::group_by(id) %>%
+			dplyr::filter(t <= t[event=="y"]) %>%
+			dplyr::mutate(terminal2 = as.numeric(event=="y" & terminal1==0 & t < truncate),
+				  terminal1 = as.numeric(event=="y" & terminal1==1 & t < truncate),
+				  event = as.numeric(event=="t"),
+				  g = diff(c(0,t)),
+				  t0 = t - g)%>%
+			dplyr::ungroup() %>%
+			dplyr::select(id, trt, w, event, terminal1, terminal2, g,t, t0)
+	      rbind(df, mutate(df, id = id+max(id), terminal2 = terminal1, terminal1=0))
+
+}

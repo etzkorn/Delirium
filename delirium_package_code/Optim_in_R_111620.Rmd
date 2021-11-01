@@ -1,0 +1,155 @@
+---
+title: "Optim_in_R"
+output: html_document
+---
+
+```{r setup, include=FALSE, message = FALSE, warning = FALSE}
+library(frailtypack); library(tidyverse)
+source("../../frailtypack/R/simulate_competing_data.R")
+source("../../delirium_package/R/random_weibull.R")
+source("../../delirium_package/R/competing_marginal_likelihood_weibull_gap.R")
+source("../../delirium_package/R/marg_likelihood_weibull_gap.R")
+source("../../delirium_package/R/competing_weibull_gap_model_optim.R")
+source("../../delirium_package/R/weibull_gap_model_optim.R")
+source("../../delirium_package/R/extract_frailtypack_coef_weibullgap.R")
+data0 <- 
+map(1:10, ~simulate.competing.data.paired(n = 500,truncate = 4,
+		         par0 = c(betaR = .1, etaR = 1,
+                  betaD = 1, etaD = 1,
+                  theta = 1, alpha1 = 0,
+                  trtR = 0, trtD = 0)) %>%
+    	mutate(terminal = terminal1 + terminal2))
+
+save(data0, file = "FrailtyPenal_Test_Data.rdata")
+truth = tibble(values = c(betaR = log(.1), etaR = 0,
+		                  betaD = 0, etaD = 0,
+		                  betaD2 = 0, etaD2 = 0,
+		                  theta = 0,
+		                  alpha1 = 0, alpha2 = 0,
+		                  trtR = 0, trtD = 0, trtD2 = 0),
+	   names = c("betaR", "etaR",
+		                  "betaD", "etaD",
+		                  "betaD2", "etaD2",
+		                  "theta",
+		                  "alpha1", "alpha2",
+		                  "trtR", "trtD", "trtD2"))
+```
+
+```{r, message = FALSE}
+# Competing Joint Model
+mod.joint.a <- list()
+for(i in 1:10){
+mod.joint.a[[i]] <- tryCatch(
+competing.weibull.gap.model(data = data0[[i]], covar.names = "trt",GH = 30),
+error = function(e) "error"
+)
+}
+save(mod.joint.a, file = "JointModelsA.rdata")
+
+####################################################################
+# Single Terminal Event = Second event is censored
+mod.joint.c<-list()
+for(i in 1:10){
+mod.joint.c[[i]] <- tryCatch(
+weibull.gap.model.optim(data = filter(data0[[i]], id<=500), covar.names = "trt",GH = 30),
+error = function(e) "error"
+)
+}
+save(mod.joint.c, file = "JointModelsC.rdata")
+
+mod.joint.c.fp <-
+map(data0, 
+~frailtyPenal(formula = Surv(g, event) ~ trt + cluster(id) +
+		terminal(terminal1),
+	formula.terminalEvent = ~trt,
+	data = filter(., id<=500),
+	recurrentAG=FALSE,
+	hazard = "Weibull",
+	maxit = 100,
+	RandDist = "LogN"))
+mod.joint.c.fp <- map(mod.joint.c.fp, extract.fp.coef)
+
+#mod.joint.b[mod.joint.b == "error"] <-  NULL
+
+####################################################################
+# Combine  Results
+results <- 
+tibble(iter = 1:20,
+       data = rep(1:10, 2),
+       model = rep(c("Competing", "Classic"),each = 10),
+       fits =  c(mod.joint.a, mod.joint.c),
+       names = map(fits, ~names(.[[1]]))) %>%
+mutate(fits = map(fits, as_tibble)) %>%
+unnest(cols = c(fits, names))
+
+ggplot(results)+
+geom_errorbarh(aes(y = data , 
+	       xmin = estimates - 2*se, 
+	       xmax = estimates + 2*se, 
+	        color = model),
+	   position = position_dodge())+
+geom_point(aes(y = data, x = estimates, color = model),
+	   position = position_dodge()) +
+facet_wrap("names", scale = "free_x") +
+geom_vline(data = truth,aes(xintercept = values)) +
+scale_y_continuous("Data Set", breaks = (1:5)*2)
+```
+
+```{r}
+fp.results <- 
+mod.joint.c.fp %>% 
+do.call(what = "rbind") %>%
+as_tibble() %>%
+mutate(data = 1:10) %>%
+pivot_longer(cols = betaR:trtD, names_to = "names", values_to = "FP_estimates") %>%
+group_by(data) %>%
+filter(all(is.finite(FP_estimates))) %>%
+left_join(truth) %>%
+group_by(names) %>%
+summarise(ClassicFP_RMSE = sqrt(mean((FP_estimates - values)^2, na.rm=T)),
+          ClassicFP_SD = sd(FP_estimates, na.rm=T),
+          ClassicFP_Bias = mean(FP_estimates - values, na.rm=T))
+
+results %>%
+left_join(truth) %>% 
+group_by(model, names) %>%
+summarise(RMSE = sqrt(mean((estimates - values)^2)),
+          SD = sd(estimates),
+          Bias = mean(estimates - values)) %>%
+pivot_longer(cols = RMSE:Bias) %>%
+mutate(value = round(value, 3)) %>%
+pivot_wider(names_from = c(model, name), values_from = value) %>%
+left_join(fp.results)
+```
+
+
+```{r}
+mod.joint.c.fp %>% 
+do.call(what = "rbind") %>%
+as_tibble() %>%
+mutate(data = 1:10) %>%
+pivot_longer(cols = betaR:trtD, names_to = "names", values_to = "FP_estimates") %>%
+left_join(filter(results,model == "Classic")) %>%
+group_by(data) %>%
+mutate(FP_estimates = ifelse(any(!is.finite(FP_estimates)), NA, FP_estimates)) %>%
+ggplot() + 
+geom_point(aes(x = estimates, y = FP_estimates)) +
+facet_wrap("names", scales = "free") +
+theme_bw()
+```
+
+
+```{r}
+mod.joint.c.fp %>% 
+do.call(what = "rbind") %>%
+as_tibble() %>%
+mutate(data = 1:10) %>%
+pivot_longer(cols = betaR:trtD, names_to = "names", values_to = "FP_estimates") %>%
+left_join(filter(results,model == "Competing")) %>%
+group_by(data) %>%
+mutate(FP_estimates = ifelse(any(!is.finite(FP_estimates)), NA, FP_estimates)) %>%
+ggplot() + 
+geom_point(aes(x = estimates, y = FP_estimates)) +
+facet_wrap("names", scales = "free") +
+theme_bw()
+```

@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1588566735297.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1254344480",
+    "id" : "3D6148FF",
+    "lastKnownWriteTime" : 1589984004,
+    "last_content_update" : 1590019075921,
+    "path" : "~/Documents/Research/Delirium/Fortran_Code/mycode/Updated_Codes/MultivPenalized_Function_Outline.Rmd",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "407,7",
+        "scrollLine" : "397"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

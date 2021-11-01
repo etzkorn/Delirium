@@ -1,0 +1,73 @@
+---
+title: "Optim_in_R"
+output: html_document
+---
+
+```{r setup, include=FALSE, message = FALSE, warning = FALSE}
+library(frailtypack); library(tidyverse); library(delirium)
+
+data0 <-
+simulate.competing.data(n = 500, truncate = 2,
+		         par0 = c(betaR = 1, etaR = .3,
+                  betaD = 1, etaD = 1, betaD2 = 1, etaD2 = 1,
+                  theta = 1, alpha1 = 0, alpha2 = 0, 
+                  trtR = 0, trtD = 0, trtD2 = 0)) 
+
+truth = tibble(values = c(betaR = log(.1), etaR = 0,
+		                  betaD = 0, etaD = 0,
+		                  betaD2 = 0, etaD2 = 0,
+		                  theta = 0,
+		                  alpha1 = 0, alpha2 = 0,
+		                  trtR = 0, trtD = 0, trtD2 = 0),
+	   names = c("betaR", "etaR",
+		                  "betaD", "etaD",
+		                  "betaD2", "etaD2",
+		                  "theta",
+		                  "alpha1", "alpha2",
+		                  "trtR", "trtD", "trtD2"))
+```
+
+# Compare Values of LL, Estimates
+
+```{r, message = FALSE}
+# Competing Joint Model
+mod.joint.a <- competing.weibull.gap.model(data = data0, covar.names = "trt",GH = 30)
+save(mod.joint.a, file = "JointModelsA.rdata")
+
+competing.marg.likelihood.weibull.gap(phi = mod.joint.a$estimates, data0, "trt", GH = 30)
+# 3073.5
+
+estimates.a <- mod.joint.a$estimates
+
+# Classic Joint 
+mod.joint.c<-weibull.gap.model.optim(data = data0, covar.names = "trt",GH = 30)
+save(mod.joint.c, file = "JointModelsC.rdata")
+
+estimates.c <- mod.joint.a$estimates*0
+estimates.c[names(mod.joint.c$estimates)] <- mod.joint.c$estimates
+marg.likelihood.weibull.gap(phi = estimates.c, data0, "trt", GH = 30)
+#3181.905
+
+# Classic Joint in Frailtypack
+mod.joint.c.fp <-
+frailtyPenal(formula = Surv(g, event) ~ trt + cluster(id) +
+		terminal(terminal1),
+	formula.terminalEvent = ~trt,
+	data = data0,
+	recurrentAG=FALSE,
+	hazard = "Weibull",
+	maxit = 100,
+	RandDist = "LogN", nb.gh = 32)
+# Marginal LL is 1564.16
+
+classic.coef <- mod.joint.a[[1]]*0
+classic.coef[extract.fp.coef(mod.joint.c.fp)[[1]]] <- extract.fp.coef(mod.joint.c.fp)[[2]]
+classic.coef[1:7] <- log(classic.coef[1:7])
+marg.likelihood.weibull.gap(phi = classic.coef, data0, "trt", GH = 32)
+# Marginal LL is 1596.65
+
+# Compare Estimates Directly
+data.frame(FP.coef = classic.coef, my.coef = estimates.c, my.competing.coef = estimates.a)
+```
+
+The estimates do not appear to be very close. Maybe the frailtypack version is better?
