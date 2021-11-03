@@ -71,6 +71,7 @@ multivPenal.R:: noVarEvent= 0 0 0 0 \nmultiveJoint.f90:: Unpacking model control
  aaOptim.f90:: Convergence Criteria: dd =    1.0009999999999999      (   1.0000000000000000E-003 )
  funcpaMultivWeib.f90:: Error with cumulative hazard for recurrent event 1.
  funcpaMultivWeib.f90:: betaR, etaR=   67.240764279186195        2.2825038634054730E-009
+ funcpaMultivWeib.f90:: i=           1
  funcpaMultivWeib.f90:: g(i)=           1
  funcpaMultivWeib.f90:: vet=   1.0000000000000000     
  funcpaMultivWeib.f90:: t1(i)=   4.9888601876934331     
