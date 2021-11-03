@@ -3,12 +3,12 @@ multivPenal.R:: length(b)= 12
 multivPenal.R:: np =  12
 multivPenal.R:: length(controls)= 12
 
-multivPenal.R::nobsEvent= 216 100 1
+multivPenal.R::nobsEvent= 253 100 1
 kappa= 0 0 0 0
-multivPenal.R:: length(tt10)= 216 
-multivPenal.R:: length(tt11)= 216 
-multivPenal.R:: length(event1)= 216 
-multivPenal.R:: length(group1)= 216 
+multivPenal.R:: length(tt10)= 253 
+multivPenal.R:: length(tt11)= 253 
+multivPenal.R:: length(event1)= 253 
+multivPenal.R:: length(group1)= 253 
 multivPenal.R:: max(group1)= 100 
 multivPenal.R:: length(unique(group1))= 100
 multivPenal.R:: length(tt0meta0)= 1 
@@ -19,10 +19,10 @@ multivPenal.R:: max(group2)= 0
 multivPenal.R:: length(unique(group2))= 1
 multivPenal.R:: length(terminal1, terminal2, groupdc, tt1dc)= 100 100 100 100
 multivPenal.R:: nbvar= 1 1 1 1
-multivPenal.R:: dim(modelmatrix1, modelmatrix2, modelmatrix3, modelmatrix4) 216 1 , 100 1 , 1 1 , 100 1
+multivPenal.R:: dim(modelmatrix1, modelmatrix2, modelmatrix3, modelmatrix4) 253 1 , 100 1 , 1 1 , 100 1
 multivPenal.R:: noVarEvent= 0 0 0 0 \nmultiveJoint.f90:: Unpacking model controls.
  multiveJoint.f90:: controls =          200           0           2           1           1           0           0           0           0           1          32           0
- multiveJoint.f90:: nobsEvent =          216         100           1
+ multiveJoint.f90:: nobsEvent =          253         100           1
  multiveJoint.f90:: k0 =    0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     
  multiveJoint.f90:: nbvar =            1           1           1           1
  multiveJoint.f90:: noVarEvent =            0           0           0           0
@@ -49,7 +49,7 @@ multivPenal.R:: noVarEvent= 0 0 0 0 \nmultiveJoint.f90:: Unpacking model control
  deriva:: Likelihood Computation (1)
  deriva:: Derivative Approximation (2a)
  deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            0 ,  LL =   -1910.7520173818627     
+ aaOptim.f90:: Optim iteration =            0 ,  LL =   -2199.2347400957856     
  aaOptim.f90:: Convergence Criteria: ca =    1.0009999999999999      (   1.0000000000000000E-003 )
  aaOptim.f90:: Convergence Criteria: cb =    1.0009999999999999      (   1.0000000000000000E-003 )
  aaOptim.f90:: Convergence Criteria: dd =    1.0009999999999999      (   1.0000000000000000E-003 )
@@ -57,43 +57,24 @@ multivPenal.R:: noVarEvent= 0 0 0 0 \nmultiveJoint.f90:: Unpacking model control
  deriva:: Likelihood Computation (1)
  deriva:: Derivative Approximation (2a)
  deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            1 ,  LL =   -1370.6533246125418     
- aaOptim.f90:: Convergence Criteria: ca =    3.3390046151239340E-002 (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    540.09869276932091      (   1.0000000000000000E-003 )
+ aaOptim.f90:: Optim iteration =            1 ,  LL =   -1573.5800984179662     
+ aaOptim.f90:: Convergence Criteria: ca =    3.0195169564423308E-002 (   1.0000000000000000E-003 )
+ aaOptim.f90:: Convergence Criteria: cb =    625.65464167781943      (   1.0000000000000000E-003 )
  aaOptim.f90:: Convergence Criteria: dd =    1.0009999999999999      (   1.0000000000000000E-003 )
  aaOptim.f90::deriva::Calculating derivatives.
  deriva:: Likelihood Computation (1)
  deriva:: Derivative Approximation (2a)
  deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            2 ,  LL =   -1249.6973207999854     
- aaOptim.f90:: Convergence Criteria: ca =    2.4419578119229308E-002 (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    120.95600381255645      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    1.0009999999999999      (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            3 ,  LL =   -1135.1084284865026     
- aaOptim.f90:: Convergence Criteria: ca =    3.5550458897659891E-002 (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    114.58889231348280      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    1.0009999999999999      (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            4 ,  LL =   -1028.8395273959022     
- aaOptim.f90:: Convergence Criteria: ca =    4.0558488766880223E-002 (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    106.26890109060037      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    1.0009999999999999      (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            5 ,  LL =   -936.93468561385112     
- aaOptim.f90:: Convergence Criteria: ca =    4.2898975828114826E-002 (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    91.904841782051108      (   1.0000000000000000E-003 )
+ aaOptim.f90:: Optim iteration =            2 ,  LL =   -1433.6623769490552     
+ aaOptim.f90:: Convergence Criteria: ca =    2.1392665225300429E-002 (   1.0000000000000000E-003 )
+ aaOptim.f90:: Convergence Criteria: cb =    139.91772146891094      (   1.0000000000000000E-003 )
  aaOptim.f90:: Convergence Criteria: dd =    1.0009999999999999      (   1.0000000000000000E-003 )
  funcpaMultivWeib.f90:: Error with cumulative hazard for recurrent event 1.
+ funcpaMultivWeib.f90:: betaR, etaR=   67.240764279186195        2.2825038634054730E-009
+ funcpaMultivWeib.f90:: g(i)=           1
+ funcpaMultivWeib.f90:: vet=   1.0000000000000000     
+ funcpaMultivWeib.f90:: t1(i)=   4.9888601876934331     
+ funcpaMultivWeib.f90:: res1(g(i))=                  Infinity
  aaOptim.f90:: marq98 complete.
  multiveJoint.f90:: Optimization complete.
  multiveJoint.f90:: (13) Calculating fitted values...
