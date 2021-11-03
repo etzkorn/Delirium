@@ -6,12 +6,11 @@ source("../delirium_package/R/random_weibull.R")
 ############## Example 1
 set.seed(101010)
 data0 <- simulate.competing.data(n = 100,
-		         par0 = c(betaR = 1, etaR = .1,
-		                  betaD = 1, etaD = 1,
-		                  betaD2 = 1, etaD2 = 1,
-		                  theta = .5,
-		                  alpha1 = 1, alpha2 = 1,
-		                  trtR = 1, trtD = 0, trtD2 = 0))
+		         par0 =c(betaR = 1, etaR = 8,
+		         	     betaD = 1.8, etaD = 25,
+		         	     betaD2 = 1.15, etaD2 = 10,
+		         	     theta = 0.5, alpha1 = 0.15, alpha2 = -0.3,
+		         	     trtR = -0.1, trtD = -0.05, trtD2 = 0.075))
 file.remove("../package_tests/frailty_model_parameters.dat")
 model0 <-
 multivPenal(formula = Surv(t0, t, event) ~ trt + cluster(id) +

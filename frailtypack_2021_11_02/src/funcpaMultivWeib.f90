@@ -209,6 +209,11 @@
          if ((res1(g(i)).ne.res1(g(i))).or.(abs(res1(g(i))).ge. 1.d30)) then
             open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
             write(1,*) "funcpaMultivWeib.f90:: Error with cumulative hazard for recurrent event 1."
+            write(1,*) "funcpaMultivWeib.f90:: betaR, etaR=", betaR, etaR
+            write(1,*) "funcpaMultivWeib.f90:: g(i)=",g(i)
+            write(1,*) "funcpaMultivWeib.f90:: vet=", vet
+            write(1,*) "funcpaMultivWeib.f90:: t1(i)=", t1(i)
+            write(1,*) "funcpaMultivWeib.f90:: res1(g(i))=",res1(g(i))
             close(1)
             funcpaMultivWeib=-1.d9
             goto 123
@@ -220,6 +225,11 @@
         if ((res3(g(i)).ne.res3(g(i))).or.(abs(res3(g(i))).ge. 1.d30)) then
             open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
             write(1,*) "funcpaMultivWeib.f90:: Error with truncation adjustment for recurrent event 1."
+            write(1,*) "funcpaMultivWeib.f90:: betaR, etaR=", betaR, etaR
+            write(1,*) "funcpaMultivWeib.f90:: g(i)=",g(i)
+            write(1,*) "funcpaMultivWeib.f90:: vet=", vet
+            write(1,*) "funcpaMultivWeib.f90:: t1(i)=", t0(i)
+            write(1,*) "funcpaMultivWeib.f90:: res3(g(i))=",res3(g(i))
             close(1)
             funcpaMultivWeib=-1.d9
             goto 123
