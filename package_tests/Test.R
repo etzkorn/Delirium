@@ -1,6 +1,6 @@
 library(frailtypack);library(tidyverse);library(survival);library(purrr)
-source("R/simulate_competing_data.R")
-source("../../delirium_package/R/random_weibull.R")
+source("../delirium_package/R/competing_simulate_data.R")
+source("../delirium_package/R/random_weibull.R")
 
 ######################################################
 ############## Example 1
@@ -9,17 +9,17 @@ data0 <- simulate.competing.data(n = 100,
 		         par0 = c(betaR = 1, etaR = .1,
 		                  betaD = 1, etaD = 1,
 		                  betaD2 = 1, etaD2 = 1,
-		                  theta = .1,
+		                  theta = .5,
 		                  alpha1 = 1, alpha2 = 1,
 		                  trtR = 1, trtD = 0, trtD2 = 0))
-file.remove("frailty_model_parameters.dat")
+file.remove("../package_tests/frailty_model_parameters.dat")
 model0 <-
 multivPenal(formula = Surv(t0, t, event) ~ trt + cluster(id) +
 		terminal(terminal1) + terminal2(terminal2),
 	formula.terminalEvent = ~trt,
 	formula.terminalEvent2 = ~trt,
 	data = data0,
-	initialize = T,
+	initialize = F,
 	hazard = "Weibull",
 	maxit = 200)
 model0$critCV[1:2]

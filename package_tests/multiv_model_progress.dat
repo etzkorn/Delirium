@@ -3,31 +3,31 @@ multivPenal.R:: length(b)= 12
 multivPenal.R:: np =  12
 multivPenal.R:: length(controls)= 12
 
-multivPenal.R::nobsEvent= 2792 1200 1
+multivPenal.R::nobsEvent= 1073 100 1
 kappa= 0 0 0 0
-multivPenal.R:: length(tt10)= 2792 
-multivPenal.R:: length(tt11)= 2792 
-multivPenal.R:: length(event1)= 2792 
-multivPenal.R:: length(group1)= 2792 
-multivPenal.R:: max(group1)= 1200 
-multivPenal.R:: length(unique(group1))= 1200
+multivPenal.R:: length(tt10)= 1073 
+multivPenal.R:: length(tt11)= 1073 
+multivPenal.R:: length(event1)= 1073 
+multivPenal.R:: length(group1)= 1073 
+multivPenal.R:: max(group1)= 100 
+multivPenal.R:: length(unique(group1))= 100
 multivPenal.R:: length(tt0meta0)= 1 
 multivPenal.R:: length(tt1meta0)= 1 
 multivPenal.R:: length(group2)= 1 
 multivPenal.R:: length(event2)= 1 
 multivPenal.R:: max(group2)= 0 
 multivPenal.R:: length(unique(group2))= 1
-multivPenal.R:: length(terminal1, terminal2, groupdc, tt1dc)= 1200 1200 1200 1200
+multivPenal.R:: length(terminal1, terminal2, groupdc, tt1dc)= 100 100 100 100
 multivPenal.R:: nbvar= 1 1 1 1
-multivPenal.R:: dim(modelmatrix1, modelmatrix2, modelmatrix3, modelmatrix4) 2792 1 , 1200 1 , 1 1 , 1200 1
+multivPenal.R:: dim(modelmatrix1, modelmatrix2, modelmatrix3, modelmatrix4) 1073 1 , 100 1 , 1 1 , 100 1
 multivPenal.R:: noVarEvent= 0 0 0 0 \nmultiveJoint.f90:: Unpacking model controls.
- multiveJoint.f90:: controls =          200           0           2           1           1           1           0           0           0           1          32           0
- multiveJoint.f90:: nobsEvent =         2792        1200           1
+ multiveJoint.f90:: controls =          200           0           2           1           1           0           0           0           0           1          32           0
+ multiveJoint.f90:: nobsEvent =         1073         100           1
  multiveJoint.f90:: k0 =    0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     
  multiveJoint.f90:: nbvar =            1           1           1           1
  multiveJoint.f90:: noVarEvent =            0           0           0           0
  multiveJoint.f90:: np =           12
- multiveJoint.f90:: b =    0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     
+ multiveJoint.f90:: b =    0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000      -0.69314718055994529       0.10000000000000001      -0.10000000000000001        0.0000000000000000        0.0000000000000000        0.0000000000000000     
  multiveJoint.f90:: nz0 =            1
  multiveJoint.f90:: ghNodes0 =   -7.1258139098307218       -6.4094981492696590       -5.8122259495159092       -5.2755509865158734       -4.7771645035025951       -4.3055479533512004       -3.8537554854714475       -3.4171674928185700       -2.9924908250023736       -2.5772495377323192       -2.1694991836061104       -1.7676541094632019       -1.3703764109528718      -0.97650046358968290      -0.58497876543593241      -0.19484074156939934       0.19484074156939954       0.58497876543593230       0.97650046358968212        1.3703764109528720        1.7676541094632012        2.1694991836061130        2.5772495377323170        2.9924908250023741        3.4171674928185700        3.8537554854714440        4.3055479533512004        4.7771645035025951        5.2755509865158761        5.8122259495159074        6.4094981492696581        7.1258139098307236     
  multiveJoint.f90:: ghWeights0 =   0.82456652306559663       0.64095048591381398       0.56174901464973148       0.51503728466712151       0.48357144073610786       0.46078645569096149       0.44355318550141853       0.43016371088061273       0.41959775308115149       0.41120612871231232       0.40455706179661144       0.39935484461844939       0.39539393939617240       0.39253186436582072       0.39067274462854279       0.38975734202743911       0.38975734202743884       0.39067274462854318       0.39253186436581938       0.39539393939617318       0.39935484461844856       0.40455706179661827       0.41120612871231044       0.41959775308115221       0.43016371088061123       0.44355318550141459       0.46078645569096149       0.48357144073610442       0.51503728466712895       0.56174901464972349       0.64095048591381409       0.82456652306560851     
@@ -42,134 +42,173 @@ multivPenal.R:: noVarEvent= 0 0 0 0 \nmultiveJoint.f90:: Unpacking model control
  multiveJoint.f90:: (3b) Copying data for recurrent event 1.
  multiveJoint.f90:: (4) Calculating grid of dates for spline evaluation.
  multiveJoint.f90:: (9) Optimizing Parameters.
- multiveJoint.f90:: starting b =    0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     
+ multiveJoint.f90:: starting b =    0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000      -0.69314718055994529       0.10000000000000001      -0.10000000000000001        0.0000000000000000        0.0000000000000000        0.0000000000000000     
  multiveJoint.f90:: Model for one recurrent event and two terminal events.
  aaOptim.f90:: Optim starting.
  aaOptim.f90::deriva::Calculating derivatives.
  deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            0 ,  LL =   -24223.414822712370     
- aaOptim.f90:: Convergence Criteria: ca =    1.0009999999999999      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    1.0009999999999999      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    1.0009999999999999      (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            1 ,  LL =   -18300.249062397736     
- aaOptim.f90:: Convergence Criteria: ca =    4.8433198851146178E-002 (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    5923.1657603146341      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    1.0009999999999999      (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            2 ,  LL =   -13732.333408079438     
- aaOptim.f90:: Convergence Criteria: ca =    1.0050791676645729      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    4567.9156543182980      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    1.0009999999999999      (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            3 ,  LL =   -11852.627204606717     
- aaOptim.f90:: Convergence Criteria: ca =   0.20687834423555029      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    1879.7062034727205      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    1.0009999999999999      (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            4 ,  LL =   -10732.134671906710     
- aaOptim.f90:: Convergence Criteria: ca =   0.20307092074206881      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    1120.4925327000074      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    1.0009999999999999      (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            5 ,  LL =   -10080.226331928310     
- aaOptim.f90:: Convergence Criteria: ca =   0.29891135494337345      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    651.90833997839945      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    1.0009999999999999      (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            6 ,  LL =   -9626.3817606520533     
- aaOptim.f90:: Convergence Criteria: ca =   0.66747209197128443      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    453.84457127625683      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    1.0009999999999999      (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            7 ,  LL =   -9110.0411375232543     
- aaOptim.f90:: Convergence Criteria: ca =    1.7712687862513301      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    516.34062312879905      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    1.0009999999999999      (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            8 ,  LL =   -8653.4049475577121     
- aaOptim.f90:: Convergence Criteria: ca =    2.8645463879157047      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    456.63618996554214      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    162.21681173875092      (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =            9 ,  LL =   -8356.5625899728548     
- aaOptim.f90:: Convergence Criteria: ca =    6.1566623954674515      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    296.84235758485738      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    5.2302469666979929      (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =           10 ,  LL =   -8328.1877916639860     
- aaOptim.f90:: Convergence Criteria: ca =   0.21178562598786477      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    28.374798308868776      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =   0.52624366973173708      (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =           11 ,  LL =   -8324.8317211671711     
- aaOptim.f90:: Convergence Criteria: ca =    3.9297878597876583E-002 (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    3.3560704968149366      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    1.9678075312574938E-002 (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =           12 ,  LL =   -8324.7094788855611     
- aaOptim.f90:: Convergence Criteria: ca =    2.0086936734015162E-003 (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =   0.12224228160994244      (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    7.8446787427948909E-005 (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Optim iteration =           13 ,  LL =   -8324.7090060371720     
- aaOptim.f90:: Convergence Criteria: ca =    9.4548820103763474E-006 (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: cb =    4.7284838910854887E-004 (   1.0000000000000000E-003 )
- aaOptim.f90:: Convergence Criteria: dd =    3.6549124105304436E-009 (   1.0000000000000000E-003 )
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
- aaOptim.f90:: Hessian retrieved.
- aaOptim.f90::deriva::Calculating derivatives.
- deriva:: Likelihood Computation (1)
- deriva:: Derivative Approximation (2a)
- deriva::Deriva Complete.
+ funcpaMultivWwib.f90:: Error with integral component of likelihood.
+ typeJoint =            0
+ theta =   0.50000000000000000     
+ alpha1 =   0.10000000000000001     
+ alpha2 =  -0.10000000000000001     
+ k =           22
+ cpt(k) =           42
+ res1(k) =   0.76033203646057357     
+ res3(k) =    0.0000000000000000     
+ cdc(k) =            1
+ cdc2(k) =            0
+ aux1(k) =   0.76033203646057357     
+ aux2(k) =   0.76033203646057357     
+ integrale3(k) =    2.5600147039253760E+047
+ deriva:: Stopped at First Likelihood Computation (1)
+ aaOptim.f90::Optimization Terminated, istop = 4
  aaOptim.f90:: marq98 complete.
  multiveJoint.f90:: Optimization complete.
- multiveJoint.f90:: (10) Organizing hessian matricies...
- multiveJoint.f90:: (11) Calculating hazard and survival functions...
+ multiveJoint.f90:: (13) Calculating fitted values.
+ multiveJoint.f90:: Multiplying design matricies by beta....
+ multiveJoint.f90:: (14) Deallocating variables....
+ multiveJoint.f90:: All Variables Deallocated.
+ multiveJoint.f90:: complete....
+
+multivPenal.R:: length(b)= 12 
+multivPenal.R:: np =  12
+multivPenal.R:: length(controls)= 12
+
+multivPenal.R::nobsEvent= 857 100 1
+kappa= 0 0 0 0
+multivPenal.R:: length(tt10)= 857 
+multivPenal.R:: length(tt11)= 857 
+multivPenal.R:: length(event1)= 857 
+multivPenal.R:: length(group1)= 857 
+multivPenal.R:: max(group1)= 100 
+multivPenal.R:: length(unique(group1))= 100
+multivPenal.R:: length(tt0meta0)= 1 
+multivPenal.R:: length(tt1meta0)= 1 
+multivPenal.R:: length(group2)= 1 
+multivPenal.R:: length(event2)= 1 
+multivPenal.R:: max(group2)= 0 
+multivPenal.R:: length(unique(group2))= 1
+multivPenal.R:: length(terminal1, terminal2, groupdc, tt1dc)= 100 100 100 100
+multivPenal.R:: nbvar= 1 1 1 1
+multivPenal.R:: dim(modelmatrix1, modelmatrix2, modelmatrix3, modelmatrix4) 857 1 , 100 1 , 1 1 , 100 1
+multivPenal.R:: noVarEvent= 0 0 0 0 \nmultiveJoint.f90:: Unpacking model controls.
+ multiveJoint.f90:: controls =          200           0           2           1           1           0           0           0           0           1          32           0
+ multiveJoint.f90:: nobsEvent =          857         100           1
+ multiveJoint.f90:: k0 =    0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     
+ multiveJoint.f90:: nbvar =            1           1           1           1
+ multiveJoint.f90:: noVarEvent =            0           0           0           0
+ multiveJoint.f90:: np =           12
+ multiveJoint.f90:: b =    0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000      -0.69314718055994529       0.10000000000000001      -0.10000000000000001        0.0000000000000000        0.0000000000000000        0.0000000000000000     
+ multiveJoint.f90:: nz0 =            1
+ multiveJoint.f90:: ghNodes0 =   -7.1258139098307218       -6.4094981492696590       -5.8122259495159092       -5.2755509865158734       -4.7771645035025951       -4.3055479533512004       -3.8537554854714475       -3.4171674928185700       -2.9924908250023736       -2.5772495377323192       -2.1694991836061104       -1.7676541094632019       -1.3703764109528718      -0.97650046358968290      -0.58497876543593241      -0.19484074156939934       0.19484074156939954       0.58497876543593230       0.97650046358968212        1.3703764109528720        1.7676541094632012        2.1694991836061130        2.5772495377323170        2.9924908250023741        3.4171674928185700        3.8537554854714440        4.3055479533512004        4.7771645035025951        5.2755509865158761        5.8122259495159074        6.4094981492696581        7.1258139098307236     
+ multiveJoint.f90:: ghWeights0 =   0.82456652306559663       0.64095048591381398       0.56174901464973148       0.51503728466712151       0.48357144073610786       0.46078645569096149       0.44355318550141853       0.43016371088061273       0.41959775308115149       0.41120612871231232       0.40455706179661144       0.39935484461844939       0.39539393939617240       0.39253186436582072       0.39067274462854279       0.38975734202743911       0.38975734202743884       0.39067274462854318       0.39253186436581938       0.39539393939617318       0.39935484461844856       0.40455706179661827       0.41120612871231044       0.41959775308115221       0.43016371088061123       0.44355318550141459       0.46078645569096149       0.48357144073610442       0.51503728466712895       0.56174901464972349       0.64095048591381409       0.82456652306560851     
+ multiveJoint.f90:: (2) Initializing parameters.
+ multiveJoint.f90:: Parameter initialization skipped.
+ multiveJoint.f90:: End parameter initialization.
+ multiveJoint.f90:: Allocation (1).
+ multiveJoint.f90:: Allocation (2).
+ multiveJoint.f90:: Allocation (3).
+ multiveJoint.f90:: Allocation (4).
+ multiveJoint.f90:: (3a) Copying data for terminal events.
+ multiveJoint.f90:: (3b) Copying data for recurrent event 1.
+ multiveJoint.f90:: (4) Calculating grid of dates for spline evaluation.
+ multiveJoint.f90:: (9) Optimizing Parameters.
+ multiveJoint.f90:: starting b =    0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000      -0.69314718055994529       0.10000000000000001      -0.10000000000000001        0.0000000000000000        0.0000000000000000        0.0000000000000000     
+ multiveJoint.f90:: Model for one recurrent event and two terminal events.
+ aaOptim.f90:: Optim starting.
+ aaOptim.f90::deriva::Calculating derivatives.
+ deriva:: Likelihood Computation (1)
+ funcpaMultivWwib.f90:: Error with integral component of likelihood.
+ typeJoint =            0
+ theta =   0.50000000000000000     
+ alpha1 =   0.10000000000000001     
+ alpha2 =  -0.10000000000000001     
+ k =           56
+ cpt(k) =           56
+ res1(k) =    2.1355944287294406     
+ res3(k) =    0.0000000000000000     
+ cdc(k) =            1
+ cdc2(k) =            0
+ aux1(k) =    2.1355944287294406     
+ aux2(k) =    2.1355944287294406     
+ integrale3(k) =    2.0222380035435959E+048
+ deriva:: Stopped at First Likelihood Computation (1)
+ aaOptim.f90::Optimization Terminated, istop = 4
+ aaOptim.f90:: marq98 complete.
+ multiveJoint.f90:: Optimization complete.
+ multiveJoint.f90:: (13) Calculating fitted values.
+ multiveJoint.f90:: Multiplying design matricies by beta....
+ multiveJoint.f90:: (14) Deallocating variables....
+ multiveJoint.f90:: All Variables Deallocated.
+ multiveJoint.f90:: complete....
+
+multivPenal.R:: length(b)= 12 
+multivPenal.R:: np =  12
+multivPenal.R:: length(controls)= 12
+
+multivPenal.R::nobsEvent= 4700 500 1
+kappa= 0 0 0 0
+multivPenal.R:: length(tt10)= 4700 
+multivPenal.R:: length(tt11)= 4700 
+multivPenal.R:: length(event1)= 4700 
+multivPenal.R:: length(group1)= 4700 
+multivPenal.R:: max(group1)= 500 
+multivPenal.R:: length(unique(group1))= 500
+multivPenal.R:: length(tt0meta0)= 1 
+multivPenal.R:: length(tt1meta0)= 1 
+multivPenal.R:: length(group2)= 1 
+multivPenal.R:: length(event2)= 1 
+multivPenal.R:: max(group2)= 0 
+multivPenal.R:: length(unique(group2))= 1
+multivPenal.R:: length(terminal1, terminal2, groupdc, tt1dc)= 500 500 500 500
+multivPenal.R:: nbvar= 1 1 1 1
+multivPenal.R:: dim(modelmatrix1, modelmatrix2, modelmatrix3, modelmatrix4) 4700 1 , 500 1 , 1 1 , 500 1
+multivPenal.R:: noVarEvent= 0 0 0 0 \nmultiveJoint.f90:: Unpacking model controls.
+ multiveJoint.f90:: controls =          200           0           2           1           1           0           0           0           0           1          32           0
+ multiveJoint.f90:: nobsEvent =         4700         500           1
+ multiveJoint.f90:: k0 =    0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     
+ multiveJoint.f90:: nbvar =            1           1           1           1
+ multiveJoint.f90:: noVarEvent =            0           0           0           0
+ multiveJoint.f90:: np =           12
+ multiveJoint.f90:: b =    0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000      -0.69314718055994529       0.10000000000000001      -0.10000000000000001        0.0000000000000000        0.0000000000000000        0.0000000000000000     
+ multiveJoint.f90:: nz0 =            1
+ multiveJoint.f90:: ghNodes0 =   -7.1258139098307218       -6.4094981492696590       -5.8122259495159092       -5.2755509865158734       -4.7771645035025951       -4.3055479533512004       -3.8537554854714475       -3.4171674928185700       -2.9924908250023736       -2.5772495377323192       -2.1694991836061104       -1.7676541094632019       -1.3703764109528718      -0.97650046358968290      -0.58497876543593241      -0.19484074156939934       0.19484074156939954       0.58497876543593230       0.97650046358968212        1.3703764109528720        1.7676541094632012        2.1694991836061130        2.5772495377323170        2.9924908250023741        3.4171674928185700        3.8537554854714440        4.3055479533512004        4.7771645035025951        5.2755509865158761        5.8122259495159074        6.4094981492696581        7.1258139098307236     
+ multiveJoint.f90:: ghWeights0 =   0.82456652306559663       0.64095048591381398       0.56174901464973148       0.51503728466712151       0.48357144073610786       0.46078645569096149       0.44355318550141853       0.43016371088061273       0.41959775308115149       0.41120612871231232       0.40455706179661144       0.39935484461844939       0.39539393939617240       0.39253186436582072       0.39067274462854279       0.38975734202743911       0.38975734202743884       0.39067274462854318       0.39253186436581938       0.39539393939617318       0.39935484461844856       0.40455706179661827       0.41120612871231044       0.41959775308115221       0.43016371088061123       0.44355318550141459       0.46078645569096149       0.48357144073610442       0.51503728466712895       0.56174901464972349       0.64095048591381409       0.82456652306560851     
+ multiveJoint.f90:: (2) Initializing parameters.
+ multiveJoint.f90:: Parameter initialization skipped.
+ multiveJoint.f90:: End parameter initialization.
+ multiveJoint.f90:: Allocation (1).
+ multiveJoint.f90:: Allocation (2).
+ multiveJoint.f90:: Allocation (3).
+ multiveJoint.f90:: Allocation (4).
+ multiveJoint.f90:: (3a) Copying data for terminal events.
+ multiveJoint.f90:: (3b) Copying data for recurrent event 1.
+ multiveJoint.f90:: (4) Calculating grid of dates for spline evaluation.
+ multiveJoint.f90:: (9) Optimizing Parameters.
+ multiveJoint.f90:: starting b =    0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000      -0.69314718055994529       0.10000000000000001      -0.10000000000000001        0.0000000000000000        0.0000000000000000        0.0000000000000000     
+ multiveJoint.f90:: Model for one recurrent event and two terminal events.
+ aaOptim.f90:: Optim starting.
+ aaOptim.f90::deriva::Calculating derivatives.
+ deriva:: Likelihood Computation (1)
+ funcpaMultivWwib.f90:: Error with integral component of likelihood.
+ typeJoint =            0
+ theta =   0.50000000000000000     
+ alpha1 =   0.10000000000000001     
+ alpha2 =  -0.10000000000000001     
+ k =            1
+ cpt(k) =           52
+ res1(k) =   0.93408391932716306     
+ res3(k) =    0.0000000000000000     
+ cdc(k) =            0
+ cdc2(k) =            1
+ aux1(k) =   0.93408391932716306     
+ aux2(k) =   0.93408391932716306     
+ integrale3(k) =    1.1568439704071602E+060
+ deriva:: Stopped at First Likelihood Computation (1)
+ aaOptim.f90::Optimization Terminated, istop = 4
+ aaOptim.f90:: marq98 complete.
+ multiveJoint.f90:: Optimization complete.
  multiveJoint.f90:: (13) Calculating fitted values.
  multiveJoint.f90:: Multiplying design matricies by beta....
  multiveJoint.f90:: (14) Deallocating variables....
