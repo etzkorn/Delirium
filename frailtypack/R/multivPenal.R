@@ -792,7 +792,7 @@ if(terminal2.ind == 1) {
 ############################################################
 # Compute Gap Times (If Applicable)
 
-if (!gapTimes){
+if(gapTimes){
   tt11 <- tt11 - tt10
   tt10 <- 0 * tt10
   tt1meta0 <- tt1meta0 - tt0meta0
@@ -831,18 +831,19 @@ gh <- statmod::gauss.quad(GHpoints, kind="hermite")
 ghNodes = gh$nodes
 ghWeights = gh$weights * exp(gh$nodes^2)
 
-###################################################
-# Fill Parameter Vector with User-Defined Values
+#####################################################################
+# Fill Parameter Vector with User-Defined Values OR Initialize Models
 
+# Check if user entered values for hazard, input 1s if not
 if(is.null(init.hazard)) init.hazard <- rep(1, np - nvar - 3 - 2*jointGeneral)
 
+# Check lengths of inputs
 if(typeof == "Weibull" & length(init.hazard != 2 * (2 + event2.ind + terminal2.ind))){
 	stop("init.hazard must have length 6 for weibull for three
 	     event types, or length 8 for four event types.")
 }else if(typeof == "Splines" & length(init.hazard != (n.knots + 2) * (2 + event2.ind + terminal2.ind))){
 		stop("init.hazard must have length (n.knots + 2) * number of event types (3 or 4) for splines.")
 }
-
 if(jointGeneral & length(init.Theta)!=3){
 	stop("init.Theta must have length 3 when jointGeneral = T.\n
 	     Order should be: c(frailtyVarianceTerminal1,  frailtyVarianceTerminal2, frailtyCorrelation)")
@@ -850,6 +851,50 @@ if(jointGeneral & length(init.Theta)!=3){
 	stop("init.Theta must have length 1 when jointGeneral = F.")
 }
 
+# If initialization indicated, replace values
+if(initialize){
+	# ignore user-supplied initialization values if initialize == T
+	init.hazard <- rep(1, np - nvar - 3 - 2*jointGeneral)
+
+	# recreate time variable in original data set in case of gap times, create new formula
+	if(gapTimes){
+		data$gapTimes <- tt11
+		initlialization.formula <-
+			paste("Surv(gapTimes, ", EVENT1, ")",
+			      paste(gsub("Surv(.*)","", as.character(formula)), collapse = ""),
+			      collapse = "")
+	}else{
+		initlialization.formula <- formula
+	}
+
+	# fit two joint models for initialization
+	mod.joint1<-
+		frailtyPenal(formula = drop.terms(terms(initlialization.formula),
+				          survival::untangle.specials(terms(initlialization.formula, c("terminal2")), "terminal2", 1:10)$terms,
+				          keep.response = T),
+			 # this line drops the "terminal2" term from the original model formula
+			 formula.terminalEvent = formula.terminalEvent,
+			 jointGeneral = F,
+			 data = data,
+			 recurrentAG= !gapTimes,
+			 hazard = "Weibull",RandDist = "LogN",
+			 maxit = 100)
+
+	mod.joint2<-
+		frailtyPenal(formula = drop.terms(terms(initlialization.formula),
+				          survival::untangle.specials(terms(initlialization.formula, c("terminal")), "terminal", 1:10)$terms,
+				          keep.response = T),
+			 # this line drops the "terminal" term from the original model formula
+			 formula.terminalEvent = formula.terminalEvent2,
+			 jointGeneral = F,
+			 data = data,
+			 recurrentAG= !gapTimes,
+			 hazard = "Weibull",RandDist = "LogN",
+			 maxit = 100)
+}
+
+
+# Fill parameter vector
 if(!jointGeneral){
 	b <- c(log(sqrt(init.hazard)),
 	       log(sqrt(init.Theta)),
