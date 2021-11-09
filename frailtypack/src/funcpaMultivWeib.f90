@@ -199,6 +199,8 @@
             write(1,*) "funcpaMultivWeib.f90:: vet=", vet
             write(1,*) "funcpaMultivWeib.f90:: t1(i)=", t1(i)
             write(1,*) "funcpaMultivWeib.f90:: res2(g(i))=",res2(g(i))
+            write(1,*) "res2(g(i)) = res2(g(i))+(betaR-1.d0)*dlog(t1(i))+"
+            write(1,*) "dlog(betaR)-betaR*dlog(etaR)+dlog(vet)"
             close(1)
             funcpaMultivWeib=-1.d9
             goto 123
@@ -216,6 +218,7 @@
             write(1,*) "funcpaMultivWeib.f90:: vet=", vet
             write(1,*) "funcpaMultivWeib.f90:: t1(i)=", t1(i)
             write(1,*) "funcpaMultivWeib.f90:: res1(g(i))=",res1(g(i))
+            write(1,*) "res1(g(i)) = res1(g(i))+((t1(i)/etaR)**betaR)*vet"
             close(1)
             funcpaMultivWeib=-1.d9
             goto 123

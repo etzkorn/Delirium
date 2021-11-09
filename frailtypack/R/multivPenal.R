@@ -1145,7 +1145,7 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
 ######################################################################################################
 # Format Model Tables
 
-ans$initialization$b <- mod.joint1
+ans$initialization$b <- start.b
 ans$initialization$joint1 <- mod.joint1
 ans$initialization$joint2 <- mod.joint2
 

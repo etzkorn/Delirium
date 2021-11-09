@@ -10,12 +10,10 @@ source("../delirium_package/R/random_weibull.R")
 source("../delirium_package/R/extract_frailtypack_coef_weibullgap.R")
 ```
 
-Increase theta (2) to see if we can better estimate alpha parameters.
-Alpha1 and alpha2 are now in opposite directions.
-
-We simulate an artificial data set where shape parameters match estimates from the reduce trial.
-Scale parameters are chosen by us (20,25,10).
-Simulated treatment effects are all 0.
+In this simulation, we simulate from estimated values for the REDUCE gap times model, 
+except theta = 0.4 instead of 5.4 and 
+the scale parameters have been manipulated so that recurrent events happen more frequently (8 instead of 35)
+and discharge is slightly prolonged (10 instead of 8.2).
 
 # Competing Joint Model
 
@@ -30,25 +28,24 @@ $$
 $$
 $$
     \textbf{Simulation Values:}\\
-    \gamma_r = 0, \gamma_1 = 0, \gamma_2 = 0 \text{  (treatment effects)}\\
-    \eta_r =20, \eta_1 = 25, \eta_2 = 10 \text{  (weibull scale)}\\
-    \beta_r = 1, \beta_1 = 1.8, \beta_2 = 1.15 \text{  (weibull shape)}\\
-    \alpha_1 = -0.1;  
-    \alpha_2 = 0.25; 
-    \theta = 2 \\
+    \gamma_r = -0.08, \gamma_1 = 0.07, \gamma_2 = 0.08 \text{  (treatment effects)}\\
+    \eta_r =8, \eta_1 = 25, \eta_2 = 10 \text{  (weibull scale)}\\
+    \beta_r = 0.83, \beta_1 = 1.85, \beta_2 = 1.15 \text{  (weibull shape)}\\
+    \alpha_1 = -0.12;  
+    \alpha_2 = -0.32; 
+    \theta = 0.4 \\
     \text{Maximum Observation (Censoring) Time } = 28
 $$
-
 
 # Test Shared Model 
 
 ```{r, fig.height = 14, fig.width=18}
-set.seed(080621)
-par00 = c(betaR = 1, etaR = 8,
-         betaD = 1.8, etaD = 25,         
+set.seed(080721)
+par00 = c(betaR = 0.83, etaR = 8,
+         betaD = 1.85, etaD = 25,      
          betaD2 = 1.15, etaD2 = 10,
-         theta = 0.5, alpha1 = 0.15, alpha2 = -0.3,
-         trtR = -0.1, trtD = -0.05, trtD2 = 0.075)
+         theta = 0.4, alpha1 = -0.12, alpha2 = -0.32,
+         trtR = -0.08, trtD = 0.07, trtD2 = 0.08)
 
 # put in treatment effects
 # opposite directions for alpha
@@ -56,7 +53,7 @@ par00 = c(betaR = 1, etaR = 8,
 #alpha2 = -0.3
 
 data <- 
-simulate.competing.data(n = 1200, truncate = 28, par0 = par00)
+simulate.competing.data(n = 1500, truncate = 28, par0 = par00)
 
 data %>% 
 group_by(id) %>% 
@@ -77,14 +74,32 @@ formula.terminalEvent=~trt,
 formula.terminalEvent2=~trt,
 data=data, 
 jointGeneral = F,
-initialize = T, 
+initialize = FALSE, 
 save.progress = T,
 hazard = "Weibull",
 gapTimes=T,
-maxit = 200)
+maxit = 350,
+init.hazard = c(1,10,1,25,1,10),
+init.Theta = 2,
+init.Alpha1 = 0,
+init.Alpha2 = -.3,
+init.B = c(0,0,0))
 
 mod0$critCV
 mod0$summary.table
+```
+
+```{r}
+moda <- 
+frailtyPenal(formula = Surv(g, event) ~ trt + cluster(id) +
+		terminal(terminal1),
+formula.terminalEvent = ~trt, 
+jointGeneral = F,
+data = data,
+recurrentAG=F,
+hazard = "Weibull",RandDist = "LogN",
+maxit = 200, init.Theta = .4)
+moda$istop
 ```
 
 # Simulate Data and Fit Shared Competing Model
@@ -98,13 +113,16 @@ par0 = rep(each = nsim, list(par00))
 
 ####################################################################
 # Generate Data
-if(!file.exists("../package_test_output/CompetingJointModels_20210805.rdata")){
+if(!file.exists("../package_test_output/CompetingJointModels_20210807.rdata")){
 data0 <- 
 map(par0, 
     ~simulate.competing.data(n = 1200,truncate = 2,par0 = .))
 
 # Fit models
 mod.joint.a <- list()
+mod.joint.b <- list()
+mod.joint.c <- list()
+mod.joint.d <- list()
 
 for(i in 1:length(par0)){
 mod.joint.a[[i]] <-
@@ -123,23 +141,7 @@ init.Theta = par00[7],
 init.Alpha1 = par00[8],
 init.Alpha2 = par00[9],
 init.B = c(0,0,0))
-cat("Model ", i, "complete.\n")
-save(data0, mod.joint.a, file = "../package_test_output/CompetingJointModels_20210805.rdata")
-}
-} else load(file = "../package_test_output/CompetingJointModels_20210805.rdata")
-```
 
-# Fit Joint Models
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.height = 8, fig.width = 12}
-if(!file.exists("../package_test_output/JointModels_20210805.rdata")){
-# Fit models
-mod.joint.b <- list()
-mod.joint.c <- list()
-mod.joint.d <- list()
-
-for(i in 1:length(par0)){
-	
 ### Death Only
 mod.joint.b[[i]] <-
 frailtyPenal(formula = Surv(g, event) ~ trt + cluster(id) +
@@ -175,11 +177,10 @@ hazard = "Weibull",RandDist = "LogN",
 maxit = 100)
 
 cat("Model ", i, "complete.\n")
-save(mod.joint.b, mod.joint.c,mod.joint.d, file = "../package_test_output/JointModels_20210805.rdata")
+save(data0, mod.joint.a, mod.joint.b, mod.joint.c,mod.joint.d, 
+     file = "../package_test_output/CompetingJointModels_20210807.rdata")
 }
-} else{
-	load(file = "../package_test_output/JointModels_20210805.rdata")
-}
+} else load(file = "../package_test_output/CompetingJointModels_20210807.rdata")
 ```
 
 # Verify Competing Joint Model Works
@@ -208,22 +209,10 @@ ggplot()+
 geom_point(aes(y = data, x = Estimate, color = factor(error))) +
 facet_wrap("Parameter", scales = "free") +
 geom_vline(data = truth, aes(xintercept = truth), color = "red") +
-scale_color_manual("Error",values = c("black", "blue", "red"))+
+scale_color_manual(values = c("black", "blue", "red"))+
 theme_bw()+
 labs(title = "Joint Model Simulation Results under Different Values of Theta, Alpha1 (R = 1000, n = 1200)")
 ```
-
-```{r}
-results %>% filter(!anyerror) %>%
-#filter(!error) %>%
-ggplot()+
-geom_point(aes(y = data, x = Estimate)) +
-facet_wrap("Parameter", scales = "free") +
-geom_vline(data = truth, aes(xintercept = truth), color = "red") +
-theme_bw()+
-labs(title = "Joint Model Simulation Results under Different Values of Theta, Alpha1 (R = 1000, n = 1200)")
-```
-
 
 ```{r}
 results %>% 
