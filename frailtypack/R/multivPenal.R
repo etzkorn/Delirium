@@ -716,7 +716,7 @@ if (print.times) {
 #########################################################################
 # Configure Model Matrices
 
-noVarEvent = c(0,0,0,0)
+noVarEvent = c(0,0,0,0) # need to fix this
 
 # Recurrent1
 specials = c("strata", "cluster", "terminal", "event2", "terminal2")
@@ -808,13 +808,12 @@ nvar = ncol(modelmatrix1) +
   ncol(modelmatrix3) * event2.ind+
   ncol(modelmatrix4) * terminal2.ind
 
-if(!is.null(init.B)){
-	if(length(init.B) != nvar){
-		stop("init.B must be the same length as the number of coefficients.")
-	}
-}else{
-	init.B <- rep(0, nvar)
-}
+nbvar = c(
+	ncol(modelmatrix1),
+	ncol(modelmatrix2),
+	ncol(modelmatrix3),
+	ncol(modelmatrix4)
+)
 
 # Total number of parameters
 # This will need adjustment before incorporating a second recurrent event
@@ -837,6 +836,10 @@ ghWeights = gh$weights * exp(gh$nodes^2)
 # Check if user entered values for hazard, input 1s if not
 if(is.null(init.hazard)) init.hazard <- rep(1, np - nvar - 3 - 2*jointGeneral)
 
+# Check if user entered values for coefficients, input 0s if not
+if(is.null(init.B)) init.B <- rep(0, nvar)
+
+
 # Check lengths of inputs
 if(typeof == "Weibull" & length(init.hazard != 2 * (2 + event2.ind + terminal2.ind))){
 	stop("init.hazard must have length 6 for weibull for three
@@ -850,49 +853,98 @@ if(jointGeneral & length(init.Theta)!=3){
 }else if(!jointGeneral & length(init.Theta)!=1){
 	stop("init.Theta must have length 1 when jointGeneral = F.")
 }
+if(length(init.B) != nvar){
+	stop("init.B must be the same length as the number of coefficients.")
+}
 
 # If initialization indicated, replace values
 if(initialize){
 	# ignore user-supplied initialization values if initialize == T
-	init.hazard <- rep(1, np - nvar - 3 - 2*jointGeneral)
+	init.hazard <- init.hazard*0 + 1
+	init.B <- init.B*0
 
 	# recreate time variable in original data set in case of gap times, create new formula
 	if(gapTimes){
 		data$gapTimes <- tt11
-		initlialization.formula <-
+		initialization.formula <-
 			paste("Surv(gapTimes, ", EVENT1, ")",
 			      paste(gsub("Surv(.*)","", as.character(formula)), collapse = ""),
 			      collapse = "")
 	}else{
-		initlialization.formula <- formula
+		initialization.formula <- formula
 	}
+	initialization.formula <- formula(initialization.formula)
+
+	# create separate formulas for each initialization model
+	initialization.formula1 <- drop.terms(terms(initialization.formula),
+				  survival::untangle.specials(terms(initialization.formula, c("terminal2")), "terminal2", 1:10)$terms,
+				  keep.response = T)
+	initialization.formula1 <- formula(initialization.formula1)
+
+	initialization.formula2 <- drop.terms(terms(initialization.formula),
+				  survival::untangle.specials(terms(initialization.formula, c("terminal")), "terminal", 1:10)$terms,
+				  keep.response = T)
+	initialization.formula2 <- formula(initialization.formula2)
+	initialization.formula2 <- sub("terminal2\\(","terminal\\(",initialization.formula2)
+	initialization.formula2 <- formula(paste0(initialization.formula2[2:3], collapse = "~"))
+
 
 	# fit two joint models for initialization
 	mod.joint1<-
-		frailtyPenal(formula = drop.terms(terms(initlialization.formula),
-				          survival::untangle.specials(terms(initlialization.formula, c("terminal2")), "terminal2", 1:10)$terms,
-				          keep.response = T),
+		frailtyPenal(formula = initialization.formula1,
 			 # this line drops the "terminal2" term from the original model formula
 			 formula.terminalEvent = formula.terminalEvent,
 			 jointGeneral = F,
 			 data = data,
 			 recurrentAG= !gapTimes,
 			 hazard = "Weibull",RandDist = "LogN",
-			 maxit = 100)
+			 maxit = 100, print.times = F)
 
 	mod.joint2<-
-		frailtyPenal(formula = drop.terms(terms(initlialization.formula),
-				          survival::untangle.specials(terms(initlialization.formula, c("terminal")), "terminal", 1:10)$terms,
-				          keep.response = T),
+		frailtyPenal(formula = initialization.formula2,
 			 # this line drops the "terminal" term from the original model formula
 			 formula.terminalEvent = formula.terminalEvent2,
 			 jointGeneral = F,
 			 data = data,
 			 recurrentAG= !gapTimes,
-			 hazard = "Weibull",RandDist = "LogN",
-			 maxit = 100)
-}
+			 hazard = "Weibull", RandDist = "LogN",
+			 maxit = 100, print.times = F)
 
+	# grab initialized values
+	# Recurrent
+	init.hazard[1:(2+n.knots)] <- (mod.joint1$b[1:(2+n.knots)]^2 + mod.joint2$b[1:(2+n.knots)]^2)/2
+		# average estimates from the two models
+	# Terminal 1
+	init.hazard[(3+n.knots):(4+n.knots*2)] <- mod.joint1$b[(3+n.knots):(4+n.knots*2)]^2
+	# Terminal 2
+	init.hazard[(5+n.knots*2):(6+n.knots*3)] <- mod.joint2$b[(3+n.knots):(4+n.knots*2)]^2
+
+	# Random Effect Variance
+	if(!jointGeneral){
+		init.Theta <- (mod.joint1$b[5+n.knots*2]^2 + mod.joint2$b[5+n.knots*2]^2)/2
+			# average estimates from the two models
+	}else{
+		init.Theta[1] <- mod.joint1$b[5+n.knots*2]^2
+		init.Theta[2] <- mod.joint2$b[5+n.knots*2]^2
+		init.Theta[3] <- 0 # rho, covariance
+	}
+
+	# Alpha
+	init.Alpha1 <- mod.joint1$b[6+n.knots*2]
+	init.Alpha2 <- mod.joint2$b[6+n.knots*2]
+
+	# Coefficients
+	if(noVarEvent[1] == 0){
+		# average two estimates
+		init.B[1:nbvar[1]] <- (mod.joint1$b[(7+n.knots*2):(6+n.knots*2+nbvar[1])] + mod.joint2$b[(7+n.knots*2):(6+n.knots*2+nbvar[1])])/2
+	}
+	if(noVarEvent[2] == 0){
+		init.B[(1+nbvar[1]):(nbvar[1]+nbvar[2])] <- mod.joint1$b[(7+n.knots*2+nbvar[1]):(6+n.knots*2+nbvar[1]+nbvar[2])]
+	}
+	if(noVarEvent[4] == 0){
+		init.B[(1+nbvar[1]+nbvar[2]):(nbvar[1]+nbvar[2]+nbvar[4])] <- mod.joint2$b[(7+n.knots*2+nbvar[1]):(6+n.knots*2+nbvar[1]+nbvar[4])]
+	}
+}
 
 # Fill parameter vector
 if(!jointGeneral){
@@ -988,12 +1040,6 @@ cat("\nmultivPenal.R:: length(terminal1, terminal2, groupdc, tt1dc)=",
     length(terminal1),length(terminal2),length(groupdc),length(tt1dc),
     file='../package_tests/multiv_model_progress.dat',append=TRUE)
 
-nbvar = c(
-	ncol(modelmatrix1),
-	ncol(modelmatrix2),
-	ncol(modelmatrix3),
-	ncol(modelmatrix4)
-)
 if(length(nbvar) != 4) stop("length(nbvar) != 4")
 cat("\nmultivPenal.R:: nbvar=",nbvar,
     file='../package_tests/multiv_model_progress.dat',append=TRUE)
