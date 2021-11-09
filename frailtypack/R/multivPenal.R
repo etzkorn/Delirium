@@ -960,6 +960,8 @@ if(!jointGeneral){
 	       init.B)
 }
 
+start.b <- b
+
 if(length(b)!=np) stop("Parameter vector not the correct length.")
 cat("\nmultivPenal.R:: length(b)=",length(b),
     "\nmultivPenal.R:: np = ",np,
@@ -1142,6 +1144,10 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
     )
 ######################################################################################################
 # Format Model Tables
+
+ans$initialization$b <- mod.joint1
+ans$initialization$joint1 <- mod.joint1
+ans$initialization$joint2 <- mod.joint2
 
 # if(jointGeneral == F & hazard == "Weibull"){
 # 	f <- function(b){
