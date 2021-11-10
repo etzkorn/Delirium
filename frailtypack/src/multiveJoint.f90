@@ -686,7 +686,9 @@
     endif
 
 ! This sets the delta used to approximate the derivatives
-    model = 1
+! 1 gives differences of th=1.d-3
+! 3 gives differences of th=1.d-5
+    model = 3
     
     if(typeof.ne.0)then
         nbinterv = nbinterv0

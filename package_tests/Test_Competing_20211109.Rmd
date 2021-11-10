@@ -79,12 +79,7 @@ initialize = T,
 save.progress = T,
 hazard = "Weibull",
 gapTimes=T,
-maxit = 350,
-init.hazard = c(1,10,1,25,1,10),
-init.Theta = 2,
-init.Alpha1 = 0,
-init.Alpha2 = -.3,
-init.B = c(0,0,0))
+maxit = 350)
 
 mod0$critCV
 mod0$summary.table
