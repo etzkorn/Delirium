@@ -1820,61 +1820,63 @@
     indic_a1=1
     indic_a2=2
 
-    if(initialize.eq.1)then
-        open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-        write(1,*)'multiveJoint.f90:: b01 = ', b01
-        write(1,*)'multiveJoint.f90:: b02 = ', b02
-        write(1,*)'multiveJoint.f90:: b03 = ', b03
-        write(1,*)'multiveJoint.f90:: b04 = ', b04
-        close(1) 
+!2021-11-10: LE removed this section because parameters are being initialized through R.
+!Initialized parameters are imported into the fortran routine in "b".
+!    if(initialize.eq.1)then
+!        open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+!        write(1,*)'multiveJoint.f90:: b01 = ', b01
+!        write(1,*)'multiveJoint.f90:: b02 = ', b02
+!        write(1,*)'multiveJoint.f90:: b03 = ', b03
+!        write(1,*)'multiveJoint.f90:: b04 = ', b04
+!        close(1) 
         ! (1) Copy Baseline Hazard Parameters
-        select case(typeof)
-            case(0) ! splines
+!        select case(typeof)
+!            case(0) ! splines
                 !b(1:(np1-nva1-1))=b01(1:(np1-nva1-1))
                 !b((1+(np1-nva1-1)):(np1-nva1+np2-nva2-2))=b02(1:(np2-nva2-1))
                 !b((1+(np1-nva1+np2-nva2-2)):(np1-nva1+np2-nva2+np3-nva3-3))=b03(1:(np3-nva3-1))
                 !b((1+(np1-nva1+np2-nva2+np3-nva3-2)):(np1-nva1+np2-nva2+np3-nva3+np4-nva4-3))=b04(1:(np4-nva4-1))
-            case(1)
-            case(2) ! weibull
-                b(1:2)=b01(1:2)
-                b(3:4)=b02(1:2)
-                if((event2_ind.eq.1).and.(terminal2_ind.eq.1))then
-                    b(5:6)=b03(1:2)
-                    b(7:8)=b04(1:2)
-                else if((event2_ind.eq.0).and.(terminal2_ind.eq.1))then
-                    b(5:6)=b04(1:2)
-                else if(event2_ind == 1 .and. terminal2_ind == 0 )then
-                    b(5:6)=b03(1:2)
-                endif
-        end select
+!            case(1)
+!            case(2) ! weibull
+!                b(1:2)=b01(1:2)
+!                b(3:4)=b02(1:2)
+!                if((event2_ind.eq.1).and.(terminal2_ind.eq.1))then
+!                    b(5:6)=b03(1:2)
+!                    b(7:8)=b04(1:2)
+!                else if((event2_ind.eq.0).and.(terminal2_ind.eq.1))then
+!                    b(5:6)=b04(1:2)
+!                else if(event2_ind == 1 .and. terminal2_ind == 0 )then
+!                    b(5:6)=b03(1:2)
+!                endif
+!         end select
         
         ! (2) copy variable coefficients
-        b(np-nva1-nva2-nva3-nva4+1 : np-nva2-nva3-nva4) = b01((np1-nva1+1):np1)
+!        b(np-nva1-nva2-nva3-nva4+1 : np-nva2-nva3-nva4) = b01((np1-nva1+1):np1)
         !write(*,*) b01((np1-nva1+1):np1)
-        b(np-nva2-nva3-nva4+1 : np-nva3-nva4) = b02((np2-nva2+1):np2)
-        b((np-nva3-nva4+1) : (np-nva4)) = b03((np3-nva3+1):np3)
-        b((np-nva4+1) : np) = b04((np4-nva4+1):np4)
+!        b(np-nva2-nva3-nva4+1 : np-nva3-nva4) = b02((np2-nva2+1):np2)
+!        b((np-nva3-nva4+1) : (np-nva4)) = b03((np3-nva3+1):np3)
+!        b((np-nva4+1) : np) = b04((np4-nva4+1):np4)
         !write(*,*)'Initialized Parameter Vector: b = ', b
 
         ! (3) Copy Frailty Parameters
-        if((event2_ind.eq.1).and.(terminal2_ind.eq.1))then
-            b(5:6)=b03(1:2)
-            b(7:8)=b04(1:2)
-        else if((event2_ind.eq.0).and.(terminal2_ind.eq.1))then
-            b(np-nva-2)=b02(np1 - nva1)
-            if(b(np-nva-2).lt.0.1d0)then ! small values for frailty variance can interfere with GH quadrature
-                b(np-nva-2) = 0.1d0
-            endif
-            b(np-nva-1)=0.5d0 !no initialized value
-            b(np-nva)=0.5d0 !no initializd value
-        else if((event2_ind.eq.1).and.(terminal2_ind.eq.0))then
-            b(np-nva-indic_alpha)=b01(np1-nva1)
-            b(np-nva-indic_eta)=b03(np3-nva3)
-            b(np-nva-indic_a1)=0.5d0 !no initialized value
-            b(np-nva-indic_a2)=0.5d0 !no initializd value
-            b(np-nva-indic_rho)=0.5d0 !no initialized value
-        endif
-    endif
+!        if((event2_ind.eq.1).and.(terminal2_ind.eq.1))then
+!            b(5:6)=b03(1:2)
+!            b(7:8)=b04(1:2)
+!        else if((event2_ind.eq.0).and.(terminal2_ind.eq.1))then
+!            b(np-nva-2)=b02(np1 - nva1)
+!            if(b(np-nva-2).lt.0.1d0)then ! small values for frailty variance can interfere with GH quadrature
+!                b(np-nva-2) = 0.1d0
+!            endif
+!            b(np-nva-1)=0.5d0 !no initialized value
+!            b(np-nva)=0.5d0 !no initializd value
+!        else if((event2_ind.eq.1).and.(terminal2_ind.eq.0))then
+!            b(np-nva-indic_alpha)=b01(np1-nva1)
+!            b(np-nva-indic_eta)=b03(np3-nva3)
+!            b(np-nva-indic_a1)=0.5d0 !no initialized value
+!            b(np-nva-indic_a2)=0.5d0 !no initializd value
+!            b(np-nva-indic_rho)=0.5d0 !no initialized value
+!        endif
+!    endif
 
     if((typeof.eq.0).and.(initialize.eq.1))then
         k0 = kappaCV    

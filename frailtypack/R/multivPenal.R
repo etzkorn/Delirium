@@ -910,7 +910,10 @@ if(initialize){
 			 hazard = "Weibull", RandDist = "LogN",
 			 maxit = 100, print.times = F)
 
-	# grab initialized values
+	# Grab initialized values
+		# Note: Joint model optimizes on the square root scale
+		# for hazard parameters and frailty
+		# variance, so we have to square to get to the true scale.
 	# Recurrent
 	init.hazard[1:(2+n.knots)] <- (mod.joint1$b[1:(2+n.knots)]^2 + mod.joint2$b[1:(2+n.knots)]^2)/2
 		# average estimates from the two models
@@ -1144,9 +1147,9 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
     )
 ######################################################################################################
 # Format Model Tables
+ans$initialization$b <- start.b
 
 if(initialize){
-	ans$initialization$b <- start.b
 	ans$initialization$joint1 <- mod.joint1
 	ans$initialization$joint2 <- mod.joint2
 }
