@@ -41,10 +41,10 @@ $$
 
 ```{r, fig.height = 14, fig.width=18}
 set.seed(080721)
-par00 = c(betaR = 0.83, etaR = 8,
+par00 = c(betaR = 1, etaR = 10,
          betaD = 1.85, etaD = 25,      
          betaD2 = 1.15, etaD2 = 10,
-         theta = 0.4, alpha1 = -0.12, alpha2 = -0.32,
+         theta = 0.2, alpha1 = -0.12, alpha2 = -0.32,
          trtR = -0.08, trtD = 0.07, trtD2 = 0.08)
 
 # put in treatment effects
@@ -57,10 +57,11 @@ simulate.competing.data(n = 1500, truncate = 28, par0 = par00)
 
 data %>% 
 group_by(id) %>% 
-summarise(del = any(event==1), 
+summarise(del = any(event==1),
+          no.del = sum(event==1),
           death = any(terminal1==1), 
           discharge = any(terminal2==1)) %>% 
-summarise(mean(del), mean(death), mean(discharge), 
+summarise(mean(del), max(no.del), mean(death), mean(discharge), 
           mean(death*del)/mean(death), mean((discharge*del))/mean(discharge)) %>% 
 t
 ```
@@ -74,7 +75,7 @@ formula.terminalEvent=~trt,
 formula.terminalEvent2=~trt,
 data=data, 
 jointGeneral = F,
-initialize = FALSE, 
+initialize = T, 
 save.progress = T,
 hazard = "Weibull",
 gapTimes=T,
