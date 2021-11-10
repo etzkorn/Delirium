@@ -236,6 +236,7 @@
             write(1,*) "funcpaMultivWeib.f90:: vet=", vet
             write(1,*) "funcpaMultivWeib.f90:: t1(i)=", t0(i)
             write(1,*) "funcpaMultivWeib.f90:: res3(g(i))=",res3(g(i))
+            write(1,*) "res3(g(i)) = res3(g(i))+((t0(i)/etaR)**betaR)*vet"
             close(1)
             funcpaMultivWeib=-1.d9
             goto 123
@@ -263,8 +264,9 @@
                 write(1,*) "funcpaMultivWwib.f90:: Error with hazard for terminal event 1."
                 write(1,*) "funcpaMultivWeib.f90:: betaD, etaD=", betaD, etaD
                 write(1,*) "funcpaMultivWeib.f90:: t1dc(k)=", t1dc(k)
-                write(1,*) "funcpaMultivWeib.f90:: res2dc(k)=", res2dc(k)
                 write(1,*) "funcpaMultivWeib.f90:: vet2=", vet2
+                write(1,*) "funcpaMultivWeib.f90:: res2dc(k)=", res2dc(k)
+                write(1,*) "res2dc(k)=(betaD-1.d0)*dlog(t1dc(k))+dlog(betaD)-betaD*dlog(etaD)+dlog(vet2)"
                 close(1)
                 funcpaMultivWeib=-1.d9
                 goto 123
@@ -284,6 +286,7 @@
             write(1,*) "funcpaMultivWeib.f90:: vedc(k,1:nva2)=", vedc(k,1:nva2)
             write(1,*) "funcpaMultivWeib.f90:: vet2=", vet2
             write(1,*) "funcpaMultivWeib.f90:: aux1(k)=", aux1(k)
+            write(1,*) "aux1(k)=((t1dc(k)/etaD)**betaD)*vet2"
             close(1)
             funcpaMultivWeib=-1.d9
             goto 123
@@ -309,6 +312,11 @@
             if ((res2dc2(k).ne.res2dc2(k)).or.(abs(res2dc2(k)).ge. 1.d30)) then
                 open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
                 write(1,*) "funcpaMultivWwib.f90:: Error with hazard for terminal event 2."
+                write(1,*) "funcpaMultivWeib.f90:: betaD2, etaD2=", betaD2, etaD2
+                write(1,*) "funcpaMultivWeib.f90:: t1dc(k)=", t1dc(k)
+                write(1,*) "funcpaMultivWeib.f90:: vet4=", vet4
+                write(1,*) "res2dc2(k) = (betaD2-1.d0)*dlog(t1dc(k))+dlog(betaD2)-betaD2*dlog(etaD2)+dlog(vet4)"
+                write(1,*) "res2dc2(k) =", res2dc2(k)
                 close(1)
                 funcpaMultivWeib=-1.d9
                 goto 123
@@ -320,6 +328,13 @@
         if ((aux2(k).ne.aux2(k)).or.(abs(aux2(k)).ge. 1.d30)) then
             open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
             write(1,*) "funcpaMultivWwib.f90:: Error with cumulative hazard for terminal event 2."
+            write(1,*) "funcpaMultivWeib.f90:: betaD2, etaD2=", betaD2, etaD2
+            write(1,*) "funcpaMultivWeib.f90:: np , nva2, nva3, nva4 =", np , nva2, nva3, nva4
+            write(1,*) "funcpaMultivWeib.f90:: k=", k
+            write(1,*) "funcpaMultivWeib.f90:: vedc2(k,1:nva4)=", vedc2(k,1:nva4)
+            write(1,*) "funcpaMultivWeib.f90:: vet4=", vet4
+            write(1,*) "aux2(k)=((t1dc(k)/etaD2)**betaD2)*vet4"
+            write(1,*) "aux2(k) = ", aux2(k)
             close(1)
             funcpaMultivWeib=-1.d9
             goto 123
@@ -436,6 +451,11 @@
                 open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
                 write(1,*) "funcpaMultivWwib.f90:: Error with integral component of likelihood."
                 write(1,*) "integrale3(k) = ", integrale3(k)
+                write(1,*) "ss = SUM(weight* dexp( & ! GQ Weights
+                    frail * cpt(k) - dexp(frail)*(res1(k)-res3(k)) & ! recurrent event 1
+                    + alpha1 * frail * cdc(k) - dexp(frail*alpha1) * aux1(k) & ! terminal event 1
+                    + alpha2 * frail * cdc2(k) - dexp(frail*alpha2) * aux2(k) & ! terminal event 2
+                    - (frail**2.d0)/(2.d0*theta))))"
                 write(1,*) "typeJoint = ", typeJoint
                 write(1,*) "theta = ", theta
                 write(1,*) "theta2 = ", theta2
