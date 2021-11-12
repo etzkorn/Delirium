@@ -1147,99 +1147,138 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
     )
 ######################################################################################################
 # Format Model Tables
-ans$initialization$b <- start.b
+ if(jointGeneral == F & hazard == "Weibull"){
+ 	f <- function(b){
+ 		c(exp(b[1:6])^2,
+ 		  exp(b[7]),
+ 		  b[(np-nvar-1):np])
+ 	}
+ 	f.prime <- function(b){
+ 		diag(c(2*exp(2*b[1:6]),
+ 		       exp(b[7]),
+ 		       rep(1,nvar + 2)))
+ 	}
+ 	Parameter = c("Shape, Recurrent", "Scale, Recurrent",
+ 		  "Shape, Terminal1", "Scale, Terminal1",
+ 		  "Shape, Terminal2", "Scale, Terminal2",
+ 		  "Sigma",
+ 		  "Alpha, Terminal1", "Alpha, Terminal2",
+ 		  paste0("Beta",(np-nvar+1):np))
+ }else if(jointGeneral == T & hazard == "Weibull"){
+ 	f <- function(b){
+ 		c(exp(b[1:6])^2,
+ 		  exp(b[7:8]),
+ 		  (exp(b[9]) - 1)/(exp(b[9]) + 1),
+ 		  b[(np-nvar-1):np])
+ 	}
+ 	f.prime <- function(b){
+ 		diag(c(2*exp(2*b[1:6]),
+ 		       exp(b[7:8]),
+ 		       2*exp(2*b[9])/(1+exp(b[9]))^2,
+ 		       rep(1,nvar+2)))
+ 	}
+ 	Parameter = c("Shape, Recurrent", "Scale, Recurrent",
+ 		  "Shape, Terminal1", "Scale, Terminal1",
+ 		  "Shape, Terminal2", "Scale, Terminal2",
+ 		  "Sigma, Terminal1", "Sigma, Terminal2", "Rho",
+ 		  "Alpha, Terminal1", "Alpha, Terminal2",
+ 		  paste0("Beta",(np-nvar+1):np))
+ }else if(jointGeneral == F & hazard == "Weibull"){
+ 	f <- function(b){
+ 		c(exp(b[1:6])^2,
+ 		  exp(b[7]),
+ 		  b[(np-nvar-1):np])
+ 	}
+ 	f.prime <- function(b){
+ 		diag(c(2*exp(2*b[1:6]),
+ 		       exp(b[7]),
+ 		       rep(1,nvar + 2)))
+	}
+ 	Parameter = c("Shape, Recurrent", "Scale, Recurrent",
+ 		  "Shape, Terminal1", "Scale, Terminal1",
+ 		  "Shape, Terminal2", "Scale, Terminal2",
+ 		  "Sigma",
+ 		  "Alpha, Terminal1", "Alpha, Terminal2",
+ 		  paste0("Beta",(np-nvar+1):np))
+ }else if(jointGeneral == T & hazard == "Splines"){
+ 	f <- function(b){
+ 		c(exp(b[1:6])^2,
+ 		  exp(b[7:8]),
+ 		  (exp(b[9]) - 1)/(exp(b[9]) + 1),
+ 		  b[(np-nvar-1):np])
+ 	}
+ 	f.prime <- function(b){
+ 		diag(c(2*exp(2*b[1:6]),
+ 		       exp(b[7:8]),
+ 		       2*exp(2*b[9])/(1+exp(b[9]))^2,
+ 		       rep(1,nvar+2)))
+ 	}
+ 	Parameter = c("Shape, Recurrent", "Scale, Recurrent",
+ 		  "Shape, Terminal1", "Scale, Terminal1",
+ 		  "Shape, Terminal2", "Scale, Terminal2",
+ 		  "Sigma, Terminal1", "Sigma, Terminal2", "Rho",
+ 		  "Alpha, Terminal1", "Alpha, Terminal2",
+ 		  paste0("Beta",(np-nvar+1):np))
+ }
+ ans$varH.Raw <- matrix(ans$H, nrow = np, ncol = np)
+ ans$varH.Estimate <- f.prime(ans$b) %*% ans$varH.Raw %*% f.prime(ans$b)
+ ans$summary.table <- tibble(
+ 	Parameter = Parameter,
+ 	Raw = ans$b,
+ 	Raw.SE = sqrt(diag(ans$varH.Raw)),
+ 	Estimate = f(ans$b),
+ 	Estimate.SE = sqrt(diag(ans$varH.Estimate)),
+ 	LB95 = f(ans$b - 2*Raw.SE),
+ 	UB95 = f(ans$b + 2*Raw.SE),
+ 	p = 2*pnorm(q = -abs(ans$b), mean = 0, sd = Raw.SE),
+ 	H0 = paste(Parameter, " = ", f(rep(0, np)))
+ )
 
-if(initialize){
-	ans$initialization$joint1 <- mod.joint1
-	ans$initialization$joint2 <- mod.joint2
-}
+ # Format Initialization Tables
+ ans$initialization$b <- start.b
 
-# if(jointGeneral == F & hazard == "Weibull"){
-# 	f <- function(b){
-# 		c(exp(b[1:6])^2,
-# 		  exp(b[7]),
-# 		  b[(np-nvar-1):np])
-# 	}
-# 	f.prime <- function(b){
-# 		diag(c(2*exp(2*b[1:6]),
-# 		       exp(b[7]),
-# 		       rep(1,nvar + 2)))
-# 	}
-# 	Parameter = c("Shape, Recurrent", "Scale, Recurrent",
-# 		  "Shape, Terminal1", "Scale, Terminal1",
-# 		  "Shape, Terminal2", "Scale, Terminal2",
-# 		  "Sigma",
-# 		  "Alpha, Terminal1", "Alpha, Terminal2",
-# 		  paste0("Beta",(np-nvar+1):np))
-# }else if(jointGeneral == T & hazard == "Weibull"){
-# 	f <- function(b){
-# 		c(exp(b[1:6])^2,
-# 		  exp(b[7:8]),
-# 		  (exp(b[9]) - 1)/(exp(b[9]) + 1),
-# 		  b[(np-nvar-1):np])
-# 	}
-# 	f.prime <- function(b){
-# 		diag(c(2*exp(2*b[1:6]),
-# 		       exp(b[7:8]),
-# 		       2*exp(2*b[9])/(1+exp(b[9]))^2,
-# 		       rep(1,nvar+2)))
-# 	}
-# 	Parameter = c("Shape, Recurrent", "Scale, Recurrent",
-# 		  "Shape, Terminal1", "Scale, Terminal1",
-# 		  "Shape, Terminal2", "Scale, Terminal2",
-# 		  "Sigma, Terminal1", "Sigma, Terminal2", "Rho",
-# 		  "Alpha, Terminal1", "Alpha, Terminal2",
-# 		  paste0("Beta",(np-nvar+1):np))
-# }if(jointGeneral == F & hazard == "Weibull"){
-# 	f <- function(b){
-# 		c(exp(b[1:6])^2,
-# 		  exp(b[7]),
-# 		  b[(np-nvar-1):np])
-# 	}
-# 	f.prime <- function(b){
-# 		diag(c(2*exp(2*b[1:6]),
-# 		       exp(b[7]),
-# 		       rep(1,nvar + 2)))
-# 	}
-# 	Parameter = c("Shape, Recurrent", "Scale, Recurrent",
-# 		  "Shape, Terminal1", "Scale, Terminal1",
-# 		  "Shape, Terminal2", "Scale, Terminal2",
-# 		  "Sigma",
-# 		  "Alpha, Terminal1", "Alpha, Terminal2",
-# 		  paste0("Beta",(np-nvar+1):np))
-# }else if(jointGeneral == T & hazard == "Splines"){
-# 	f <- function(b){
-# 		c(exp(b[1:6])^2,
-# 		  exp(b[7:8]),
-# 		  (exp(b[9]) - 1)/(exp(b[9]) + 1),
-# 		  b[(np-nvar-1):np])
-# 	}
-# 	f.prime <- function(b){
-# 		diag(c(2*exp(2*b[1:6]),
-# 		       exp(b[7:8]),
-# 		       2*exp(2*b[9])/(1+exp(b[9]))^2,
-# 		       rep(1,nvar+2)))
-# 	}
-# 	Parameter = c("Shape, Recurrent", "Scale, Recurrent",
-# 		  "Shape, Terminal1", "Scale, Terminal1",
-# 		  "Shape, Terminal2", "Scale, Terminal2",
-# 		  "Sigma, Terminal1", "Sigma, Terminal2", "Rho",
-# 		  "Alpha, Terminal1", "Alpha, Terminal2",
-# 		  paste0("Beta",(np-nvar+1):np))
-# }
-# ans$varH.Raw <- matrix(ans$H, nrow = np, ncol = np)
-# ans$varH.Estimate <- f.prime(ans$b) %*% ans$varH.Raw %*% f.prime(ans$b)
-# ans$summary.table <- tibble(
-# 	Parameter = Parameter,
-# 	Raw = ans$b,
-# 	Raw.SE = sqrt(diag(ans$varH.Raw)),
-# 	Estimate = f(ans$b),
-# 	Estimate.SE = sqrt(diag(ans$varH.Estimate)),
-# 	LB95 = f(ans$b - 2*Raw.SE),
-# 	UB95 = f(ans$b + 2*Raw.SE),
-# 	p = 2*pnorm(q = -abs(ans$b), mean = 0, sd = Raw.SE),
-# 	H0 = paste(Parameter, " = ", f(rep(0, np)))
-# )
+ if(initialize){
+ 	ans$initialization$joint1 <- mod.joint1
+ 	ans$initialization$joint2 <- mod.joint2
+
+	# Extract Transformed Parameters
+ 	f1 <- function(b, i=3){
+ 		c(b[1:(length(b)-nvar+nbvar[i])]^2,
+ 		  b[(length(b)-nvar+nbvar[i]+1):length(b)])
+ 	}
+ 	f1.prime <- function(b, i = 3){
+ 		diag(c(2*b[1:(length(b)-nvar+nbvar[i])],
+ 		       rep(1,nvar-nbvar[i])))
+ 	}
+ 	Parameters = c("Shape, Recurrent", "Scale, Recurrent",
+ 		  "Shape, Terminal1", "Scale, Terminal1",
+ 		  "Sigma, Terminal1", "Alpha, Terminal1",
+ 		  paste0("Beta",1:(nbvar[1]+nbvar[2])),
+ 		  "Shape, Recurrent", "Scale, Recurrent",
+ 		  "Shape, Terminal2", "Scale, Terminal2",
+ 		  "Sigma, Terminal2", "Alpha, Terminal2",
+ 		  paste0("Beta",1:(nbvar[1]+nbvar[4])))
+
+ 	ans$initialization$varH.Estimate1 <-
+ 		f1.prime(ans$initialization$joint1$b) %*%
+ 		ans$initialization$joint1$varHtotal %*%
+ 		f1.prime(ans$initialization$joint1$b)
+ 	ans$initialization$varH.Estimate2 <-
+ 		f1.prime(ans$initialization$joint2$b, i=4) %*%
+ 		ans$initialization$joint2$varHtotal %*%
+ 		f1.prime(ans$initialization$joint2$b, i=4)
+ 	ans$initialization$summary.table <- tibble(
+ 		Parameter = Parameters,
+ 		Raw = c(ans$initialization$joint1$b, ans$initialization$joint2$b),
+ 		Raw.SE = c(sqrt(diag(ans$initialization$joint1$varHtotal)),
+ 		           sqrt(diag(ans$initialization$joint2$varHtotal))),
+ 		Estimate = c(f1(ans$initialization$joint1$b), f1(ans$initialization$joint2$b, i=4)),
+ 		Estimate.SE = c(sqrt(diag(ans$initialization$varH.Estimate1)),
+ 			    sqrt(diag(ans$initialization$varH.Estimate2))),
+ 		p = 2*pnorm(q = -abs(Raw), mean = 0, sd = Raw.SE)
+ 	)
+
+ }
 return(ans)
 }
 

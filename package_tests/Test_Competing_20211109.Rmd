@@ -81,21 +81,21 @@ hazard = "Weibull",
 gapTimes=T,
 maxit = 350)
 
-mod0 <- 
+mod0b <- # without initialization
 multivPenal(
 formula = Surv(t0, t, event)~cluster(id)+trt+terminal(terminal1)+terminal2(terminal2),
 formula.terminalEvent=~trt,
 formula.terminalEvent2=~trt,
 data=data, 
 jointGeneral = F,
-initialize = T, 
+initialize = F, 
 save.progress = T,
 hazard = "Weibull",
 gapTimes=T,
 maxit = 350)
 
 mod0$critCV
-mod0$summary.table
+mod0b$critCV
 ```
 
 ```{r}
