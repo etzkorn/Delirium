@@ -1605,15 +1605,15 @@
     write(1,*)'multiveJoint.f90:: (10) Organizing hessian matricies...'
     close(1) 
 
-    !call multi(I_hess,H_hess,np,np,np,IH)
-    !call multi(H_hess,IH,np,np,np,HIH)
+    call multi(I_hess,H_hess,np,np,np,IH)
+    call multi(H_hess,IH,np,np,np,HIH)
 
-    !do ss=1,npmax
-    !    do sss=1,npmax
-    !        HIHOut(ss,sss) = HIH(ss,sss)
-    !        H_hessOut(ss,sss)= H_hess(ss,sss)
-    !    end do  
-    !end do
+    do ss=1,npmax
+        do sss=1,npmax
+            HIHOut(ss,sss) = HIH(ss,sss)
+            H_hessOut(ss,sss)= H_hess(ss,sss)
+        end do  
+    end do
 ! (10) Organize Hessian Matrix
 !-----------------------------------------------------------
 
