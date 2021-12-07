@@ -1220,7 +1220,7 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		  "Alpha, Terminal1", "Alpha, Terminal2",
  		  paste0("Beta",(np-nvar+1):np))
  }
- ans$varH.Raw <- matrix(ans$H, nrow = np, ncol = np)
+ ans$varH.Raw <- matrix(ans$HIHOut, nrow = np, ncol = np)
  ans$varH.Estimate <- f.prime(ans$b) %*% ans$varH.Raw %*% f.prime(ans$b)
  ans$summary.table <- tibble(
  	Parameter = Parameter,
@@ -1251,13 +1251,9 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		       rep(1,nvar-nbvar[i])))
  	}
  	Parameters = c("Shape, Recurrent", "Scale, Recurrent",
- 		  "Shape, Terminal1", "Scale, Terminal1",
- 		  "Sigma, Terminal1", "Alpha, Terminal1",
- 		  paste0("Beta",1:(nbvar[1]+nbvar[2])),
- 		  "Shape, Recurrent", "Scale, Recurrent",
- 		  "Shape, Terminal2", "Scale, Terminal2",
- 		  "Sigma, Terminal2", "Alpha, Terminal2",
- 		  paste0("Beta",1:(nbvar[1]+nbvar[4])))
+ 		  "Shape, Terminal", "Scale, Terminal",
+ 		  "Sigma, Terminal", "Alpha, Terminal",
+ 		  paste0("Beta",1:(nbvar[1]+nbvar[2])))
 
  	ans$initialization$varH.Estimate1 <-
  		f1.prime(ans$initialization$joint1$b) %*%
@@ -1267,14 +1263,20 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		f1.prime(ans$initialization$joint2$b, i=4) %*%
  		ans$initialization$joint2$varHtotal %*%
  		f1.prime(ans$initialization$joint2$b, i=4)
- 	ans$initialization$summary.table <- tibble(
+ 	ans$initialization$summary.table1 <- tibble(
  		Parameter = Parameters,
- 		Raw = c(ans$initialization$joint1$b, ans$initialization$joint2$b),
- 		Raw.SE = c(sqrt(diag(ans$initialization$joint1$varHtotal)),
- 		           sqrt(diag(ans$initialization$joint2$varHtotal))),
- 		Estimate = c(f1(ans$initialization$joint1$b), f1(ans$initialization$joint2$b, i=4)),
- 		Estimate.SE = c(sqrt(diag(ans$initialization$varH.Estimate1)),
- 			    sqrt(diag(ans$initialization$varH.Estimate2))),
+ 		Raw = ans$initialization$joint1$b,
+ 		Raw.SE = sqrt(diag(ans$initialization$joint1$varHtotal)),
+ 		Estimate = f1(ans$initialization$joint1$b),
+ 		Estimate.SE = sqrt(diag(ans$initialization$varH.Estimate1)),
+ 		p = 2*pnorm(q = -abs(Raw), mean = 0, sd = Raw.SE)
+ 	)
+ 	ans$initialization$summary.table2 <- tibble(
+ 		Parameter = Parameters,
+ 		Raw = ans$initialization$joint2$b,
+ 		Raw.SE = sqrt(diag(ans$initialization$joint2$varHtotal)),
+ 		Estimate = f1(ans$initialization$joint2$b, i=4),
+ 		Estimate.SE = sqrt(diag(ans$initialization$varH.Estimate2)),
  		p = 2*pnorm(q = -abs(Raw), mean = 0, sd = Raw.SE)
  	)
 

@@ -34,7 +34,7 @@ $$
     \alpha_1 = -0.12;  
     \alpha_2 = -0.32; 
     \theta = 0.4 \\
-    \text{Maximum Observation (Censoring) Time } = 28
+    \text{Maximum Observation (Censoring) Time} = 28
 $$
 
 # Test Shared Model 
@@ -49,8 +49,8 @@ par00 = c(betaR = 1, etaR = 10,
 
 # put in treatment effects
 # opposite directions for alpha
-#alpha1 = 0.15
-#alpha2 = -0.3
+# alpha1 = 0.15
+# alpha2 = -0.3
 
 data <- 
 simulate.competing.data(n = 1500, truncate = 28, par0 = par00)
