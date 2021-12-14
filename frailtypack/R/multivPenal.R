@@ -736,7 +736,7 @@ modelmatrix1 =
 group1 <- as.numeric(factor(data[[CLUSTER]]))
 
 # Compute Event Counts
-#nevents1 <- tapply(event1, group1, sum)
+# nevents1 <- tapply(event1, group1, sum)
 
 # Recurrent 2
 if (event2.ind == 1) {
@@ -1163,7 +1163,9 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		  "Shape, Terminal2", "Scale, Terminal2",
  		  "Sigma",
  		  "Alpha, Terminal1", "Alpha, Terminal2",
- 		  paste0("Beta",(np-nvar+1):np))
+ 		  paste0("Recurrent: ",colnames(modelmatrix1)),
+ 		  paste0("Terminal1: ",colnames(modelmatrix2)),
+ 		  paste0("Terminal2: ",colnames(modelmatrix4)))
  }else if(jointGeneral == T & hazard == "Weibull"){
  	f <- function(b){
  		c(exp(b[1:6])^2,
@@ -1182,7 +1184,9 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		  "Shape, Terminal2", "Scale, Terminal2",
  		  "Sigma, Terminal1", "Sigma, Terminal2", "Rho",
  		  "Alpha, Terminal1", "Alpha, Terminal2",
- 		  paste0("Beta",(np-nvar+1):np))
+ 		  paste0("Recurrent: ",colnames(modelmatrix1)),
+ 		  paste0("Terminal1: ",colnames(modelmatrix2)),
+ 		  paste0("Terminal2: ",colnames(modelmatrix4)))
  }else if(jointGeneral == F & hazard == "Weibull"){
  	f <- function(b){
  		c(exp(b[1:6])^2,
@@ -1199,7 +1203,9 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		  "Shape, Terminal2", "Scale, Terminal2",
  		  "Sigma",
  		  "Alpha, Terminal1", "Alpha, Terminal2",
- 		  paste0("Beta",(np-nvar+1):np))
+ 		  paste0("Recurrent: ",colnames(modelmatrix1)),
+ 		  paste0("Terminal1: ",colnames(modelmatrix2)),
+ 		  paste0("Terminal2: ",colnames(modelmatrix4)))
  }else if(jointGeneral == T & hazard == "Splines"){
  	f <- function(b){
  		c(exp(b[1:6])^2,
@@ -1218,7 +1224,9 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		  "Shape, Terminal2", "Scale, Terminal2",
  		  "Sigma, Terminal1", "Sigma, Terminal2", "Rho",
  		  "Alpha, Terminal1", "Alpha, Terminal2",
- 		  paste0("Beta",(np-nvar+1):np))
+ 		  paste0("Recurrent: ",colnames(modelmatrix1)),
+ 		  paste0("Terminal1: ",colnames(modelmatrix2)),
+ 		  paste0("Terminal2: ",colnames(modelmatrix4)))
  }
  ans$varH.Raw <- matrix(ans$HIHOut, nrow = np, ncol = np)
  ans$varH.Estimate <- f.prime(ans$b) %*% ans$varH.Raw %*% f.prime(ans$b)
@@ -1250,10 +1258,17 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		diag(c(2*b[1:(length(b)-nvar+nbvar[i])],
  		       rep(1,nvar-nbvar[i])))
  	}
- 	Parameters = c("Shape, Recurrent", "Scale, Recurrent",
- 		  "Shape, Terminal", "Scale, Terminal",
- 		  "Sigma, Terminal", "Alpha, Terminal",
- 		  paste0("Beta",1:(nbvar[1]+nbvar[2])))
+ 	Parameters1 = c("Shape, Recurrent", "Scale, Recurrent",
+ 		  "Shape, Terminal1", "Scale, Terminal1",
+ 		  "Sigma", "Alpha, Terminal1",
+ 		  paste0("Recurrent: ",colnames(modelmatrix1)),
+ 		  paste0("Terminal1: ",colnames(modelmatrix2)))
+
+ 	Parameters2 = c("Shape, Recurrent", "Scale, Recurrent",
+ 		    "Shape, Terminal2", "Scale, Terminal2",
+ 		    "Sigma", "Alpha, Terminal2",
+ 		    paste0("Recurrent: ",colnames(modelmatrix1)),
+ 		    paste0("Terminal2: ",colnames(modelmatrix4)))
 
  	ans$initialization$varH.Estimate1 <-
  		f1.prime(ans$initialization$joint1$b) %*%
@@ -1264,7 +1279,7 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		ans$initialization$joint2$varHtotal %*%
  		f1.prime(ans$initialization$joint2$b, i=4)
  	ans$initialization$summary.table1 <- tibble(
- 		Parameter = Parameters,
+ 		Parameter = Parameters1,
  		Raw = ans$initialization$joint1$b,
  		Raw.SE = sqrt(diag(ans$initialization$joint1$varHtotal)),
  		Estimate = f1(ans$initialization$joint1$b),
@@ -1272,7 +1287,7 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		p = 2*pnorm(q = -abs(Raw), mean = 0, sd = Raw.SE)
  	)
  	ans$initialization$summary.table2 <- tibble(
- 		Parameter = Parameters,
+ 		Parameter = Parameters2,
  		Raw = ans$initialization$joint2$b,
  		Raw.SE = sqrt(diag(ans$initialization$joint2$varHtotal)),
  		Estimate = f1(ans$initialization$joint2$b, i=4),
