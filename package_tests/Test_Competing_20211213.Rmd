@@ -4,7 +4,7 @@ output: html_document
 ---
 ```{r setup, warning = FALSE, message = FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
-library(frailtypack); library(tidyverse)
+library(frailtypack); library(tidyverse); library(gt)
 source("../delirium_package/R/competing_simulate_data.R")
 source("../delirium_package/R/random_weibull.R")
 save.date <- "20211213"
@@ -155,12 +155,14 @@ unnest(c(par1, est1, par2, est2))
 
 # Plot Results
 results2 %>%
-filter(par1 %in% c("Shape, Recurrent","Scale, Recurrent", "Sigma, Terminal", "Beta1")) %>%
+filter(par1 %in% c("Shape, Recurrent","Scale, Recurrent", "Sigma", "Recurrent: trt")) %>%
 ggplot()+
 geom_point(aes(y = data, x = est1)) +
+geom_point(aes(y = data, x = est2), color="blue", shape = 1) +
 facet_wrap("par1", scales = "free") +
 geom_vline(data = tibble(truth = par00[c("betaR","etaR","theta","trtR")],
-		 par1 = c("Shape, Recurrent","Scale, Recurrent", "Sigma, Terminal", "Beta1")),
+		 par1 = c("Shape, Recurrent","Scale, Recurrent", 
+		          "Sigma", "Recurrent: trt")),
            aes(xintercept = truth), color = "red") +
 theme_bw()+
 labs(title = paste0("Competing Joint Model Simulation Results(R =",length(par00),", n = ", length(unique(data0[[1]]$id)),")"))
@@ -190,11 +192,10 @@ pivot_longer(cols = Mean:Est.SD) %>%
 mutate(value = round(value, 3)) %>%
 pivot_wider(names_from = c(name), values_from = value)
 
-library(gt)
 gt(tab_start, rowname_col = "Parameter")%>%
 tab_stubhead(label = "Parameter")%>%
 tab_header(
-    title = md("**Joint Model Frailty Pack Fits (R = 1,000, n = 1,200)**"))%>%
+    title = md(paste0("Competing Joint Model Simulation Results(R =",length(par00),", n = ", length(unique(data0[[1]]$id)),")")))%>%
 cols_label(
     Truth = html("True Value"),
     Mean = html("Avg. Estimate"),
@@ -213,84 +214,44 @@ mean(results$error4)
 
 # Comparison with Joint Model
 
-```{r}
-Parameter = mod.joint.a[[1]]$summary.table$Parameter
-results <- list()
-for(i in 1:nsim){
-results[[i]]<- 
-tibble(sim = i,
-       Parameter = c(Parameter[c(1:4,7:8,10:11)], #model1a
-	         Parameter[c(1:2,5:6,7,9,10,12)],
-	         Parameter),
-       Estimates = c(mod.joint.b[[i]]$b[1:5]^2, mod.joint.b[[i]]$b[6:8], 
-       	         mod.joint.c[[i]]$b[1:5]^2, mod.joint.c[[i]]$b[6:8],
-       	         mod.joint.a[[i]]$summary.table$Estimate) %>% round(3),
-       SE = c(sqrt(diag(mod.joint.b[[i]]$varHtotal))[1:5]*2*sqrt(mod.joint.b[[i]]$b[1:5]), 
-       	  sqrt(diag(mod.joint.b[[i]]$varHtotal))[6:8], 
-       	  sqrt(diag(mod.joint.c[[i]]$varHtotal))[1:5]*2*sqrt(mod.joint.c[[i]]$b[1:5]),
-       	  sqrt(diag(mod.joint.c[[i]]$varHtotal))[6:8],
-       	  mod.joint.a[[i]]$summary.table$Estimate.SE) %>% round(3),
-       Error = c(rep(mod.joint.b[[1]]$istop != 1, 8),
-                 rep(mod.joint.c[[1]]$istop != 1, 8),
-                 rep(mod.joint.a[[1]]$critCV[2] != 1, 12))) %>%
-mutate(model = c(rep("Death",8), 
-       	         rep("Discharge",8), 
-       	         rep("Competing",12)))
-}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 
-results %>%
-do.call(what = "rbind") %>% 
-group_by(Parameter, model) %>%
-summarise(Mean = median(Estimates[!Error], trim = 0.005),
-          SD = sd(Estimates[!Error]),
-          Est.SD = median(SE[!Error], na.rm=T), .groups = "drop"
+truth =
+tibble(Parameter = mod.joint[[1]]$summary.table$Parameter,
+       truth = par00)
+
+results2 <- 
+tibble(data = rep(1:(nsim), 2), model = rep(1:2, each = nsim),
+       Parameter = c(map(mod.joint, ~.$initialization$summary.table1$Parameter),
+       	  map(mod.joint, ~.$initialization$summary.table2$Parameter)),
+       Estimate = c(map(mod.joint, ~.$initialization$summary.table1$Estimate),
+       	 map(mod.joint, ~.$initialization$summary.table2$Estimate)),
+       Error = c(map(mod.joint, ~.$initialization$joint1$istop),
+       	 map(mod.joint, ~.$initialization$joint1$istop))) %>% 
+unnest(c(Parameter, Estimate, Error)) %>%
+mutate(Truth = c(rep(par00[c(1:4,7:8,10:11)], nsim), rep(par00[c(1:2,5:7,9:10,12)], nsim)), 
+       Error = Error!=1) %>%
+group_by(model, Parameter)  %>%
+summarise(Truth = Truth[1], 
+          Mean = mean(Estimate[!Error]),
+          SD = mean((Estimate[!Error]-Mean)^2, na.rm=T)^.5, .groups = "drop"
 ) %>%
-pivot_longer(cols = Mean:Est.SD) %>%
-mutate(value = round(value, 3)) %>%
-pivot_wider(names_from = c(name), values_from = value) %>%
-pivot_wider(id_cols = Parameter, names_from = c(model), values_from = c(Mean, SD, Est.SD) ) %>%
-#arrange(Parameter)  %>%
-relocate(SD_Death, .after = Mean_Death)%>%
-relocate(SD_Discharge, .after = Mean_Discharge)%>%
-relocate(SD_Competing, .after = Mean_Competing)%>%
-relocate(SD_Death, .after = Mean_Death)%>%
-relocate(SD_Discharge, .after = Mean_Discharge)%>%
-relocate(SD_Competing, .after = Mean_Competing) %>%
-dplyr::select(-Est.SD_Competing:-Est.SD_Discharge) %>%
-arrange(c(5:6,1:3,7:12,4))%>%
-mutate(Truth = par00[c(10:12,7:9,2,4,6,1,3,5)]) %>%
+pivot_wider(id_cols = Parameter, values_from = c(Truth, Mean, SD), names_from = model)
+
+tab_start %>%
+left_join(results2, by = "Parameter") %>%
+select(Parameter, Truth, Mean, SD, Mean_1, SD_1, Mean_2, SD_2) %>%
 gt(rowname_col = "Parameter")%>%
 tab_stubhead(label = "Parameter")%>%
 tab_header(
-    title = md("**Simulation Results: Weibull Model Estimates**"))%>%
+    title = md(paste0("**Competing Joint Model Simulation Results(R =",length(par00),", n = ", length(unique(data0[[1]]$id)),")**")))%>%
 cols_label(
-    Mean_Death = html("Joint: Death"),
-    Mean_Discharge = html("Joint: Discharge"),
-    Mean_Competing = html("Competing"),
-    Mean_Death = html("Joint (Death)"),
-    Mean_Discharge = html("Joint (Discharge)"),
-    Mean_Competing = html("Competing"),
-    SD_Death = html("(SE)"),
-    SD_Discharge = html("(SE)"),
-    SD_Competing = html("(SE)"),
-)%>%
-fmt_missing(columns = 1:8, missing_text = "")  %>%
- tab_style(
-     style = list(
-       cell_borders(sides = "left")
-     ),
-     locations = list(
-       cells_body(
-         columns = vars(Truth)
-       )
-     )
-   ) %>% 
-text_transform(
-  locations = cells_body(columns = c(3,5,7)),
-  fn = function(x) ifelse(x == "","",paste0("(",x,")"))
-  )%>%
-cols_align(
-  align = "left",
-  columns = c(3,5,7)
+    Mean = html("Competing Estimate"),
+    Mean_1 = html("Death Estimate"),
+    Mean_2 = html("Discharge Estimate"),
+    SD = html("SE"),
+    SD_1 = html("SE"),
+    SD_2 = html("SE")
 )
 ```
+
