@@ -11,11 +11,6 @@ save.date <- "20211213"
 set.seed(121321)
 ```
 
-In this simulation, we simulate from estimated values for the REDUCE gap times model, 
-except theta = 0.4 instead of 5.4 and 
-the scale parameters have been manipulated so that recurrent events happen more frequently (8 instead of 35)
-and discharge is slightly prolonged (10 instead of 8.2).
-
 # Competing Joint Model
 
 $$
@@ -215,7 +210,6 @@ mean(results$error4)
 # Comparison with Joint Model
 
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
-
 truth =
 tibble(Parameter = mod.joint[[1]]$summary.table$Parameter,
        truth = par00)
@@ -252,6 +246,10 @@ cols_label(
     SD = html("SE"),
     SD_1 = html("SE"),
     SD_2 = html("SE")
-)
+) %>% 
+fmt_number(c(4,6,8),pattern = "({x})")%>% 
+fmt_number(c(3,5,7)) %>% 
+fmt_missing(columns = 1:8, missing_text = "") %>%
+cols_align(columns = c(4,6,8), align = c("left"))
 ```
 
