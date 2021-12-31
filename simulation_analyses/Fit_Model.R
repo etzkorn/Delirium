@@ -11,10 +11,13 @@
 library(frailtypack); library(tidyverse)
 source("competing_simulate_data.R")
 source("random_weibull.R")
-metadata <- readRDS(file = "Simulation_MetaData.rdata")
-par <- metadata[[simid]]$par
-new.seed <- metadata[[simid]]$seed
-set.seed(new.seed)
+
+simid <- as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))
+metadata <- readRDS(file = "Simulation_Values_MetaData.rdata")
+par <- unlist(metadata[simid,1:12])
+seed <- metadata$seed[simid]
+
+set.seed(seed)
 
 # (1) Simulate Data Set
 data <- simulate.competing.data(n = n, truncate = 28, par0 = par)
@@ -37,5 +40,5 @@ mod$simulation.values <- par
 mod$simulation.id <- simid
 
 # (3) Save Results Under Simulation ID
-saveRDS(mod, file = paste("Simulation_Results/Sim_",simid,".rdata" ))
+saveRDS(mod, file = paste0("Simulation_Results/Sim_",simid,".rdata" ))
 
