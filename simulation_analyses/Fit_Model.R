@@ -3,14 +3,14 @@
 # (1) Simulate Data Set
 # (2) Fit Model
 # (3) Save Results Under Simulation ID
-#
-# Notes:
-# cd $ups/numerical_experiments/R
-# Rnosave Fit_Model.R -t 1-5000 -tc 40 -N JOB_lm
+
+message("Starting script...")
 
 library(frailtypack); library(tidyverse)
-source("competing_simulate_data.R")
-source("random_weibull.R")
+source("Simulation_Scripts/competing_simulate_data.R")
+source("Simulation_Scripts/random_weibull.R")
+
+message("Code Sourced...")
 
 simid <- as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))
 metadata <- readRDS(file = "Simulation_Values_MetaData.rdata")
@@ -19,8 +19,12 @@ seed <- metadata$seed[simid]
 
 set.seed(seed)
 
+message("Seed Set...")
+
 # (1) Simulate Data Set
 data <- simulate.competing.data(n = n, truncate = 28, par0 = par)
+
+message("Data Simulated...")
 
 # (2) Fit Model
 mod <-
@@ -35,6 +39,8 @@ multivPenal(formula = Surv(t0, t, event)~cluster(id)+trt+terminal(terminal1)+ter
 	gapTimes=T,
 	maxit = 350)
 
+message("Model Fit...")
+
 # Add identifiers to model object for further analysis
 mod$simulation.values <- par
 mod$simulation.id <- simid
@@ -42,3 +48,4 @@ mod$simulation.id <- simid
 # (3) Save Results Under Simulation ID
 saveRDS(mod, file = paste0("Simulation_Results/Sim_",simid,".rdata" ))
 
+message("Results Saved...")

@@ -1,6 +1,6 @@
 
 library(tidyverse)
-df <- read_csv("../reduce_analysis_output/reduce data.csv")
+df <- read_csv("../reduce_data/reduce data.csv")
 head(df)
 
 # Pivot to a long format.
@@ -128,6 +128,7 @@ df1 %>%
 	      axis.title.x = element_blank(),
 	      legend.position = c(.86,.35),
 	      legend.background = element_rect(color = "grey80")),
+
 df2 %>%
 filter(id %in% id.sample & !next.state %in% c("None")) %>%
 ungroup %>%
@@ -152,5 +153,7 @@ theme(legend.position = c(.86,.35),
 nrow = 2)
 dev.off()
 }
+
+
 
 

@@ -3,6 +3,7 @@ function Rnosave {
   x="$1"
   mydir=`mktemp file.XXXX.sh`
   echo '#!/bin/bash' > $mydir
+  echo "module load conda_R" >> $mydir
   echo "R --no-save < ${x}" >> $mydir
   shift
   qsub -cwd "$@" $mydir
