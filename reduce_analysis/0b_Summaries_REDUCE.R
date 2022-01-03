@@ -1,12 +1,14 @@
 
 library(tidyverse)
-df <- read_csv("../reduce_analysis_output/reduce data.csv")
+df <- read_csv("../reduce_data/reduce data.csv")
 head(df)
 
 # Pivot to a long format.
 # Retain only days observed in ICU
 df <- df %>%
 	mutate(letter = substr(CRF_letter_number, 0,1)) %>%
+	mutate(study_arm = factor(study_arm,
+			  labels = c("Placebo", "Haloperidol (2mg)", "Haloperidol (1mg)"))) %>%
 	filter(!letter %in% c("L","M","N","Q","R","T","U")) %>%
 	select(died, gender, age, delirium_yes_no, apache,
 	       losic, number_days_survived_28days,
@@ -14,22 +16,29 @@ df <- df %>%
 	mutate( id = 1:n(),
 	        apache = ifelse(apache < 0, NA,apache))
 
+########################################################################
 # Summarize Select Measures
 df%>%
 group_by(study_arm) %>%
-summarise(size = n(),
-          survived = mean(losic < number_days_survived_28days),
-          N.survived = sum(losic < number_days_survived_28days), #discharged from icu before 28 or death
-          died = mean(losic >= number_days_survived_28days & number_days_survived_28days < 28),
-          N.died = sum(losic >= number_days_survived_28days& number_days_survived_28days < 28), #died before discharge
-          anyDelirium = mean(delirium_yes_no),
-          N.anyDelirium = sum(delirium_yes_no),
-          mean(gender), sum(gender),
-          mean(age),
-          sd(age),
-          mean(apache, na.rm=T), sd(apache, na.rm=T),
-          mean(losic), sd(losic),
-          mean(number_days_survived_28days), sd(number_days_survived_28days)) %>% t()
+summarise(size = paste0("(n=",n(),")"),
+          `Any Delirium (verall)` = paste0(sum(delirium_yes_no),
+          	         " (",100*round(mean(delirium_yes_no),3),"%)"),
+          `Length of Stay`= paste0(round(mean(losic),2),
+          		 " (",round(sd(losic),2),")"),
+          Discharged = paste0(sum(losic < number_days_survived_28days),
+          	        " (",100*round(mean(losic < number_days_survived_28days),3),"%)"),
+          `Delirium among Discharges` = paste0(sum(delirium_yes_no[losic < number_days_survived_28days]),
+          		" (",100*round(mean(delirium_yes_no[losic < number_days_survived_28days]),3),"%)"),
+          `Length of Stay for Discharges`= paste0(round(mean(losic[losic < number_days_survived_28days]),2),
+          			    " (",round(sd(losic[losic < number_days_survived_28days]),2),")"),
+          Died = paste0(sum(losic >= number_days_survived_28days& number_days_survived_28days < 28),
+          	  " (",100*round(mean(losic >= number_days_survived_28days & number_days_survived_28days < 28),3),"%)"),
+          `Delirium among Deaths` = paste0(sum(delirium_yes_no[losic >= number_days_survived_28days& number_days_survived_28days < 28]),
+          			 " (",100*round(mean(delirium_yes_no[losic >= number_days_survived_28days& number_days_survived_28days < 28]),3),"%)"),
+          `Length of Stay for Mortalities`= paste0(round(mean(losic[losic >= number_days_survived_28days& number_days_survived_28days < 28]),2),
+          		 " (",round(sd(losic[losic >= number_days_survived_28days& number_days_survived_28days < 28]),2),")")) %>%
+t() %>%
+knitr::kable("latex")
 
 
 # Plot Prevalence by Apache Score
@@ -53,13 +62,25 @@ df1 <- df %>%
 	       death = as.numeric(day == 0 & number_days_survived_28days<=losic)) %>%
 	filter(day<=losic)
 
+dfsum <-
 df1 %>%
 filter(!is.na(coma * delirium)) %>%
+arrange(id, day) %>%
+group_by(id) %>%
+mutate(anydel = cumsum(delirium)>0) %>%
+ungroup %>%
 group_by(day, study_arm) %>%
 summarise(prev1 = sum(delirium)/sum(1-coma),
-          prev2 = sum(delirium)/1492) %>%
-ggplot() +
-geom_line(aes(y = prev1, x = day, group = study_arm, color = factor(study_arm)))+
-geom_line(aes(y = prev2, x = day, group = study_arm, color = factor(study_arm)), linetype = 2)
+          prev2 = sum(delirium)/1492,
+          cumprev = sum(anydel)/1492)
+
+ggplot(dfsum) +
+geom_line(aes(y = prev1, x = day, group = study_arm, color = factor(study_arm)))
+
+ggplot(dfsum) +
+geom_line(aes(y = prev2, x = day, group = study_arm, color = factor(study_arm)))
+
+ggplot(dfsum) +
+geom_line(aes(y = cumprev, x = day, group = study_arm, color = factor(study_arm)))
 
 
