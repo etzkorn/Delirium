@@ -62,7 +62,7 @@ This function will make running batches of R code easier, thanks to John Muschel
 	
 ## Running Some Simulations on the Cluster
 	
-	Assuming you've also uploaded the following files:
+Assuming you've also uploaded the following files:
 	
 	*`simulation_analyses/Fit_Model.R`
 	
@@ -74,11 +74,17 @@ This function will make running batches of R code easier, thanks to John Muschel
 	
 	*`simulation_analyses/0_Generate_Simulation_Values.R`
 	
-	and you've run `0_Generate_Simulation_Values.R`, 
-	you should be able to execute the following code to 
-	run the first two models on simulated data sets:
+and you've run `0_Generate_Simulation_Values.R`, 
+you should be able to execute the following code to 
+run the first two models on simulated data sets:
 	
 	`Rnosave Simulation_Scripts/Fit_Model.R -t 1-2 -tc 2 -N TestTwoJobs`
+
+## Removing output files:
+	
+This should remove the output files from your main directory:
+
+	`ls | grep -P "TestTwoJobs.*" | xargs -d"\n" rm`
 
 
 
