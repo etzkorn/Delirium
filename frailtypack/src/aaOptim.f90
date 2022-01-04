@@ -196,9 +196,9 @@
             goto 110
         endif
         !write(*,*)'iteration***',ni,'vrais',rl
-        open(1, file = '../package_tests/joint_model_parameters.dat',position="append")  
-        write(1,*) rl1, b
-        close(1) 
+       !debug: open(1, file = '../package_tests/joint_model_parameters.dat',position="append")  
+       !debug: write(1,*) rl1, b
+       !debug: close(1) 
         
         !Myriam ! Construction de la progressBar
         if (((effet == 2).and.(model == 1)).or.(model == 7)) then 
@@ -253,15 +253,15 @@
         end do
     end do
 	
-    open(1, file = '../package_tests/joint_model_derivative.dat',position="append")  
-    write(1,*) v
-    close(1) 
+   !debug: open(1, file = '../package_tests/joint_model_derivative.dat',position="append")  
+   !debug: write(1,*) v
+   !debug: close(1) 
 
         call dsinvj(fu,m,ep,ier)
 
-    open(1, file = '../package_tests/joint_model_inverse.dat',position="append")  
-    write(1,*) fu
-    close(1) 
+   !debug: open(1, file = '../package_tests/joint_model_inverse.dat',position="append")  
+   !debug: write(1,*) fu
+   !debug: close(1) 
 
     if (ier.eq.-1) then ! hessienne non inversible
         !print*,"here"
@@ -1198,15 +1198,15 @@
     nql=1
     m1=m*(m+1)/2
     ep=1.d-20
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'aaOptim.f90:: Optim starting.'
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'aaOptim.f90:: Optim starting.'
+   !debug: close(1) 
 ! ------------ do Main
     Main:Do
 
-    open(1, file = '../package_tests/multiv_model_parameters.dat',position="append")  
-    write(1,*) ni, rl, b
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_parameters.dat',position="append")  
+   !debug: write(1,*) ni, rl, b
+   !debug: close(1) 
 	
     call deriva(b,m,v,rl,k0,fctnames)
     rl1=rl
@@ -1214,9 +1214,9 @@
     if(rl.eq.-1.D9) then
         istop=4
 
-        open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-        write(1,*)"aaOptim.f90::Optimization Terminated, istop = 4"
-        close(1) 
+       !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+       !debug: write(1,*)"aaOptim.f90::Optimization Terminated, istop = 4"
+       !debug: close(1) 
 
         goto 110
     end if
@@ -1234,15 +1234,15 @@
             fu(ij)=v(ij)
         end do
     end do
-    open(1, file = '../package_tests/multiv_model_derivative.dat',position="append")  
-    write(1,*) v
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_derivative.dat',position="append")  
+   !debug: write(1,*) v
+   !debug: close(1) 
 
     ! invert derivtive
     call dsinvj(fu,m,ep,ier)
-    open(1, file = '../package_tests/multiv_model_inverse.dat',position="append")  
-    write(1,*) fu
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_inverse.dat',position="append")  
+   !debug: write(1,*) fu
+   !debug: close(1) 
 
     if (ier.eq.-1) then
         dd=epsd+1.d0
@@ -1262,12 +1262,12 @@
     end if
 
 ! Check whether convergence criteria are met
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'aaOptim.f90:: Optim iteration = ',ni,',  LL = ',rl
-    write(1,*)"aaOptim.f90:: Convergence Criteria: ca = ", ca, "(",epsa,")"
-    write(1,*)"aaOptim.f90:: Convergence Criteria: cb = ", cb, "(",epsb,")"
-    write(1,*)"aaOptim.f90:: Convergence Criteria: dd = ", dd, "(",epsd,")"
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'aaOptim.f90:: Optim iteration = ',ni,',  LL = ',rl
+   !debug: write(1,*)"aaOptim.f90:: Convergence Criteria: ca = ", ca, "(",epsa,")"
+   !debug: write(1,*)"aaOptim.f90:: Convergence Criteria: cb = ", cb, "(",epsb,")"
+   !debug: write(1,*)"aaOptim.f90:: Convergence Criteria: dd = ", dd, "(",epsd,")"
+   !debug: close(1) 
     if(ca.lt.epsa.and.cb.lt.epsb.and.dd.lt.epsd) exit main
 
         tr=0.d0
@@ -1380,9 +1380,9 @@
         if (ni.ge.maxiter) then
             istop=2
  !           write(6,*) 'maximum number of iteration reached'
-            open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-            write(1,*) 'aaOptim.f90:: maximum number of iteration reached'
-            close(1)
+           !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+           !debug: write(1,*) 'aaOptim.f90:: maximum number of iteration reached'
+           !debug: close(1)
             goto 110
         end if
     End do Main
@@ -1399,9 +1399,9 @@
 !==== on ne retient que les para des splines
 
     call deriva(b,m,v,rl,k0,fctnames)
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'aaOptim.f90:: Hessian retrieved.'
-    close(1)
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'aaOptim.f90:: Hessian retrieved.'
+   !debug: close(1)
     if(rl.eq.-1.D9) then
         istop=4
         goto 110
@@ -1442,9 +1442,9 @@
 
     if (ier.eq.-1) then
 !         write(*,*)   'echec inversion matrice information'
-        open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-        write(1,*)'aaOptim.f90:: information matrix inversion failure.'
-        close(1)
+       !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+       !debug: write(1,*)'aaOptim.f90:: information matrix inversion failure.'
+       !debug: close(1)
         istop=3
     endif
 
@@ -1467,9 +1467,9 @@
     call dsinvJ(v,m,ep,ier)
 
     if (ier.eq.-1) then
-        open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-        write(1,*)'aaOptim.f90:: information matrix inversion failure (2).'
-        close(1)
+       !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+       !debug: write(1,*)'aaOptim.f90:: information matrix inversion failure (2).'
+       !debug: close(1)
         istop=3
     endif
 
@@ -1514,9 +1514,9 @@
 
  110   continue
  
- open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
- write(1,*)'aaOptim.f90:: marq98 complete.'
- close(1) 
+!debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+!debug: write(1,*)'aaOptim.f90:: marq98 complete.'
+!debug: close(1) 
 
        return
 
@@ -1538,9 +1538,9 @@
     double precision::fctnames,thn,th,z,vl,th2,vaux
     external::fctnames
 	
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)"aaOptim.f90::deriva::Calculating derivatives."
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)"aaOptim.f90::deriva::Calculating derivatives."
+   !debug: close(1) 
 
     th=1.d-3
 
@@ -1564,26 +1564,26 @@
     iun =1
 	
     ! (1) Calculate log likelihood at current parameter values
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*) "deriva:: Likelihood Computation (1)"
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*) "deriva:: Likelihood Computation (1)"
     !write(1,*) "deriva:: b = ", b
     !write(1,*) "deriva:: m = ", m
     !write(1,*) "deriva:: i0 = ", i0
     !write(1,*) "deriva:: z = ", z
     !write(1,*) "deriva:: k0 = ", k0	
-    close(1) 
+   !debug: close(1) 
     rl=fctnames(b,m,i0,z,i0,z,k0)
         if(rl.eq.-1.d9) then
-            open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-            write(1,*) "deriva:: Stopped at First Likelihood Computation (1)"
-            close(1) 
+           !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+           !debug: write(1,*) "deriva:: Stopped at First Likelihood Computation (1)"
+           !debug: close(1) 
             rl=-1.d9
             goto 123
         end if
     ! (2a) Calculate log likelihood changing each parameter by small constant "th"
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*) "deriva:: Derivative Approximation (2a)"
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*) "deriva:: Derivative Approximation (2a)"
+   !debug: close(1) 
 	
     do i=1,m
         fcith(i)=fctnames(b,m,i,th,i0,z,k0)
@@ -1591,9 +1591,9 @@
         !write(1,*) "deriva:: (2a) Derivative calculated:", i
         !close(1) 
         if(fcith(i).eq.-1.d9) then
-            open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-            write(1,*) "deriva:: Stopped at Derivative Approximation (2a)"
-            close(1) 
+           !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+           !debug: write(1,*) "deriva:: Stopped at Derivative Approximation (2a)"
+           !debug: close(1) 
             rl=-1.d9
             goto 123
         end if
@@ -1608,9 +1608,9 @@
         ll=ll+1
         vaux=fctnames(b,m,i,thn,i0,z,k0)
                 if(vaux.eq.-1.d9) then
-                    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-                    write(1,*) "deriva:: Stopped at Hessian Approximation (2b)"
-                    close(1) 
+                   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+                   !debug: write(1,*) "deriva:: Stopped at Hessian Approximation (2b)"
+                   !debug: close(1) 
                     rl=-1.d9
                     goto 123
                 end if
@@ -1623,9 +1623,9 @@
             v(k)=-(fctnames(b,m,i,th,j,th,k0)-fcith(j)-fcith(i)+rl)/th2
         end do
     end do
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)"deriva::Deriva Complete."
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)"deriva::Deriva Complete."
+   !debug: close(1) 
 
 123   continue
     return

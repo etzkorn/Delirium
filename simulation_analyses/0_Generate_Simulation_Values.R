@@ -10,5 +10,6 @@ expand.grid(betaR = 1, etaR = 10,
 	            trtR = c(-0.1, 0, 0.1), trtD = c(-0.1, 0, 0.1), trtD2 = c(-0.1, 0, 0.1),
 		r = 1:5000) %>%
 mutate(simid = 1:n(),
-       seed = cumsum(rpois(n(),10)))
+       seed = cumsum(rpois(n(),10)),
+       n = 1500)
 saveRDS(simValues, file = "../reduce_data/Simulation_Values_MetaData.rdata")

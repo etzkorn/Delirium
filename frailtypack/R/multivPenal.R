@@ -966,9 +966,9 @@ if(!jointGeneral){
 start.b <- b
 
 if(length(b)!=np) stop("Parameter vector not the correct length.")
-cat("\nmultivPenal.R:: length(b)=",length(b),
-    "\nmultivPenal.R:: np = ",np,
-    file='../package_tests/multiv_model_progress.dat',append=TRUE)
+#debug: cat("\nmultivPenal.R:: length(b)=",length(b),
+#debug:     "\nmultivPenal.R:: np = ",np,
+#debug:     file='../package_tests/multiv_model_progress.dat',append=TRUE)
 
 
 ###################################################
@@ -986,42 +986,42 @@ controls = c(maxit = maxit[1], # [1]
 	 GHpoints = GHpoints, # [11]
 	 jointGeneral = as.integer(jointGeneral)) # [12] typeJoint0
 if(length(controls) != 12) stop("Length of 'controls' not 12.")
-cat("\nmultivPenal.R:: length(controls)=",length(controls),
-    file='../package_tests/multiv_model_progress.dat',append=TRUE)
+#debug: cat("\nmultivPenal.R:: length(controls)=",length(controls),
+#debug:     file='../package_tests/multiv_model_progress.dat',append=TRUE)
 
 nobsEvent = c(length(event1),
 	  length(terminal1),
 	  length(event2))
 if(length(nobsEvent)!= 3) stop("Length of 'nobsEvent' not 3.")
-cat("\n\nmultivPenal.R::nobsEvent=", nobsEvent,
-    file='../package_tests/multiv_model_progress.dat',append=TRUE)
+#debug: cat("\n\nmultivPenal.R::nobsEvent=", nobsEvent,
+#debug:     file='../package_tests/multiv_model_progress.dat',append=TRUE)
 
 if(length(kappa) != 4) stop("Length of 'kappa' not 4.")
-cat("\nkappa=", kappa,file='../package_tests/multiv_model_progress.dat',append=TRUE)
+#debug: cat("\nkappa=", kappa,file='../package_tests/multiv_model_progress.dat',append=TRUE)
 
 ### Recurrent 1
 if(length(tt10) != nobsEvent[1] | length(tt10) !=  nobsEvent[1] | length(event1) !=  nobsEvent[1] | length(group1) !=  nobsEvent[1]){
 	stop("Length of tt00, tt10, event1, group1 not nobsEvent[1]")
 }
-cat("\nmultivPenal.R:: length(tt10)=",length(tt10),
-    "\nmultivPenal.R:: length(tt11)=",length(tt11),
-    "\nmultivPenal.R:: length(event1)=",length(event1),
-    "\nmultivPenal.R:: length(group1)=",length(group1),
-    "\nmultivPenal.R:: max(group1)=",max(group1),
-    "\nmultivPenal.R:: length(unique(group1))=",length(unique(group1)),
-    file='../package_tests/multiv_model_progress.dat',append=TRUE)
+#debug: cat("\nmultivPenal.R:: length(tt10)=",length(tt10),
+#debug:     "\nmultivPenal.R:: length(tt11)=",length(tt11),
+#debug:     "\nmultivPenal.R:: length(event1)=",length(event1),
+#debug:     "\nmultivPenal.R:: length(group1)=",length(group1),
+#debug:     "\nmultivPenal.R:: max(group1)=",max(group1),
+#debug:     "\nmultivPenal.R:: length(unique(group1))=",length(unique(group1)),
+#debug:     file='../package_tests/multiv_model_progress.dat',append=TRUE)
 
 ### Recurrent 2
 if(length(tt0meta0) !=  nobsEvent[3]  | length(tt1meta0) !=  nobsEvent[3]  | length(group2) !=  nobsEvent[3]  | length(event2) !=  nobsEvent[3] ){
 	stop("Length of tt0meta0, tt1meta0, group2, event2 not nobsEvent[3]")
 }
-cat("\nmultivPenal.R:: length(tt0meta0)=",length(tt0meta0),
-    "\nmultivPenal.R:: length(tt1meta0)=",length(tt1meta0),
-    "\nmultivPenal.R:: length(group2)=",length(group2),
-    "\nmultivPenal.R:: length(event2)=",length(event2),
-    "\nmultivPenal.R:: max(group2)=",max(group2),
-    "\nmultivPenal.R:: length(unique(group2))=",length(unique(group2)),
-    file='../package_tests/multiv_model_progress.dat',append=TRUE)
+#debug: cat("\nmultivPenal.R:: length(tt0meta0)=",length(tt0meta0),
+#debug:     "\nmultivPenal.R:: length(tt1meta0)=",length(tt1meta0),
+#debug:     "\nmultivPenal.R:: length(group2)=",length(group2),
+#debug:     "\nmultivPenal.R:: length(event2)=",length(event2),
+#debug:     "\nmultivPenal.R:: max(group2)=",max(group2),
+#debug:     "\nmultivPenal.R:: length(unique(group2))=",length(unique(group2)),
+#debug:     file='../package_tests/multiv_model_progress.dat',append=TRUE)
 
 if(length(event1) != nobsEvent[1]) stop("length(event1) != nobsEvent[1]")
 if(length(event2) != nobsEvent[3]) stop("length(event2) != nobsEvent[3]")
@@ -1041,25 +1041,25 @@ if(length(terminal2) != nobsEvent[2]){
 	cat("nobsEvent[2] = ", nobsEvent[2], " and length(terminal2) = ",length(terminal2))
 	stop("length(terminal2) != nobsEvent[2]")
 }
-cat("\nmultivPenal.R:: length(terminal1, terminal2, groupdc, tt1dc)=",
-    length(terminal1),length(terminal2),length(groupdc),length(tt1dc),
-    file='../package_tests/multiv_model_progress.dat',append=TRUE)
+#debug: cat("\nmultivPenal.R:: length(terminal1, terminal2, groupdc, tt1dc)=",
+#debug:     length(terminal1),length(terminal2),length(groupdc),length(tt1dc),
+#debug:     file='../package_tests/multiv_model_progress.dat',append=TRUE)
 
 if(length(nbvar) != 4) stop("length(nbvar) != 4")
-cat("\nmultivPenal.R:: nbvar=",nbvar,
-    file='../package_tests/multiv_model_progress.dat',append=TRUE)
+#debug: cat("\nmultivPenal.R:: nbvar=",nbvar,
+#debug:     file='../package_tests/multiv_model_progress.dat',append=TRUE)
 
 if(all(dim(modelmatrix1) != c(nobsEvent[1],nbvar[1]))) stop("all(dim(modelmatrix1) != c(nobsEvent[1],nbvar[1]))")
 if(all(dim(modelmatrix2) != c(nobsEvent[2],nbvar[2]))) stop("all(dim(modelmatrix2) != c(nobsEvent[3],nbvar[2]))")
 if(all(dim(modelmatrix3) != c(nobsEvent[3],nbvar[3]))) stop("all(dim(modelmatrix3) != c(nobsEvent[2],nbvar[3]))")
 if(all(dim(modelmatrix4) != c(nobsEvent[2],nbvar[4]))) stop("all(dim(modelmatrix4) != c(nobsEvent[3],nbvar[4]))")
-cat("\nmultivPenal.R:: dim(modelmatrix1, modelmatrix2, modelmatrix3, modelmatrix4)",
-    dim(modelmatrix1),",", dim(modelmatrix2),",", dim(modelmatrix3),",", dim(modelmatrix4),
-    file='../package_tests/multiv_model_progress.dat',append=TRUE)
+#debug: cat("\nmultivPenal.R:: dim(modelmatrix1, modelmatrix2, modelmatrix3, modelmatrix4)",
+#debug:     dim(modelmatrix1),",", dim(modelmatrix2),",", dim(modelmatrix3),",", dim(modelmatrix4),
+#debug:     file='../package_tests/multiv_model_progress.dat',append=TRUE)
 
 if(length(noVarEvent) != 4) stop("length(noVarEvent) != 4")
-cat("\nmultivPenal.R:: noVarEvent=",noVarEvent,
-    file='../package_tests/multiv_model_progress.dat',append=TRUE)
+#debug: cat("\nmultivPenal.R:: noVarEvent=",noVarEvent,
+#debug:     file='../package_tests/multiv_model_progress.dat',append=TRUE)
 
 if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|any(is.na(modelmatrix4))){
 	stop("NA values among covariates. Reconfigure Data.")

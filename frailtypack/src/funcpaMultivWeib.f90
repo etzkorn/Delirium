@@ -97,9 +97,9 @@
     endif
 
     if (abs(rho).ge.1.d0) then
-        open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-        write(1,*) "funcpaMultivWeib.f90:: Correlation out of bounds."
-        close(1)
+       !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+       !debug: write(1,*) "funcpaMultivWeib.f90:: Correlation out of bounds."
+       !debug: close(1)
         funcpaMultivWeib =-1.d9
         do k=1,ng
             Rrec(k)=0.d0
@@ -191,17 +191,17 @@
         endif
 
         if ((res2(g(i)).ne.res2(g(i))).or.(abs(res2(g(i))).ge.1.d30)) then
-            open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-            write(1,*) "funcpaMultivWeib.f90:: Error with hazard for recurrent event 1."
-            write(1,*) "funcpaMultivWeib.f90:: betaR, etaR=", betaR, etaR
-            write(1,*) "funcpaMultivWeib.f90:: i=",i
-            write(1,*) "funcpaMultivWeib.f90:: g(i)=",g(i)
-            write(1,*) "funcpaMultivWeib.f90:: vet=", vet
-            write(1,*) "funcpaMultivWeib.f90:: t1(i)=", t1(i)
-            write(1,*) "funcpaMultivWeib.f90:: res2(g(i))=",res2(g(i))
-            write(1,*) "res2(g(i)) = res2(g(i))+(betaR-1.d0)*dlog(t1(i))+"
-            write(1,*) "dlog(betaR)-betaR*dlog(etaR)+dlog(vet)"
-            close(1)
+           !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+           !debug: write(1,*) "funcpaMultivWeib.f90:: Error with hazard for recurrent event 1."
+           !debug: write(1,*) "funcpaMultivWeib.f90:: betaR, etaR=", betaR, etaR
+           !debug: write(1,*) "funcpaMultivWeib.f90:: i=",i
+           !debug: write(1,*) "funcpaMultivWeib.f90:: g(i)=",g(i)
+           !debug: write(1,*) "funcpaMultivWeib.f90:: vet=", vet
+           !debug: write(1,*) "funcpaMultivWeib.f90:: t1(i)=", t1(i)
+           !debug: write(1,*) "funcpaMultivWeib.f90:: res2(g(i))=",res2(g(i))
+           !debug: write(1,*) "res2(g(i)) = res2(g(i))+(betaR-1.d0)*dlog(t1(i))+"
+           !debug: write(1,*) "dlog(betaR)-betaR*dlog(etaR)+dlog(vet)"
+           !debug: close(1)
             funcpaMultivWeib=-1.d9
             goto 123
         end if
@@ -210,16 +210,16 @@
         ! this part goes into the integral
         res1(g(i)) = res1(g(i))+((t1(i)/etaR)**betaR)*vet
          if ((res1(g(i)).ne.res1(g(i))).or.(abs(res1(g(i))).ge. 1.d30)) then
-            open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-            write(1,*) "funcpaMultivWeib.f90:: Error with cumulative hazard for recurrent event 1."
-            write(1,*) "funcpaMultivWeib.f90:: betaR, etaR=", betaR, etaR
-            write(1,*) "funcpaMultivWeib.f90:: i=",i
-            write(1,*) "funcpaMultivWeib.f90:: g(i)=",g(i)
-            write(1,*) "funcpaMultivWeib.f90:: vet=", vet
-            write(1,*) "funcpaMultivWeib.f90:: t1(i)=", t1(i)
-            write(1,*) "funcpaMultivWeib.f90:: res1(g(i))=",res1(g(i))
-            write(1,*) "res1(g(i)) = res1(g(i))+((t1(i)/etaR)**betaR)*vet"
-            close(1)
+           !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+           !debug: write(1,*) "funcpaMultivWeib.f90:: Error with cumulative hazard for recurrent event 1."
+           !debug: write(1,*) "funcpaMultivWeib.f90:: betaR, etaR=", betaR, etaR
+           !debug: write(1,*) "funcpaMultivWeib.f90:: i=",i
+           !debug: write(1,*) "funcpaMultivWeib.f90:: g(i)=",g(i)
+           !debug: write(1,*) "funcpaMultivWeib.f90:: vet=", vet
+           !debug: write(1,*) "funcpaMultivWeib.f90:: t1(i)=", t1(i)
+           !debug: write(1,*) "funcpaMultivWeib.f90:: res1(g(i))=",res1(g(i))
+           !debug: write(1,*) "res1(g(i)) = res1(g(i))+((t1(i)/etaR)**betaR)*vet"
+           !debug: close(1)
             funcpaMultivWeib=-1.d9
             goto 123
         end if
@@ -228,16 +228,16 @@
         ! as opposed to gap time model)
         res3(g(i)) = res3(g(i))+((t0(i)/etaR)**betaR)*vet
         if ((res3(g(i)).ne.res3(g(i))).or.(abs(res3(g(i))).ge. 1.d30)) then
-            open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-            write(1,*) "funcpaMultivWeib.f90:: Error with truncation adjustment for recurrent event 1."
-            write(1,*) "funcpaMultivWeib.f90:: betaR, etaR=", betaR, etaR
-            write(1,*) "funcpaMultivWeib.f90:: i=",i
-            write(1,*) "funcpaMultivWeib.f90:: g(i)=",g(i)
-            write(1,*) "funcpaMultivWeib.f90:: vet=", vet
-            write(1,*) "funcpaMultivWeib.f90:: t1(i)=", t0(i)
-            write(1,*) "funcpaMultivWeib.f90:: res3(g(i))=",res3(g(i))
-            write(1,*) "res3(g(i)) = res3(g(i))+((t0(i)/etaR)**betaR)*vet"
-            close(1)
+           !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+           !debug: write(1,*) "funcpaMultivWeib.f90:: Error with truncation adjustment for recurrent event 1."
+           !debug: write(1,*) "funcpaMultivWeib.f90:: betaR, etaR=", betaR, etaR
+           !debug: write(1,*) "funcpaMultivWeib.f90:: i=",i
+           !debug: write(1,*) "funcpaMultivWeib.f90:: g(i)=",g(i)
+           !debug: write(1,*) "funcpaMultivWeib.f90:: vet=", vet
+           !debug: write(1,*) "funcpaMultivWeib.f90:: t1(i)=", t0(i)
+           !debug: write(1,*) "funcpaMultivWeib.f90:: res3(g(i))=",res3(g(i))
+           !debug: write(1,*) "res3(g(i)) = res3(g(i))+((t0(i)/etaR)**betaR)*vet"
+           !debug: close(1)
             funcpaMultivWeib=-1.d9
             goto 123
         end if
@@ -260,14 +260,14 @@
         if(cdc(k).eq.1)then
             res2dc(k) = (betaD-1.d0)*dlog(t1dc(k))+dlog(betaD)-betaD*dlog(etaD)+dlog(vet2)
             if ((res2dc(k).ne.res2dc(k)).or.(abs(res2dc(k)).ge.1.d30)) then
-                open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-                write(1,*) "funcpaMultivWwib.f90:: Error with hazard for terminal event 1."
-                write(1,*) "funcpaMultivWeib.f90:: betaD, etaD=", betaD, etaD
-                write(1,*) "funcpaMultivWeib.f90:: t1dc(k)=", t1dc(k)
-                write(1,*) "funcpaMultivWeib.f90:: vet2=", vet2
-                write(1,*) "funcpaMultivWeib.f90:: res2dc(k)=", res2dc(k)
-                write(1,*) "res2dc(k)=(betaD-1.d0)*dlog(t1dc(k))+dlog(betaD)-betaD*dlog(etaD)+dlog(vet2)"
-                close(1)
+               !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+               !debug: write(1,*) "funcpaMultivWwib.f90:: Error with hazard for terminal event 1."
+               !debug: write(1,*) "funcpaMultivWeib.f90:: betaD, etaD=", betaD, etaD
+               !debug: write(1,*) "funcpaMultivWeib.f90:: t1dc(k)=", t1dc(k)
+               !debug: write(1,*) "funcpaMultivWeib.f90:: vet2=", vet2
+               !debug: write(1,*) "funcpaMultivWeib.f90:: res2dc(k)=", res2dc(k)
+               !debug: write(1,*) "res2dc(k)=(betaD-1.d0)*dlog(t1dc(k))+dlog(betaD)-betaD*dlog(etaD)+dlog(vet2)"
+               !debug: close(1)
                 funcpaMultivWeib=-1.d9
                 goto 123
             end if
@@ -276,18 +276,18 @@
 ! cumulative hazard, goes into the integral
         aux1(k)=((t1dc(k)/etaD)**betaD)*vet2
         if ((aux1(k).ne.aux1(k)).or.(abs(aux1(k)).ge. 1.d30)) then
-            open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-            write(1,*) "funcpaMultivWwib.f90:: Error with cumulative hazard for terminal event 1."
-            write(1,*) "funcpaMultivWeib.f90:: betaD, etaD=", betaD, etaD
-            write(1,*) "funcpaMultivWeib.f90:: np , nva2, nva3, nva4 =", np , nva2, nva3, nva4
-            write(1,*) "funcpaMultivWeib.f90:: bh(np-nva2-(nva3*event2_ind)-(nva4*terminal2_ind)+1) =", &
-            bh(np-nva2-(nva3*event2_ind)-(nva4*terminal2_ind)+1)
-            write(1,*) "funcpaMultivWeib.f90:: k=", k
-            write(1,*) "funcpaMultivWeib.f90:: vedc(k,1:nva2)=", vedc(k,1:nva2)
-            write(1,*) "funcpaMultivWeib.f90:: vet2=", vet2
-            write(1,*) "funcpaMultivWeib.f90:: aux1(k)=", aux1(k)
-            write(1,*) "aux1(k)=((t1dc(k)/etaD)**betaD)*vet2"
-            close(1)
+           !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+           !debug: write(1,*) "funcpaMultivWwib.f90:: Error with cumulative hazard for terminal event 1."
+           !debug: write(1,*) "funcpaMultivWeib.f90:: betaD, etaD=", betaD, etaD
+           !debug: write(1,*) "funcpaMultivWeib.f90:: np , nva2, nva3, nva4 =", np , nva2, nva3, nva4
+           !debug: write(1,*) "funcpaMultivWeib.f90:: bh(np-nva2-(nva3*event2_ind)-(nva4*terminal2_ind)+1) =", &
+           !debug: bh(np-nva2-(nva3*event2_ind)-(nva4*terminal2_ind)+1)
+           !debug: write(1,*) "funcpaMultivWeib.f90:: k=", k
+           !debug: write(1,*) "funcpaMultivWeib.f90:: vedc(k,1:nva2)=", vedc(k,1:nva2)
+           !debug: write(1,*) "funcpaMultivWeib.f90:: vet2=", vet2
+           !debug: write(1,*) "funcpaMultivWeib.f90:: aux1(k)=", aux1(k)
+           !debug: write(1,*) "aux1(k)=((t1dc(k)/etaD)**betaD)*vet2"
+           !debug: close(1)
             funcpaMultivWeib=-1.d9
             goto 123
         end if
@@ -310,14 +310,14 @@
         if(cdc2(k).eq.1)then
             res2dc2(k) = (betaD2-1.d0)*dlog(t1dc(k))+dlog(betaD2)-betaD2*dlog(etaD2)+dlog(vet4)
             if ((res2dc2(k).ne.res2dc2(k)).or.(abs(res2dc2(k)).ge. 1.d30)) then
-                open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-                write(1,*) "funcpaMultivWwib.f90:: Error with hazard for terminal event 2."
-                write(1,*) "funcpaMultivWeib.f90:: betaD2, etaD2=", betaD2, etaD2
-                write(1,*) "funcpaMultivWeib.f90:: t1dc(k)=", t1dc(k)
-                write(1,*) "funcpaMultivWeib.f90:: vet4=", vet4
-                write(1,*) "res2dc2(k) = (betaD2-1.d0)*dlog(t1dc(k))+dlog(betaD2)-betaD2*dlog(etaD2)+dlog(vet4)"
-                write(1,*) "res2dc2(k) =", res2dc2(k)
-                close(1)
+               !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+               !debug: write(1,*) "funcpaMultivWwib.f90:: Error with hazard for terminal event 2."
+               !debug: write(1,*) "funcpaMultivWeib.f90:: betaD2, etaD2=", betaD2, etaD2
+               !debug: write(1,*) "funcpaMultivWeib.f90:: t1dc(k)=", t1dc(k)
+               !debug: write(1,*) "funcpaMultivWeib.f90:: vet4=", vet4
+               !debug: write(1,*) "res2dc2(k) = (betaD2-1.d0)*dlog(t1dc(k))+dlog(betaD2)-betaD2*dlog(etaD2)+dlog(vet4)"
+               !debug: write(1,*) "res2dc2(k) =", res2dc2(k)
+               !debug: close(1)
                 funcpaMultivWeib=-1.d9
                 goto 123
             end if
@@ -326,16 +326,16 @@
 ! cumulative hazard, goes into the integral
         aux2(k)=((t1dc(k)/etaD2)**betaD2)*vet4
         if ((aux2(k).ne.aux2(k)).or.(abs(aux2(k)).ge. 1.d30)) then
-            open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-            write(1,*) "funcpaMultivWwib.f90:: Error with cumulative hazard for terminal event 2."
-            write(1,*) "funcpaMultivWeib.f90:: betaD2, etaD2=", betaD2, etaD2
-            write(1,*) "funcpaMultivWeib.f90:: np , nva2, nva3, nva4 =", np , nva2, nva3, nva4
-            write(1,*) "funcpaMultivWeib.f90:: k=", k
-            write(1,*) "funcpaMultivWeib.f90:: vedc2(k,1:nva4)=", vedc2(k,1:nva4)
-            write(1,*) "funcpaMultivWeib.f90:: vet4=", vet4
-            write(1,*) "aux2(k)=((t1dc(k)/etaD2)**betaD2)*vet4"
-            write(1,*) "aux2(k) = ", aux2(k)
-            close(1)
+           !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+           !debug: write(1,*) "funcpaMultivWwib.f90:: Error with cumulative hazard for terminal event 2."
+           !debug: write(1,*) "funcpaMultivWeib.f90:: betaD2, etaD2=", betaD2, etaD2
+           !debug: write(1,*) "funcpaMultivWeib.f90:: np , nva2, nva3, nva4 =", np , nva2, nva3, nva4
+           !debug: write(1,*) "funcpaMultivWeib.f90:: k=", k
+           !debug: write(1,*) "funcpaMultivWeib.f90:: vedc2(k,1:nva4)=", vedc2(k,1:nva4)
+           !debug: write(1,*) "funcpaMultivWeib.f90:: vet4=", vet4
+           !debug: write(1,*) "aux2(k)=((t1dc(k)/etaD2)**betaD2)*vet4"
+           !debug: write(1,*) "aux2(k) = ", aux2(k)
+           !debug: close(1)
             funcpaMultivWeib=-1.d9
             goto 123
         end if
@@ -407,22 +407,22 @@
             if((ss.eq.0.0d0)) ss = 1.0d-10 ! integral should not be too small when theta is large
             integrale3(k) = ss
             if ((integrale3(k).ne.integrale3(k)).or.(abs(integrale3(k)).ge.1.d30)) then
-                open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-                write(1,*) "funcpaMultivWwib.f90:: Error with integral component of likelihood."
-                write(1,*) "typeJoint = ", typeJoint
-                write(1,*) "theta = ", theta
-                write(1,*) "alpha1 = ", alpha1
-                write(1,*) "alpha2 = ", alpha2
-                write(1,*) "k = ", k
-                write(1,*) "cpt(k) = ", cpt(k)
-                write(1,*) "res1(k) = ", res1(k)
-                write(1,*) "res3(k) = ", res3(k)
-                write(1,*) "cdc(k) = ", cdc(k)
-                write(1,*) "cdc2(k) = ", cdc2(k)
-                write(1,*) "aux1(k) = ", aux1(k)
-                write(1,*) "aux2(k) = ", aux2(k)
-                write(1,*) "integrale3(k) = ", integrale3(k)
-                close(1)
+               !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+               !debug: write(1,*) "funcpaMultivWwib.f90:: Error with integral component of likelihood."
+               !debug: write(1,*) "typeJoint = ", typeJoint
+               !debug: write(1,*) "theta = ", theta
+               !debug: write(1,*) "alpha1 = ", alpha1
+               !debug: write(1,*) "alpha2 = ", alpha2
+               !debug: write(1,*) "k = ", k
+               !debug: write(1,*) "cpt(k) = ", cpt(k)
+               !debug: write(1,*) "res1(k) = ", res1(k)
+               !debug: write(1,*) "res3(k) = ", res3(k)
+               !debug: write(1,*) "cdc(k) = ", cdc(k)
+               !debug: write(1,*) "cdc2(k) = ", cdc2(k)
+               !debug: write(1,*) "aux1(k) = ", aux1(k)
+               !debug: write(1,*) "aux2(k) = ", aux2(k)
+               !debug: write(1,*) "integrale3(k) = ", integrale3(k)
+               !debug: close(1)
                 funcpaMultivWeib=-1.d9
                 goto 123
             end if
@@ -448,24 +448,24 @@
             if((ss.eq.0.0d0)) ss = 1.0d-10 ! integral should not be too small when theta is large
             integrale3(k) = ss
             if ((integrale3(k).ne.integrale3(k)).or.(abs(integrale3(k)).ge.1.d30)) then
-                open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-                write(1,*) "funcpaMultivWwib.f90:: Error with integral component of likelihood."
-                write(1,*) "integrale3(k) = ", integrale3(k)
-                write(1,*) "typeJoint = ", typeJoint
-                write(1,*) "theta = ", theta
-                write(1,*) "theta2 = ", theta2
-                write(1,*) "rho = ", rho
-                write(1,*) "alpha1 = ", alpha1
-                write(1,*) "alpha2 = ", alpha2
-                write(1,*) "k = ", k
-                write(1,*) "cpt(k) = ", cpt(k)
-                write(1,*) "res1(k) = ", res1(k)
-                write(1,*) "res3(k) = ", res3(k)
-                write(1,*) "cdc(k) = ", cdc(k)
-                write(1,*) "cdc2(k) = ", cdc2(k)
-                write(1,*) "aux1(k) = ", aux1(k)
-                write(1,*) "aux2(k) = ", aux2(k)
-                close(1)
+               !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+               !debug: write(1,*) "funcpaMultivWwib.f90:: Error with integral component of likelihood."
+               !debug: write(1,*) "integrale3(k) = ", integrale3(k)
+               !debug: write(1,*) "typeJoint = ", typeJoint
+               !debug: write(1,*) "theta = ", theta
+               !debug: write(1,*) "theta2 = ", theta2
+               !debug: write(1,*) "rho = ", rho
+               !debug: write(1,*) "alpha1 = ", alpha1
+               !debug: write(1,*) "alpha2 = ", alpha2
+               !debug: write(1,*) "k = ", k
+               !debug: write(1,*) "cpt(k) = ", cpt(k)
+               !debug: write(1,*) "res1(k) = ", res1(k)
+               !debug: write(1,*) "res3(k) = ", res3(k)
+               !debug: write(1,*) "cdc(k) = ", cdc(k)
+               !debug: write(1,*) "cdc2(k) = ", cdc2(k)
+               !debug: write(1,*) "aux1(k) = ", aux1(k)
+               !debug: write(1,*) "aux2(k) = ", aux2(k)
+               !debug: close(1)
                 funcpaMultivWeib=-1.d9
                 goto 123
             end if
@@ -495,21 +495,21 @@
             dlog(2.d0*pi)/2.d0 - dlog(dsqrt(theta))
             
             if ((res.ne.res).or.(abs(res).ge. 1.d30)) then
-                open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-                write(1,*) "funcpaMultivWeib.f90:: Error with sum of individual log likelihoods."
-                write(1,*) "typeJoint = ", typeJoint
-                write(1,*) "theta = ", theta
-                write(1,*) "k = ", k
-                write(1,*) "res2(k) = ", res2(k)
-                write(1,*) "res2dc(k) = ", res2dc(k)
-                write(1,*) "res2dc2(k) = ", res2dc2(k)
-                write(1,*) "integrale3(k) = ", integrale3(k)
-                write(1,*) "res(k)= ", &
-                            res2(k)+res2dc(k)+res2dc2(k)+dlog(integrale3(k))- &
-                                        dlog(2.d0*pi)/2.d0 - dlog(dsqrt(theta))
-                write(1,*) "res = ", res
-                write(1,*) "funcpaMultivWeib = ", funcpaMultivWeib
-                close(1)
+               !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+               !debug: write(1,*) "funcpaMultivWeib.f90:: Error with sum of individual log likelihoods."
+               !debug: write(1,*) "typeJoint = ", typeJoint
+               !debug: write(1,*) "theta = ", theta
+               !debug: write(1,*) "k = ", k
+               !debug: write(1,*) "res2(k) = ", res2(k)
+               !debug: write(1,*) "res2dc(k) = ", res2dc(k)
+               !debug: write(1,*) "res2dc2(k) = ", res2dc2(k)
+               !debug: write(1,*) "integrale3(k) = ", integrale3(k)
+               !debug: write(1,*) "res(k)= ", &
+               !debug:             res2(k)+res2dc(k)+res2dc2(k)+dlog(integrale3(k))- &
+               !debug:                         dlog(2.d0*pi)/2.d0 - dlog(dsqrt(theta))
+               !debug: write(1,*) "res = ", res
+               !debug: write(1,*) "funcpaMultivWeib = ", funcpaMultivWeib
+               !debug: close(1)
                 funcpaMultivWeib =-1.d9
                 Rrec(k)=0.d0
                 Nrec(k)=0
@@ -537,24 +537,24 @@
             dlog(dsqrt(theta)) - dlog(dsqrt(theta2)) - dlog(dsqrt(1.0d0-(rho**2.0d0))) - dlog(2.d0*pi)
 
             if ((res.ne.res).or.(abs(res).ge. 1.d30)) then
-                open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-                write(1,*) "funcpaMultivWeib.f90:: Error with sum of individual log likelihoods."
-                write(1,*) "typeJoint = ", typeJoint
-                write(1,*) "theta = ", theta
-                write(1,*) "theta = ", theta
-                write(1,*) "theta2 = ", theta2
-                write(1,*) "rho = ", rho
-                write(1,*) "k = ", k
-                write(1,*) "res2(k) = ", res2(k)
-                write(1,*) "res2dc(k) = ", res2dc(k)
-                write(1,*) "res2dc2(k) = ", res2dc2(k)
-                write(1,*) "integrale3(k) = ", integrale3(k)
-                write(1,*) "res(k)= ", &
-                            res2(k)+res2dc(k)+res2dc2(k)+dlog(integrale3(k))- &
-                                        dlog(2.d0*pi)/2.d0 - dlog(dsqrt(theta))
-                write(1,*) "res = ", res
-                write(1,*) "funcpaMultivWeib = ", funcpaMultivWeib
-                close(1)
+               !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+               !debug: write(1,*) "funcpaMultivWeib.f90:: Error with sum of individual log likelihoods."
+               !debug: write(1,*) "typeJoint = ", typeJoint
+               !debug: write(1,*) "theta = ", theta
+               !debug: write(1,*) "theta = ", theta
+               !debug: write(1,*) "theta2 = ", theta2
+               !debug: write(1,*) "rho = ", rho
+               !debug: write(1,*) "k = ", k
+               !debug: write(1,*) "res2(k) = ", res2(k)
+               !debug: write(1,*) "res2dc(k) = ", res2dc(k)
+               !debug: write(1,*) "res2dc2(k) = ", res2dc2(k)
+               !debug: write(1,*) "integrale3(k) = ", integrale3(k)
+               !debug: write(1,*) "res(k)= ", &
+               !debug:             res2(k)+res2dc(k)+res2dc2(k)+dlog(integrale3(k))- &
+               !debug:                         dlog(2.d0*pi)/2.d0 - dlog(dsqrt(theta))
+               !debug: write(1,*) "res = ", res
+               !debug: write(1,*) "funcpaMultivWeib = ", funcpaMultivWeib
+               !debug: close(1)
                 funcpaMultivWeib =-1.d9
                 Rrec(k)=0.d0
                 Nrec(k)=0

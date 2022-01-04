@@ -214,11 +214,11 @@
 ! End other variables
 !----------------------------------------------------------------------------
 ! (1) Unpack Model Controls
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'\nmultiveJoint.f90:: Unpacking model controls.'
-    write(1,*)'multiveJoint.f90:: controls = ', controls
-    write(1,*)'multiveJoint.f90:: nobsEvent = ', nobsEvent
-    write(1,*)'multiveJoint.f90:: k0 = ', k0
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'\nmultiveJoint.f90:: Unpacking model controls.'
+   !debug: write(1,*)'multiveJoint.f90:: controls = ', controls
+   !debug: write(1,*)'multiveJoint.f90:: nobsEvent = ', nobsEvent
+   !debug: write(1,*)'multiveJoint.f90:: k0 = ', k0
     !write(1,*)'multiveJoint.f90:: tt00 = ', tt00
     !write(1,*)'multiveJoint.f90:: tt10 = ', tt10
     !write(1,*)'multiveJoint.f90:: tt0meta0 = ', tt0meta0
@@ -232,18 +232,18 @@
     !write(1,*)'multiveJoint.f90:: tt1dc0 = ', tt1dc0
     !write(1,*)'multiveJoint.f90:: icdc0 = ', icdc0
     !write(1,*)'multiveJoint.f90:: icdc20 = ', icdc20
-    write(1,*)'multiveJoint.f90:: nbvar = ', nbvar
+   !debug: write(1,*)'multiveJoint.f90:: nbvar = ', nbvar
     !write(1,*)'multiveJoint.f90:: vax0 = ', vax0
     !write(1,*)'multiveJoint.f90:: vaxdc0 = ', vaxdc0
     !write(1,*)'multiveJoint.f90:: vaxmeta0 = ', vaxmeta0
     !write(1,*)'multiveJoint.f90:: vaxdc20 = ', vaxdc20
-    write(1,*)'multiveJoint.f90:: noVarEvent = ', noVarEvent
-    write(1,*)'multiveJoint.f90:: np = ', np
-    write(1,*)'multiveJoint.f90:: b = ', b
-    write(1,*)'multiveJoint.f90:: nz0 = ', nz0
-    write(1,*)'multiveJoint.f90:: ghNodes0 = ', ghNodes0
-    write(1,*)'multiveJoint.f90:: ghWeights0 = ', ghWeights0
-    close(1) 
+   !debug: write(1,*)'multiveJoint.f90:: noVarEvent = ', noVarEvent
+   !debug: write(1,*)'multiveJoint.f90:: np = ', np
+   !debug: write(1,*)'multiveJoint.f90:: b = ', b
+   !debug: write(1,*)'multiveJoint.f90:: nz0 = ', nz0
+   !debug: write(1,*)'multiveJoint.f90:: ghNodes0 = ', ghNodes0
+   !debug: write(1,*)'multiveJoint.f90:: ghWeights0 = ', ghWeights0
+   !debug: close(1) 
 
     maxit0=controls(1)
     maxit00=controls(1)
@@ -296,9 +296,9 @@
 !----------------------------------------------------------------------
 ! (2) Parameter Initialization
 
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: (2) Initializing parameters.'
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: (2) Initializing parameters.'
+   !debug: close(1) 
 
 
     select case(typeof)
@@ -329,16 +329,16 @@
     !close(1) 
 
     if(event2_ind0==1 .AND. terminal2_ind0==1)then
-        open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-        write(1,*) 'Two recurrent and two terminal events not yet implemented.'
-        close(1) 
+       !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+       !debug: write(1,*) 'Two recurrent and two terminal events not yet implemented.'
+       !debug: close(1) 
         goto 1000
     endif
 
     if((event2_ind0.eq.1).AND.(terminal2_ind0.eq.0))then
-        open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-        write(1,*) 'Two recurrent and one terminal event not yet implemented.'
-        close(1) 
+       !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+       !debug: write(1,*) 'Two recurrent and one terminal event not yet implemented.'
+       !debug: close(1) 
         goto 1000
     endif
 
@@ -348,9 +348,9 @@
     !endif
 
 ! Without Initializaiton
-        open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-        write(1,*)'multiveJoint.f90:: Parameter initialization skipped.'
-        close(1) 
+       !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+       !debug: write(1,*)'multiveJoint.f90:: Parameter initialization skipped.'
+       !debug: close(1) 
         b01 = 0.25d0 ! recurrent
         !if(event2_ind0.eq.1)then
         b03 = 0.25d0 ! meta
@@ -362,9 +362,9 @@
 
     !k0 = kappaCV
     
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: End parameter initialization.'
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: End parameter initialization.'
+   !debug: close(1) 
 ! End (1):  Initializing parameters.
 !------------------------------------------------------------------
 
@@ -418,9 +418,9 @@
     nsujetmax=nsujet0
     nsujet=nsujet0
     
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: Allocation (1).'
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: Allocation (1).'
+   !debug: close(1) 
 
     allocate(ResidusRec(ngmax),Residusdc(ngmax),&
     !ResidusRec2(ngmax),&
@@ -448,9 +448,9 @@
     endif
     ndatemaxdc=2*ng0     
     
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: Allocation (2).'
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: Allocation (2).'
+   !debug: close(1) 
     if(typeof.eq.0)then
         allocate(nt0dc(ngmax),nt1dc(ngmax),nt0(nsujetmax),nt1(nsujetmax),mm3dc(ndatemaxdc),mm2dc(ndatemaxdc),&
         mm1dc(ndatemaxdc),mmdc(ndatemaxdc),im3dc(ndatemaxdc),im2dc(ndatemaxdc),im1dc(ndatemaxdc),imdc(ndatemaxdc))
@@ -487,9 +487,9 @@
 !------------  between no file and subject number -----        
     nvarmax=ver
     
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: Allocation (3).'
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: Allocation (3).'
+   !debug: close(1) 
     allocate(vax(nva10),vaxdc(nva20),vaxdc2(nva40))
     if(event2_ind0 .eq.1)then
         allocate(vaxmeta(nva30))
@@ -503,9 +503,9 @@
     event2_ind = event2_ind0
     terminal2_ind = terminal2_ind0
     
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: Allocation (4).'
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: Allocation (4).'
+   !debug: close(1) 
     allocate(ve(nsujetmax,nvarmax),vedc(ngmax,nvarmax),&!vemeta(nsujetmeta,nvarmax),&
     vedc2(ngmax,nvarmax), &
     ve1(nsujetmax,nva1),ve2(ngmax,nva2),&!ve3(nsujetmeta,nva3),
@@ -589,10 +589,10 @@
 
 
 !----- Copy Terminal event data
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: (3a) Copying data for terminal events.'
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: (3a) Copying data for terminal events.'
     !write(1,*)'multiveJoint.f90:: vaxdc0(1:100,1:nva2)=',vaxdc0(1:100,1:nva2)
-    close(1) 
+   !debug: close(1) 
 
     do k = 1,ngmax
         if(k.eq.1)then
@@ -663,11 +663,11 @@
 
 ! ----------------------------------------
 ! Copy Recurrent Event 1 Data
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: (3b) Copying data for recurrent event 1.'
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: (3b) Copying data for recurrent event 1.'
     !write(1,*)'multiveJoint.f90:: nsujet = ', nsujet
     !write(1,*)'multiveJoint.f90:: nva10 = ', nva10
-    close(1) 
+   !debug: close(1) 
 
     do i = 1,nsujet     !sur les observations
 
@@ -773,9 +773,9 @@
 
 ! Copy Recurrent Event 2 Data
     if(event2_ind0.eq.1)then
-        open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-        write(1,*)'multiveJoint.f90:: (3c) Copying data for recurrent event 2.'
-        close(1) 
+       !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+       !debug: write(1,*)'multiveJoint.f90:: (3c) Copying data for recurrent event 2.'
+       !debug: close(1) 
         do i = 1,nsujetmeta     !sur les observations
 
             if(i.eq.1)then
@@ -861,12 +861,12 @@
 
 !--------------------------------------------------
 ! (4) Sort Unique Dates for each event type
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: (4) Calculating grid of dates for spline evaluation.'
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: (4) Calculating grid of dates for spline evaluation.'
     !write(1,*)'multiveJoint.f90:: maxtdc = ', maxtdc
     !write(1,*)'multiveJoint.f90:: ngmax = ', ngmax
     !write(1,*)'multiveJoint.f90:: size(aux) = ', size(aux)
-    close(1) 
+   !debug: close(1) 
 
 ! Terminal Event 1 (Same grid for Terminal Event 2)
 ! aux: the ordered unique values of c(t0dc, t1dc).
@@ -1013,11 +1013,11 @@
 !--------------------------------------------
 ! (5) Construction of Nodes for Splines (only equidistant allowed at this point)
     if(typeof.eq.0)then
-        open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-        write(1,*)'multiveJoint.f90:: (5) Constructing nodes for splines.'
+       !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+       !debug: write(1,*)'multiveJoint.f90:: (5) Constructing nodes for splines.'
         !write(1,*)'multiveJoint.f90:: nzloco = ', nzloco
         !write(1,*)'multiveJoint.f90:: nzdc = ', nzdc
-        close(1) 
+       !debug: close(1) 
 
         if(equidistant.eq.0)then ! spline nodes are placed on percentiles (not currently allowed)
             ! recurrent
@@ -1195,9 +1195,9 @@
 !---------------------------------------------------------------------- 
 ! (6) Map each observed time to an index in the ordered date vector (splines only)
     if(typeof == 0)then
-        open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-        write(1,*)'multiveJoint.f90:: (6) Mapping observations to date grid (splines only).'
-        close(1) 
+       !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+       !debug: write(1,*)'multiveJoint.f90:: (6) Mapping observations to date grid (splines only).'
+       !debug: close(1) 
 
 ! nb0recu: number of subjects without terminal event
 ! moyrecu: number of recurrent events observed
@@ -1295,9 +1295,9 @@
 !------------------------------------------------------
 ! (7) Calculating Penalties (Splines only)
      if(typeof.eq.0)then
-        open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-        write(1,*)'multiveJoint.f90:: (7) Calculating spline values on date grid. (splines only)'
-        close(1) 
+       !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+       !debug: write(1,*)'multiveJoint.f90:: (7) Calculating spline values on date grid. (splines only)'
+       !debug: close(1) 
 
         call vecspli(ndate,ndatedc,ndatemeta)
 
@@ -1541,10 +1541,10 @@
     ghWeights=ghWeights0
     res=0.d0
 
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: (9) Optimizing Parameters.'
-    write(1,*)'multiveJoint.f90:: starting b = ', b
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: (9) Optimizing Parameters.'
+   !debug: write(1,*)'multiveJoint.f90:: starting b = ', b
+   !debug: close(1) 
 
     if((event2_ind.eq.1).and.(terminal2_ind.eq.0))then
         !write(*,*) 'Model for two recurrent events and one terminal event.'
@@ -1557,9 +1557,9 @@
     endif
 
     if((event2_ind.eq.0).and.(terminal2_ind.eq.1))then
-        open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-        write(1,*) 'multiveJoint.f90:: Model for one recurrent event and two terminal events.'
-        close(1) 
+       !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+       !debug: write(1,*) 'multiveJoint.f90:: Model for one recurrent event and two terminal events.'
+       !debug: close(1) 
         select case(typeof)
             case(0)
                 call marq98(k0,b,np,ni,v,res,ier,istop,effet,ca,cb,dd,funcpaMultivSplines)
@@ -1578,9 +1578,9 @@
         end select
     endif
 
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: Optimization complete.'
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: Optimization complete.'
+   !debug: close(1) 
 
 ! END (9) Optimizaion
 !-----------------------------------------------------------
@@ -1601,9 +1601,9 @@
 
 !-----------------------------------------------------------
 ! (10) Organize Hessian Matrix
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: (10) Organizing hessian matricies...'
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: (10) Organizing hessian matricies...'
+   !debug: close(1) 
 
     call multi(I_hess,H_hess,np,np,np,IH)
     call multi(H_hess,IH,np,np,np,HIH)
@@ -1625,9 +1625,9 @@
     res01(effet+1)=res
 !-----------------------------------------------------------
 ! (11) Calculate Lambda and survival estimates
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: (11) Calculating hazard and survival functions...'
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: (11) Calculating hazard and survival functions...'
+   !debug: close(1) 
     !select case(typeof)
         !case(0)
             !call distanceJ_splines(nzloco,nzdc,nzmeta,b,mt1,mt2,mt3,x1Out,lamOut,suOut,x2Out,lam2Out,su2Out,&
@@ -1681,9 +1681,9 @@
 
 !-----------------------------------------------------------
 ! (13) Calculate Fitted Values
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: (13) Calculating fitted values...'
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: (13) Calculating fitted values...'
+   !debug: close(1) 
 
     !write(*,*)'=========== coefBeta loco =========='
     !coefBeta(1,:) = b((np-nva+1):(np-nva+nva1))
@@ -1729,9 +1729,9 @@
     !    end do
     !end do
 
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: Multiplying design matricies by beta....'
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: Multiplying design matricies by beta....'
+   !debug: close(1) 
 
     !Xbeta = matmul(coefBeta,transpose(ve1))
     !Xbetadc = matmul(coefBetadc,transpose(ve2))
@@ -1781,9 +1781,9 @@
 
 !-----------------------------------------------------------
 ! (14) Deallocating All variables
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: (14) Deallocating variables....'
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: (14) Deallocating variables....'
+   !debug: close(1) 
     deallocate(b01,b02,b04)
 
     deallocate(ResidusRec,Residusdc,Rrec,Nrec,Rdc,Ndc)!,Rdc2,Ndc2)
@@ -1889,9 +1889,9 @@
         !endif
     !endif
 
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: All Variables Deallocated.'
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: All Variables Deallocated.'
+   !debug: close(1) 
 
     !cptEvent(1)=cpt
     !cptEvent(2)=cpt_dc
@@ -1911,9 +1911,9 @@
     !frailtyEstimates(1:nobsEvent(3),5)=frailtyCorr(1:nobsEvent(3))
 
 
-    open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
-    write(1,*)'multiveJoint.f90:: complete....'
-    close(1) 
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: complete....'
+   !debug: close(1) 
 
     return
 

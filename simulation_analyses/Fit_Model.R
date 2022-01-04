@@ -16,10 +16,13 @@ simid <- as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))
 metadata <- readRDS(file = "Simulation_Values_MetaData.rdata")
 par <- unlist(metadata[simid,1:12])
 seed <- metadata$seed[simid]
+n <- metadata$n[simid]
 
 set.seed(seed)
 
-message("Seed Set...")
+message(paste("simid:", simid))
+message(paste("seed:", seed))
+message(paste("n:", n))
 
 # (1) Simulate Data Set
 data <- simulate.competing.data(n = n, truncate = 28, par0 = par)
