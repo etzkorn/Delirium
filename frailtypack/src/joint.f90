@@ -138,9 +138,9 @@
     
     character(len=100)::bar
     
-    open(1, file = '../package_tests/joint_model_progress.dat',position="append")  
-    write(1,*)'joint.f90:: Unpacking model controls.'
-    close(1) 
+    !debug: open(1, file = '../package_tests/joint_model_progress.dat',position="append")  
+    !debug: write(1,*)'joint.f90:: Unpacking model controls.'
+    !debug: close(1) 
 	
     ng0 = ngrp(1)
     nfam0 = ngrp(2)
@@ -1600,9 +1600,9 @@ end if
         endif
     end select
 ! -----------------------------------------------------------------------------------------------------------
-open(1, file = '../package_tests/joint_model_progress.dat',position="append")  
-write(1,*)'joint.f90:: Optimizing.'
-close(1) 
+!debug: open(1, file = '../package_tests/joint_model_progress.dat',position="append")  
+!debug: write(1,*)'joint.f90:: Optimizing.'
+!debug: close(1) 
     if (typejoint < 1) then  ! modele conjoint pour donnees groupees
         indic_alpha = indic_alpha0 !!
         allocate(I_hess(np,np),H_hess(np,np),v((np*(np+3)/2)))
@@ -1660,9 +1660,9 @@ close(1)
         end select
     end if
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-open(1, file = '../package_tests/joint_model_progress.dat',position="append")  
-write(1,*)'joint.f90:: Optimization complete. istop = ', istop
-close(1) 
+!debug: open(1, file = '../package_tests/joint_model_progress.dat',position="append")  
+!debug: write(1,*)'joint.f90:: Optimization complete. istop = ', istop
+!debug: close(1) 
 
 
     resOut=res
