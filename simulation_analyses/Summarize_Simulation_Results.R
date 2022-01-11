@@ -1,99 +1,193 @@
 
 rm(list = ls())
 library(tidyverse)
+library(gt)
 
-load("../reduce_data/Simulation_Results.rdata")
+load("../simulation_results/Simulation_Results80000.rdata")
+#load("../simulation_results/Simulation_Results486.rdata")
 
-table(competingError)
-table(deathError)
-table(dischargeError)
-
-
-
-
-results <-
-tibble(
-	data = 1:5000,
-	est = map(competingJoint, ~.$Estimate),
+# Competing Joint Model
+results <- tibble(
+	Truth = Truth,
+	r = ((simid-1)%%729)+1,
+	simid = simid,
+	Parameter = map(competingJoint, ~.$Parameter),
+	Estimate = map(competingJoint, ~.$Estimate),
 	error = factor(competingError,
 		   labels = c("None","Maxit","Calculation"),levels = c(1,2,4))) %>%
-	unnest(c(est))
-
-#truth =
-#	tibble(Parameter = mod.joint[[1]]$summary.table$Parameter,
-#	       truth = par00)
-
-results2 <-
-	tibble(data = 1:5000,
-	       par1 = map(deathJoint, ~.$Parameter),
-	       est1 = map(deathJoint, ~.$Estimate),
-	       par2 = map(dischargeJoint, ~.$Parameter),
-	       est2 = map(dischargeJoint, ~.$Estimate)) %>%
-	unnest(c(par1, est1, par2, est2))
-
-tab_start <-
-	results %>%mutate(Truth = rep(truth$truth,nsim)) %>%
-	group_by(Parameter) %>%
+	arrange(simid) %>%
+	distinct(simid, .keep_all = T) %>%
+	unnest(c(Truth, Parameter, Estimate))%>%
+	group_by(r, Parameter) %>%
 	summarise(Truth = Truth[1],
-	          Mean = mean(Estimate[!anyerror], trim = 0.005),
-	          SD = mean((Estimate[!anyerror]-Mean)^2, na.rm=T, trim = 0.005)^.5,
-	          Est.SD = mean(Estimate.SE[!anyerror], na.rm=T, trim = 0.005), .groups = "drop"
-	) %>%
-	pivot_longer(cols = Mean:Est.SD) %>%
-	mutate(value = round(value, 3)) %>%
-	pivot_wider(names_from = c(name), values_from = value)
-
-gt(tab_start, rowname_col = "Parameter")%>%
-	tab_stubhead(label = "Parameter")%>%
-	tab_header(
-		title = md(paste0("Competing Joint Model Simulation Results(R =",length(par00),", n = ", length(unique(data0[[1]]$id)),")")))%>%
-	cols_label(
-		Truth = html("True Value"),
-		Mean = html("Avg. Estimate"),
-		SD = html("SE"),
-		Est.SD = html("Avg. Est. SE")
+	          Mean = mean(Estimate[error=="None"]),
+	          SD = sd(Estimate[error=="None"], na.rm=T)
 	)
 
-truth =
-	tibble(Parameter = mod.joint[[1]]$summary.table$Parameter,
-	       truth = par00)
-
+# Death Joint Model
 results2 <-
-	tibble(data = rep(1:(nsim), 2), model = rep(1:2, each = nsim),
-	       Parameter = c(map(mod.joint, ~.$initialization$summary.table1$Parameter),
-	       	  map(mod.joint, ~.$initialization$summary.table2$Parameter)),
-	       Estimate = c(map(mod.joint, ~.$initialization$summary.table1$Estimate),
-	       	 map(mod.joint, ~.$initialization$summary.table2$Estimate)),
-	       Error = c(map(mod.joint, ~.$initialization$joint1$istop),
-	                 map(mod.joint, ~.$initialization$joint1$istop))) %>%
-	unnest(c(Parameter, Estimate, Error)) %>%
-	mutate(Truth = c(rep(par00[c(1:4,7:8,10:11)], nsim), rep(par00[c(1:2,5:7,9:10,12)], nsim)),
-	       Error = Error!=1) %>%
-	group_by(model, Parameter)  %>%
-	summarise(Truth = Truth[1],
-	          Mean = mean(Estimate[!Error]),
-	          SD = mean((Estimate[!Error]-Mean)^2, na.rm=T)^.5, .groups = "drop"
-	) %>%
-	pivot_wider(id_cols = Parameter, values_from = c(Truth, Mean, SD), names_from = model)
+tibble(
+	r = ((simid-1)%%729)+1,
+	simid = simid,
+	Parameter = map(deathJoint, ~.$Parameter),
+	Estimate = map(deathJoint, ~.$Estimate),
+	error = factor(deathError,
+		   labels = c("None","Maxit","Calculation"),levels = c(1,2,4))) %>%
+arrange(simid) %>%
+distinct(simid, .keep_all = T) %>%
+unnest(c(Parameter, Estimate))%>%
+group_by(r, Parameter) %>%
+summarise(MeanDeath = mean(Estimate[error=="None"]),
+          SDDeath = sd(Estimate[error=="None"], na.rm=T)
+)
 
-tab_start %>%
-	left_join(results2, by = "Parameter") %>%
-	select(Parameter, Truth, Mean, SD, Mean_1, SD_1, Mean_2, SD_2) %>%
-	gt(rowname_col = "Parameter")%>%
-	tab_stubhead(label = "Parameter")%>%
-	tab_header(
-		title = md(paste0("**Competing Joint Model Simulation Results(R =",length(par00),", n = ", length(unique(data0[[1]]$id)),")**")))%>%
-	cols_label(
-		Mean = html("Competing Estimate"),
-		Mean_1 = html("Death Estimate"),
-		Mean_2 = html("Discharge Estimate"),
-		SD = html("SE"),
-		SD_1 = html("SE"),
-		SD_2 = html("SE")
+# Discharge Joint Model
+results3 <- tibble(
+	r = ((simid-1)%%729)+1,
+	simid = simid,
+	Parameter = map(dischargeJoint, ~.$Parameter),
+	Estimate = map(dischargeJoint, ~.$Estimate),
+	error = factor(dischargeError,
+		   labels = c("None","Maxit","Calculation"),levels = c(1,2,4))) %>%
+arrange(simid) %>%
+distinct(simid, .keep_all = T) %>%
+unnest(c(Parameter, Estimate))%>%
+group_by(r, Parameter) %>%
+summarise(MeanDischarge = mean(Estimate[error=="None"]),
+          SDDischarge = sd(Estimate[error=="None"], na.rm=T)
+) %>%
+mutate(Parameter = gsub("1","2",Parameter))
+
+###### Tabulate Results
+sumtab <-
+results %>% ungroup %>%
+left_join(results2, by = c("Parameter","r")) %>%
+left_join(results3, by = c("Parameter","r")) %>%
+mutate(r = paste("Scenario",r))
+
+save(sumtab, file = "Averaged_Estimates.rdata")
+
+######################################################################3
+#### Tabulate Results
+sumtab %>%
+mutate(order = sapply(Parameter,
+	          function(x) which(competingJoint[[1]]$Parameter == x))) %>%
+arrange(r, order) %>%
+dplyr::select(-order)%>%
+gt(rowname_col = "Parameter",
+   groupname_col = "r")%>%
+tab_stubhead(label = "Parameter")%>%
+tab_header(title = md(paste0("**Competing Joint Model Simulation Results(R =",
+		     110,", n = ", 1500,")**")))%>%
+cols_label(Mean = html("Competing Estimate"),
+           MeanDeath = html("Death Estimate"),
+           MeanDischarge = html("Discharge Estimate"),
+           SD = html("SE"),
+           SDDeath = html("SE"),
+           SDDischarge = html("SE")
 	) %>%
-	fmt_number(c(4,6,8),pattern = "({x})")%>%
-	fmt_number(c(3,5,7)) %>%
-	fmt_missing(columns = 1:8, missing_text = "") %>%
-	cols_align(columns = c(4,6,8), align = c("left"))
+	fmt_number(c(5,7,9),pattern = "({x})")%>%
+	fmt_number(c(4,6,8)) %>%
+	fmt_missing(columns = 1:9, missing_text = "") %>%
+	cols_align(columns = c(5,6,9), align = c("left"))
+
+######################################################################3
+
+plottab <-
+sumtab %>%
+mutate(order = sapply(Parameter,
+	          function(x) which(competingJoint[[1]]$Parameter == x)),
+       bias = Mean - Truth,
+       bias.death = MeanDeath - Truth,
+       bias.discharge = MeanDischarge - Truth)
+
+Truth2 <- do.call(Truth, what = "rbind") %>% as_tibble
+Truth2 <- Truth2[(simid %/% 729)==1,]
+# Truth2 <- Truth2 %>%
+# mutate(alpha1 = factor(alpha1, levels = c(0, -0.5, 0.5),
+# 	           labels  = as.character(c(0, -0.5, 0.5)), ordered = T),
+#        alpha2 = factor(alpha2, levels = c(0, -0.5, 0.5),
+#        	    labels  = as.character(c(0, -0.5, 0.5)), ordered = T),
+#        trtD = factor(trtD, levels = c(0, -0.1, 0.1),
+#        	  labels  = as.character(c(0, -0.1, 0.1)), ordered = T),
+#        trtD2 = factor(trtD2, levels = c(0, -0.1, 0.1),
+#        	   labels  = as.character(c(0, -0.1, 0.1)), ordered = T),
+#        trtR = factor(trtR, levels = c(0, -0.1, 0.1),
+#        	  labels  = as.character(c(0, -0.1, 0.1)), ordered = T))
+
+plottab %>%
+ggplot(aes(x = bias, y = bias.death))+
+geom_point()+
+facet_wrap("Parameter", scales = "free") +
+geom_vline(xintercept = 0, col = "blue")+
+geom_hline(yintercept = 0, col = "blue")
+
+###################################################
+### Bias as Function of Alpha2, Treatment Effect on Discharge
+gridExtra::grid.arrange(
+plottab %>%
+filter(Parameter=="Recurrent: trt") %>%
+bind_cols(Truth2) %>%
+ggplot(aes(x = bias,
+           fill = factor(trtD2),
+           y = factor(alpha2)))+
+geom_vline(xintercept = 0, linetype=3)+
+geom_boxplot(alpha = 0.5, position="dodge") +
+xlim(-0.02, 0.02)+
+ylab("Alpha2")+
+xlab("Bias")+
+ggtitle("Competing Joint Model") +
+scale_fill_discrete("Discharge\nTreatment\nEffect") +
+theme_classic(),
+
+plottab %>%
+filter(Parameter=="Recurrent: trt") %>%
+bind_cols(Truth2) %>%
+ggplot(aes(x = bias.death,
+           fill = factor(trtD2),
+           y = factor(alpha2)))+
+geom_vline(xintercept = 0, linetype=3)+
+geom_boxplot(alpha = 0.5) +
+xlim(-0.02, 0.02) +
+ylab("Alpha2") +
+xlab("Bias")+
+ggtitle("Joint Death Model")+
+scale_fill_discrete("Discharge\nTreatment\nEffect")+
+theme_classic(),
+nrow = 2
+)
+
+###################################################
+
+plottab %>%
+filter(Parameter=="Recurrent: trt") %>%
+bind_cols(Truth2) %>%
+ggplot(aes(x = bias.death, fill = alpha2))+
+geom_density(alpha = 0.5)+
+facet_wrap("trtD2", ncol =1)
+
+# errors grow with theta
+
+plottab %>%
+filter(Parameter=="Recurrent: trt") %>%
+bind_cols(Truth2)%>%
+lm(formula = Mean ~ theta+alpha1+alpha2+trtR+trtD+trtD2) %>%
+summary
+
+plottab %>%
+filter(Parameter=="Recurrent: trt") %>%
+bind_cols(Truth2)%>%
+lm(formula = MeanDeath ~ theta + alpha1 + alpha2+trtR+trtD+trtD2) %>%
+summary
+
+### Examine Parameters Biasing trtR
+plottab %>%
+filter(Parameter=="Recurrent: trt") %>%
+bind_cols(Truth2)%>%
+arrange(abs(bias.death)) %>%
+dplyr::select(bias.death, theta : trtD2) %>%
+head(20) %>% arrange(bias.death)
+
+
 
 

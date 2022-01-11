@@ -11,25 +11,21 @@
 #' simulate.data(n =3)
 #' @export
 
-simulate.competing.data <- function(n = 100, truncate = 28, gap = T,
-			par0 = c(betaR = .1, etaR = 20,
-			         betaD = 1, etaD = 20,
-			         betaD2 = 1, etaD2 = 20,
-			         theta = .05,
-			         alpha1 = -.1, alpha2 = .1,
-			         trtR = 1, trtD = 0, trtD2 = 0)){
+simulate.competing.data <- function(n, truncate = 28, gap = T, par0){
 	if(gap){
 	tibble(id = 1:n,
 	       trt = rbinom(n,1,.5),
 	       w = rnorm(n, 0, par0["theta"]^.5),
-	       y1 = rweibRH(n,
+	       y1 = map2(w,trt,
+	                 ~rweibRH(1,
 	       	 shape = par0["betaD"],
 	       	 scale = par0["etaD"],
-	       	 rh = exp(w*par0["alpha1"] + par0["trtD"] * trt)),
-	       y2 = rweibRH(n,
+	       	 rh = exp(w*par0["alpha1"] + par0["trtD"] * trt))) %>% unlist,
+	       y2 = map2(w,trt,
+	                 ~rweibRH(1,
 	       	 shape = par0["betaD2"],
 	       	 scale = par0["etaD2"],
-	       	 rh = exp(w*par0["alpha2"] + par0["trtD2"] * trt)),
+	       	 rh = exp(w*par0["alpha2"] + par0["trtD2"] * trt))) %>% unlist,
 	       y = pmin(y1, y2, truncate),
 	       terminal1 = as.numeric(y1 < y2 & y1 < truncate),
 	       t =  map2(w,trt,
@@ -83,7 +79,7 @@ simulate.competing.data <- function(n = 100, truncate = 28, gap = T,
 				  g = diff(c(0,t)),
 				  t0 = t - g)%>%
 			dplyr::ungroup() %>%
-			dplyr::select(id, trt, w, event, terminal1, terminal2, g,t, t0)
+			dplyr::select(id, trt, w, event, terminal1, terminal2, g, t, t0)
 	}
 }
 

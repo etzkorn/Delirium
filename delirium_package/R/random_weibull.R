@@ -20,7 +20,7 @@ rweib <- function(n,k,b){
 	rweibull(n, shape = k, scale = b^(-1/k))
 }
 
-rweibRH <- function(n, shape ,scale , rh = 1){
+rweibRH <- function(n, shape ,scale , rh){
 	rweibull(n, shape = shape, scale = scale * rh^(-1/shape))
 }
 
