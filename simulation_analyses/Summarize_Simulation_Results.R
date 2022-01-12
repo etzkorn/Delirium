@@ -19,6 +19,7 @@ results <- tibble(
 	distinct(simid, .keep_all = T) %>%
 	unnest(c(Truth, Parameter, Estimate))%>%
 	group_by(r, Parameter) %>%
+	mutate(Estimate = ifelse(Parameter == "Sigma", Estimate^2,Estimate))%>%
 	summarise(Truth = Truth[1],
 	          Mean = mean(Estimate[error=="None"]),
 	          SD = sd(Estimate[error=="None"], na.rm=T)
@@ -116,14 +117,18 @@ Truth2 <- Truth2[(simid %/% 729)==1,]
 #        	  labels  = as.character(c(0, -0.1, 0.1)), ordered = T))
 
 plottab %>%
+filter(Parameter=="Alpha, Terminal1")%>%
 ggplot(aes(x = bias, y = bias.death))+
 geom_point()+
-facet_wrap("Parameter", scales = "free") +
+#facet_wrap("Parameter", scales = "free") +
 geom_vline(xintercept = 0, col = "blue")+
-geom_hline(yintercept = 0, col = "blue")
+geom_hline(yintercept = 0, col = "blue")+
+coord_fixed(xlim = c(-0.5,1.75), ylim= c(-0.5,1.75))
 
 ###################################################
-### Bias as Function of Alpha2, Treatment Effect on Discharge
+### Plot Bias as Function of Alpha2, Treatment Effect on Discharge
+png("../simulation_results/TreatmentEffect_Bias_Boxplots.png",
+    width = 600, height = 800)
 gridExtra::grid.arrange(
 plottab %>%
 filter(Parameter=="Recurrent: trt") %>%
@@ -138,7 +143,7 @@ ylab("Alpha2")+
 xlab("Bias")+
 ggtitle("Competing Joint Model") +
 scale_fill_discrete("Discharge\nTreatment\nEffect") +
-theme_classic(),
+theme_classic(20),
 
 plottab %>%
 filter(Parameter=="Recurrent: trt") %>%
@@ -153,20 +158,13 @@ ylab("Alpha2") +
 xlab("Bias")+
 ggtitle("Joint Death Model")+
 scale_fill_discrete("Discharge\nTreatment\nEffect")+
-theme_classic(),
+theme_classic(20),
 nrow = 2
 )
+dev.off()
 
 ###################################################
-
-plottab %>%
-filter(Parameter=="Recurrent: trt") %>%
-bind_cols(Truth2) %>%
-ggplot(aes(x = bias.death, fill = alpha2))+
-geom_density(alpha = 0.5)+
-facet_wrap("trtD2", ncol =1)
-
-# errors grow with theta
+### Model Bias of trtR as Function of all Parameters
 
 plottab %>%
 filter(Parameter=="Recurrent: trt") %>%
@@ -177,7 +175,7 @@ summary
 plottab %>%
 filter(Parameter=="Recurrent: trt") %>%
 bind_cols(Truth2)%>%
-lm(formula = MeanDeath ~ theta + alpha1 + alpha2+trtR+trtD+trtD2) %>%
+lm(formula = MeanDeath ~ theta+alpha1+alpha2+factor(trtR)+factor(trtD)+factor(trtD2)) %>%
 summary
 
 ### Examine Parameters Biasing trtR
@@ -188,6 +186,58 @@ arrange(abs(bias.death)) %>%
 dplyr::select(bias.death, theta : trtD2) %>%
 head(20) %>% arrange(bias.death)
 
+###################################################
+### Plot Bias of Alpha2 as Function of all Parameters
+
+plottab %>%
+filter(Parameter=="Alpha, Terminal1") %>%
+bind_cols(Truth2)%>%
+lm(formula = Mean ~ factor(theta)+factor(alpha1)+factor(alpha2)+
+   	factor(trtR)+factor(trtD)+factor(trtD2)) %>%
+summary
+# alpha1, alpha2
+
+plottab %>%
+filter(Parameter=="Alpha, Terminal1") %>%
+bind_cols(Truth2)%>%
+lm(formula = MeanDeath ~ factor(theta)+factor(alpha1)+factor(alpha2)+
+   	factor(trtR)+factor(trtD)+factor(trtD2)) %>%
+summary
+# alpha1, alpha2, theta, trtD2
+
+###################################################
+### Model Bias of Alpha2 as Function of all Parameters
+gridExtra::grid.arrange(
+plottab %>%
+	filter(Parameter=="Alpha, Terminal1") %>%
+	bind_cols(Truth2) %>%
+	ggplot(aes(x = bias,
+	           fill = factor(theta),
+	           y = factor(alpha2)))+
+	geom_vline(xintercept = 0, linetype=3)+
+	geom_boxplot(alpha = 0.5, position="dodge") +
+	xlim(-0.5, 2)+
+	ylab("Alpha2")+
+	xlab("Bias")+
+	ggtitle("Competing Joint Model") +
+	scale_fill_discrete("Discharge\nTreatment\nEffect") +
+	theme_classic(20),
+	plottab %>%
+	filter(Parameter=="Alpha, Terminal1") %>%
+	bind_cols(Truth2) %>%
+	ggplot(aes(x = bias.death,
+	           fill = factor(theta),
+	           y = factor(alpha2)))+
+	geom_vline(xintercept = 0, linetype=3)+
+	geom_boxplot(alpha = 0.5) +
+	xlim(-0.5, 2) +
+	ylab("Alpha2") +
+	xlab("Bias")+
+	ggtitle("Joint Death Model")+
+	scale_fill_discrete("Discharge\nTreatment\nEffect")+
+	theme_classic(20),
+nrow = 2
+)
 
 
 

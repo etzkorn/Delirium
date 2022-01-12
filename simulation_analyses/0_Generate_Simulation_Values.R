@@ -11,8 +11,10 @@ expand.grid(betaR = 1, etaR = 10,
 	alpha2 = c(-0.5, 0, 0.5),
 	trtR = c(-0.1, 0, 0.1),
 	trtD = c(-0.1, 0, 0.1),
-	trtD2 = c(-0.1, 0, 0.1)) %>%
-mutate(r = 1:n(),
+	trtD2 = c(-0.1, 0, 0.1),
+	i = 1:5000) %>%
+mutate(simid = 1:n(),
+       r = ((simid-1) %/% 729)+1,
        seed = cumsum(1000 + rpois(n(),10)),
        n = 1500)
 

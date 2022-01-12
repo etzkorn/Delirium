@@ -1,6 +1,6 @@
 
 library(tidyverse)
-df <- read_csv("../reduce_analysis_output/reduce data.csv")
+df <- read_csv("../reduce_data/reduce data.csv")
 head(df)
 
 # Pivot to a long format.
@@ -8,10 +8,10 @@ head(df)
 df1 <- df %>%
 mutate(letter = substr(CRF_letter_number, 0,1)) %>%
 filter(!letter %in% c("L","M","N","Q","R","T","U")) %>%
-select(died, apache, study_arm, losic, number_days_survived_28days, matches(c("d.._coma","d.._delirium"))) %>%
+dplyr::select(died, apache, study_arm, losic, number_days_survived_28days, matches(c("d.._coma","d.._delirium"))) %>%
 mutate( id = 1:n()) %>%
 mutate(d00_dead = died, `d-1_dead` = died) %>%
-select(-died) %>%
+dplyr::select(-died) %>%
 pivot_longer(cols = c(d00_dead, `d-1_dead`, d01_coma:d28_delirium)) %>%
 separate(col = name, into = c("day", "state"), sep = "_") %>%
 pivot_wider(id_cols = c(id, day, apache, study_arm, losic, number_days_survived_28days), names_from = state) %>%
@@ -32,13 +32,13 @@ mutate(delirium = ifelse(delirium == -99, NA, delirium),
        tstop = ifelse(tstart == 0 | death == 1 | discharge == 1, tstart + 0.01, tstart + 1),
        state = ifelse(delirium ==1, "Delirium",
                       ifelse(coma == 1, "Coma", "None"))) %>%
-select(-dead) %>%
+dplyr::select(-dead) %>%
 arrange(id, tstart) %>%
 mutate(prev.state = c("None", state[-n()]),
        next.state = ifelse(death == 1, "Death",
                            ifelse(discharge == 1, "Discharge",
                                   c(state[-1],"None")))) %>%
-select(-day)
+dplyr::select(-day)
 
 # Re-Organize Data into subsequent intervals
 df2 <- df1  %>%
@@ -66,7 +66,7 @@ mutate(delirium = as.numeric(next.state == "Delirium"),
 
 # Remove intervals of active delirium
 filter(state != "Delirium" ) %>%
-select(id, tstart, tstop, apache, study_arm, delirium:discharge)
+dplyr::select(id, tstart, tstop, apache, study_arm, delirium:discharge)
 
 
 save(df2, file = "../reduce_analysis_output/processed_data.rdata")
