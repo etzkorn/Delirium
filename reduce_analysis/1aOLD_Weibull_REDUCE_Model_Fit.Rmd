@@ -17,10 +17,26 @@ mutate(gap = tstop - tstart,
 ```
 
 ```{r, echo = FALSE,message = FALSE}
-if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_20220113.rdata")){
+if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models.rdata")){
 #############################
-# GAP Time Models (with/without initialization)
-gap.model <-
+# GAP Time Models
+model0a <-
+frailtyPenal(data = df2,
+	 formula = Surv(tstart, tstop, delirium) ~  treatment +
+	 	terminal(death) + cluster(id),
+	 formula.terminalEvent = ~ treatment,
+	 recurrentAG = FALSE, #hazard = "Splines",n.knots = 10, kappa = c(100,100),
+	 RandDist = "LogN", hazard = "Weibull",
+	 init.Alpha = -0.314, maxit = 350)
+ model0b <-
+frailtyPenal(data = df2,
+	 formula = Surv(tstart, tstop, delirium) ~ treatment+
+	 	terminal(discharge) + cluster(id),
+	 formula.terminalEvent = ~ treatment ,
+	 recurrentAG = FALSE,hazard = "Weibull", RandDist = "LogN",
+	 init.Alpha = -0.314, maxit = 350)
+
+model0c <-
 multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
 		terminal(death) + terminal2(discharge) + cluster(id),
 	formula.terminalEvent = ~treatment,
@@ -30,49 +46,80 @@ multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
 	jointGeneral = F,
 	hazard = "Weibull",
 	maxit = 300, 
-	initialize = T, tolerance = rep(1^-5, 3))
-
-gap.model2 <-
-multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
-		terminal(death) + terminal2(discharge) + cluster(id),
-	formula.terminalEvent = ~treatment,
-	formula.terminalEvent2= ~treatment,
-	data = df2,
-	gapTimes = T,
-	jointGeneral = F,
-	hazard = "Weibull",
-	maxit = 300, 
-	initialize = F, tolerance = rep(1^-5, 3))
-
-rbind(
-gap.model$summary.table$Estimate,
-gap.model2$summary.table$Estimate,
-gap.model$summary.table$Estimate.SE,
-gap.model2$summary.table$Estimate.SE
-)
-
-gap.model$initialization$b
-gap.model2$initialization$b
-
-gap.model$b
-gap.model2$b
-
-
-#############################
-# Calendar Time Model
-cal.model <-
-multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
-		terminal(death) + terminal2(discharge) + cluster(id),
-	formula.terminalEvent = ~treatment,
-	formula.terminalEvent2= ~treatment,
-	data = df2, 
-	gapTimes = F,
-	hazard = "Weibull",
-	maxit = 200, 
 	initialize = T)
-save(gap.model, cal.model,
-     file = "../reduce_analysis_output/REDUCE_Weibull_Models_20220113.rdata")
-}else load("../reduce_analysis_output/REDUCE_Weibull_Models_20220113.rdata")
+model0d <-
+multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
+		terminal(death) + terminal2(discharge) + cluster(id),
+	formula.terminalEvent = ~treatment,
+	formula.terminalEvent2= ~treatment,
+	data = df2,
+	gapTimes=FALSE, 
+	jointGeneral = T,
+	hazard = "Weibull",
+	maxit = 100, 
+	initialize = F,
+	init.hazard = c(0.85,25,1.5,60,1,13.5),
+	init.Theta = c(4.75, 4,0.1),
+	init.Alpha1 = -0.27,
+	init.Alpha2 = -0.53,
+	init.B = c(0,0,0))
+#############################
+# Calendar Time Models
+model1a <-
+frailtyPenal(data = df2,
+	 formula = Surv(tstart, tstop, delirium) ~ treatment +
+	 	terminal(death) + cluster(id),
+	 formula.terminalEvent = ~treatment,
+	 recurrentAG = T,hazard = "Weibull",RandDist = "LogN")
+model1b <-
+frailtyPenal(data = df2,
+formula = Surv(tstart, tstop, delirium) ~ treatment +
+	 	terminal(discharge) + cluster(id),
+	 formula.terminalEvent = ~treatment,
+	 recurrentAG = T,hazard = "Weibull",RandDist = "LogN")
+
+model1c <-# one random effect
+multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
+		terminal(death) + terminal2(discharge) + cluster(id),
+	formula.terminalEvent = ~treatment,
+	formula.terminalEvent2= ~ treatment,
+	data = df2, 
+	gapTimes = T,
+	hazard = "Weibull",
+	maxit = 100, 
+	initialize = F,
+	init.hazard = c(1.4,13,1.8,26,1.13,8.4),
+	init.Theta = 4.9,
+	init.Alpha1 = -0.07,
+	init.Alpha2 = -0.31,
+	init.B = c(-0.57,0.03,0.2))
+
+model1d <-# two random effects
+multivPenal(formula = Surv(tstart, tstop, delirium) ~  treatment +
+		terminal(death) + terminal2(discharge) + cluster(id),
+	formula.terminalEvent = ~ treatment,
+	formula.terminalEvent2= ~ treatment,
+	data = df2,
+	gapTimes=T, 
+	jointGeneral = T,
+	hazard = "Weibull",
+	maxit = 100, 
+	initialize = F,
+	init.hazard = c(0.83,22.1,1.85,24,1.13,8.4),
+	init.Theta = c(5.12, 4.6,0.1),
+	init.Alpha1 = -0.07,
+	init.Alpha2 = -0.31,
+	init.B = c(-0.57,0.03,0.2))
+save(model0a, model0b, model0c, model0d, model1a, model1b, model1c, model1d,
+     file = "../reduce_analysis_output/REDUCE_Weibull_Models.rdata")
+}else load("../reduce_analysis_output/REDUCE_Weibull_Models.rdata")
+model0a$istop; model0b$istop; model1a$istop; model1b$istop
+rbind(
+model0c$critCV,
+model0d$critCV,
+model1c$critCV,
+model1d$critCV
+)
 ```
 
 

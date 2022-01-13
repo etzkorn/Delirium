@@ -83,13 +83,14 @@
 #' for parametric Weibull function. Piecewise constant hazard functions are not
 #' available for this function.
 #'
-#' @param nb.int Depreciated. An integer vector of length 3.
-#'
 #' @param print.times a logical parameter to print iteration process. Default
 #' is TRUE.
 #'
 #' @param GHpoints Integer. Number of nodes for Gauss-Hermite integration
 #' to marginalize random effects/frailties. Default is 32.
+#'
+#' @param tolerance Numeric, length 3. Optimizer's tolerance for (1) successive change
+#' in parameter values, (2) log likelihood, and (3) score, respectively.
 #'
 #' @param save.progress Logical. Should the trajectory of parameter values from the optimizer be saved?
 #'
@@ -502,6 +503,7 @@
            nb.int,
            print.times=TRUE,
            GHpoints = 32,
+           tolerance = rep(10^-3, 3),
            save.progress = F,
            init.hazard = NULL,
            init.Theta = 0.5,
@@ -914,12 +916,12 @@ if(initialize){
 		# Note: Joint model optimizes on the square root scale
 		# for hazard parameters and frailty
 		# variance, so we have to square to get to the true scale.
-	# Recurrent
+	# Recurrent Hazard
 	init.hazard[1:(2+n.knots)] <- (mod.joint1$b[1:(2+n.knots)]^2 + mod.joint2$b[1:(2+n.knots)]^2)/2
 		# average estimates from the two models
-	# Terminal 1
+	# Terminal 1 Hazard
 	init.hazard[(3+n.knots):(4+n.knots*2)] <- mod.joint1$b[(3+n.knots):(4+n.knots*2)]^2
-	# Terminal 2
+	# Terminal 2 Hazard
 	init.hazard[(5+n.knots*2):(6+n.knots*3)] <- mod.joint2$b[(3+n.knots):(4+n.knots*2)]^2
 
 	# Random Effect Variance
@@ -951,12 +953,12 @@ if(initialize){
 
 # Fill parameter vector
 if(!jointGeneral){
-	b <- c(log(sqrt(init.hazard)),
+	b <- c(sqrt(init.hazard),
 	       log(sqrt(init.Theta)),
 	       init.Alpha1, init.Alpha2,
 	       init.B)
 }else{
-	b <- c(log(sqrt(init.hazard)),
+	b <- c(sqrt(init.hazard),
 	       log(sqrt(init.Theta[1:2])), # variance
 	       log((init.Theta[3]+1)/(1-init.Theta[3])), # rho transformed using scale-logit
 	       init.Alpha1, init.Alpha2,
@@ -1143,18 +1145,19 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
                 timedc=as.double(rep(0,controls[7]+1)),
                 timeM=as.double(rep(0,controls[7]+1)),
                 ghNodes = as.double(ghNodes),
-                ghWeights = as.double(ghWeights)
+                ghWeights = as.double(ghWeights),
+                tolerance0 = as.double(tolerance)
     )
 ######################################################################################################
 # Format Model Tables
  if(jointGeneral == F & hazard == "Weibull"){
  	f <- function(b){
- 		c(exp(b[1:6])^2,
+ 		c(b[1:6]^2,#exp(b[1:6])^2,
  		  exp(b[7]),
  		  b[(np-nvar-1):np])
  	}
  	f.prime <- function(b){
- 		diag(c(2*exp(2*b[1:6]),
+ 		diag(c(2*b[1:6],#2*exp(2*b[1:6]),
  		       exp(b[7]),
  		       rep(1,nvar + 2)))
  	}
@@ -1168,13 +1171,13 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		  paste0("Terminal2: ",colnames(modelmatrix4)))
  }else if(jointGeneral == T & hazard == "Weibull"){
  	f <- function(b){
- 		c(exp(b[1:6])^2,
+ 		c(b[1:6]^2#exp(b[1:6])^2,
  		  exp(b[7:8]),
  		  (exp(b[9]) - 1)/(exp(b[9]) + 1),
  		  b[(np-nvar-1):np])
  	}
  	f.prime <- function(b){
- 		diag(c(2*exp(2*b[1:6]),
+ 		diag(c(2*b[1:6],#2*exp(2*b[1:6]),
  		       exp(b[7:8]),
  		       2*exp(2*b[9])/(1+exp(b[9]))^2,
  		       rep(1,nvar+2)))
@@ -1189,12 +1192,12 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		  paste0("Terminal2: ",colnames(modelmatrix4)))
  }else if(jointGeneral == F & hazard == "Weibull"){
  	f <- function(b){
- 		c(exp(b[1:6])^2,
+ 		c(b[1:6]^2,#exp(b[1:6])^2,
  		  exp(b[7]),
  		  b[(np-nvar-1):np])
  	}
  	f.prime <- function(b){
- 		diag(c(2*exp(2*b[1:6]),
+ 		diag(c(2*b[1:6],#2*exp(2*b[1:6]),
  		       exp(b[7]),
  		       rep(1,nvar + 2)))
 	}
@@ -1208,13 +1211,13 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		  paste0("Terminal2: ",colnames(modelmatrix4)))
  }else if(jointGeneral == T & hazard == "Splines"){
  	f <- function(b){
- 		c(exp(b[1:6])^2,
+ 		c(b[1:6]^2,#b[1:6])^2,
  		  exp(b[7:8]),
  		  (exp(b[9]) - 1)/(exp(b[9]) + 1),
  		  b[(np-nvar-1):np])
  	}
  	f.prime <- function(b){
- 		diag(c(2*exp(2*b[1:6]),
+ 		diag(c(2*b[1:6],#2*exp(2*b[1:6]),
  		       exp(b[7:8]),
  		       2*exp(2*b[9])/(1+exp(b[9]))^2,
  		       rep(1,nvar+2)))

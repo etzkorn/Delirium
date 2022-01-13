@@ -49,7 +49,7 @@
     lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out,x4Out,lam4Out,xSu4,su4Out, &
     ni,cptEvent,ResMartingaleEvent,frailtyEstimates, &
     linearpred,linearpreddc,linearpredM,linearpreddc2,ziOut1,ziOutdc,ziOutmeta, &
-    time,timedc,timeM,ghNodes0,ghWeights0)
+    time,timedc,timeM,ghNodes0,ghWeights0,tolerance0)
 
     use parametersmultiv
     use residusMmultiv
@@ -149,6 +149,7 @@
     double precision,dimension(controls(7)+1)::time,timedc,timeM
 
     double precision,dimension(controls(11))::ghNodes0, ghWeights0
+    double precision,dimension(3)::tolerance0
 
 ! End Inputs    
 !-------------------------------------------------
@@ -293,6 +294,11 @@
     ier = 0
     istop = 0
 
+!convergence criteria
+    epsa = tolerance0(1) ! change in parameter values
+    epsb = tolerance0(2) ! change in likelihood
+    epsd = tolerance0(3) ! change in likelihood derivative. most difficult to achieve? derivative of likelihood
+
 !----------------------------------------------------------------------
 ! (2) Parameter Initialization
 
@@ -388,21 +394,18 @@
         ziOutmeta=0.d0
     endif
 
-! This sets the delta used to approximate the derivatives
-! 1 gives differences of th=1.d-3
-! 3 gives differences of th=1.d-5
-    model = 3
     
     if(typeof.ne.0)then
         nbinterv = nbinterv0
     endif
 
     vectn=nz0+2
+	
+! This sets the delta used to approximate the derivatives
+! 1 gives differences of th=1.d-3
+! 3 gives differences of th=1.d-5
+    model = 3
     
-!convergence criteria
-    epsa = 1.d-3 ! small change in parameter values
-    epsb = 1.d-3 ! small change in likelihood
-    epsd = 1.d-3 ! small change in likelihood derivative. most difficult to achieve? derivative of likelihood
                 
     lrs = 0.d0
     moy_peh0 = 0.d0

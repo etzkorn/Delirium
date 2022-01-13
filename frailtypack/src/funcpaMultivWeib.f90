@@ -68,12 +68,12 @@
 ! One Random Effect Model
     if(typeJoint.eq.0)then
         ! b = c(betaR, etaR, betaD, etaD, betaD2, etaD2,theta,alpha1, alpha2, coef...)
-        betaR= dexp(bh(1))**2.0d0 !shape
-        etaR= dexp(bh(2))**2.0d0 !scale
-        betaD= dexp(bh(3))**2.0d0
-        etaD= dexp(bh(4))**2.0d0
-        betaD2= dexp(bh(5))**2.0d0
-        etaD2= dexp(bh(6))**2.0d0
+        betaR= bh(1)**2.0d0 !shape
+        etaR= bh(2)**2.0d0 !scale
+        betaD= bh(3)**2.0d0
+        etaD= bh(4)**2.0d0
+        betaD2= bh(5)**2.0d0
+        etaD2= bh(6)**2.0d0
         theta = dexp(bh(7))**2.0d0! log_e random effect sd ---> varaince
         alpha1=bh(8) ! random effect link to terminal event process 1
         alpha2=bh(9) ! random effect link to terminal event process 2
@@ -83,12 +83,12 @@
     if(typeJoint.eq.1)then
 ! Two Random Effect Model
         ! b = c(betaR, etaR, betaD, etaD, betaD2, etaD2, theta, theta2, rho, alpha1, alpha2, coef...)
-        betaR= dexp(bh(1))**2.0d0 !shape
-        etaR= dexp(bh(2))**2.0d0 !scale
-        betaD= dexp(bh(3))**2.0d0
-        etaD= dexp(bh(4))**2.0d0
-        betaD2= dexp(bh(5))**2.0d0
-        etaD2= dexp(bh(6))**2.0d0
+        betaR= bh(1)**2.0d0 !shape
+        etaR= bh(2)**2.0d0 !scale
+        betaD= bh(3)**2.0d0
+        etaD= bh(4)**2.0d0
+        betaD2= bh(5)**2.0d0
+        etaD2= bh(6)**2.0d0
         theta = dexp(bh(7))**2.0d0! log_e random effect sd ---> varaince
         theta2 = dexp(bh(8))**2.0d0! log_e random effect sd ---> varaince
         rho = (2.d0*dexp(bh(9))/(1.d0+dexp(bh(9)))) - 1.d0 ! transform correlation from unbounded to (-1,1) using inverse logit
