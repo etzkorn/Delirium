@@ -11,6 +11,9 @@ params:
 library(frailtypack); library(gt); library(tidyverse)
 knitr::opts_chunk$set(echo = FALSE,message = FALSE)
 load(file = "../reduce_analysis_output/processed_data_2mgonly.rdata")
+df2 <- df2 %>%ungroup %>% 
+mutate(gap = tstop - tstart,
+       id = dense_rank(id)) 
 ```
 
 ```{r, echo = FALSE,message = FALSE}
@@ -19,17 +22,18 @@ if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models.rdata")){
 # GAP Time Models
 model0a <-
 frailtyPenal(data = df2,
-	 formula = Surv(tstart, tstop, delirium) ~ treatment +
+	 formula = Surv(gap, delirium) ~  treatment +
 	 	terminal(death) + cluster(id),
-	 formula.terminalEvent = ~ treatment ,
-	 recurrentAG = F, hazard = "Weibull",RandDist = "LogN")
+	 formula.terminalEvent = ~ treatment,
+	 recurrentAG = FALSE,hazard = "Weibull", RandDist = "LogN",
+	 init.Alpha = -0.314,maxit = 350)
 model0b <-
 frailtyPenal(data = df2,
-	 formula = Surv(tstart, tstop, delirium) ~ treatment +
+	 formula = Surv(gap, delirium) ~ treatment+
 	 	terminal(discharge) + cluster(id),
 	 formula.terminalEvent = ~ treatment ,
-	 recurrentAG = FALSE,hazard = "Weibull",RandDist = "LogN",
-	 init.Alpha = -0.314)
+	 recurrentAG = FALSE,hazard = "Weibull", RandDist = "LogN",
+	 init.Alpha = -0.314,maxit = 350)
 
 model0c <-
 multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
@@ -73,11 +77,11 @@ frailtyPenal(data = df2,
 	 formula.terminalEvent = ~treatment,
 	 recurrentAG = T,hazard = "Weibull",RandDist = "LogN")
 model1b <-
-	frailtyPenal(data = df2,
-		 formula = Surv(tstart, tstop, delirium) ~ treatment +
-		 	terminal(discharge) + cluster(id),
-		 formula.terminalEvent = ~treatment,
-		 recurrentAG = T,hazard = "Weibull",RandDist = "LogN")
+frailtyPenal(data = df2,
+formula = Surv(tstart, tstop, delirium) ~ treatment +
+	 	terminal(discharge) + cluster(id),
+	 formula.terminalEvent = ~treatment,
+	 recurrentAG = T,hazard = "Weibull",RandDist = "LogN")
 
 model1c <-# one random effect
 multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
