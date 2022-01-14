@@ -13,17 +13,13 @@ results <- tibble(
 	simid = simid,
 	Parameter = map(competingJoint, ~.$Parameter),
 	Estimate = map(competingJoint, ~.$Estimate),
+	LB95 = map(competingJoint, ~.$LB95),
+	UB95 = map(competingJoint, ~.$UB95),
 	error = factor(competingError,
 		   labels = c("None","Maxit","Calculation"),levels = c(1,2,4))) %>%
-	arrange(simid) %>%
-	distinct(simid, .keep_all = T) %>%
-	unnest(c(Truth, Parameter, Estimate))%>%
-	group_by(r, Parameter) %>%
-	mutate(Estimate = ifelse(Parameter == "Sigma", Estimate^2,Estimate))%>%
-	summarise(Truth = Truth[1],
-	          Mean = mean(Estimate[error=="None"]),
-	          SD = sd(Estimate[error=="None"], na.rm=T)
-	)
+arrange(simid) %>%
+distinct(simid, .keep_all = T) %>%
+unnest(c(Truth, Parameter, Estimate, LB95, UB95))
 
 # Death Joint Model
 results2 <-
@@ -32,15 +28,13 @@ tibble(
 	simid = simid,
 	Parameter = map(deathJoint, ~.$Parameter),
 	Estimate = map(deathJoint, ~.$Estimate),
+	LB95 = map(deathJoint, ~.$Estimate - 2*.$Estimate.SE),
+	UB95 = map(deathJoint, ~.$Estimate + 2*.$Estimate.SE),
 	error = factor(deathError,
 		   labels = c("None","Maxit","Calculation"),levels = c(1,2,4))) %>%
 arrange(simid) %>%
 distinct(simid, .keep_all = T) %>%
-unnest(c(Parameter, Estimate))%>%
-group_by(r, Parameter) %>%
-summarise(MeanDeath = mean(Estimate[error=="None"]),
-          SDDeath = sd(Estimate[error=="None"], na.rm=T)
-)
+unnest(c(Parameter, Estimate, LB95, UB95))
 
 # Discharge Joint Model
 results3 <- tibble(
@@ -48,22 +42,38 @@ results3 <- tibble(
 	simid = simid,
 	Parameter = map(dischargeJoint, ~.$Parameter),
 	Estimate = map(dischargeJoint, ~.$Estimate),
+	LB95 = map(dischargeJoint, ~.$Estimate - 2*.$Estimate.SE),
+	UB95 = map(dischargeJoint, ~.$Estimate + 2*.$Estimate.SE),
 	error = factor(dischargeError,
 		   labels = c("None","Maxit","Calculation"),levels = c(1,2,4))) %>%
 arrange(simid) %>%
 distinct(simid, .keep_all = T) %>%
-unnest(c(Parameter, Estimate))%>%
-group_by(r, Parameter) %>%
-summarise(MeanDischarge = mean(Estimate[error=="None"]),
-          SDDischarge = sd(Estimate[error=="None"], na.rm=T)
-) %>%
+unnest(c(Parameter, Estimate, LB95, UB95))%>%
 mutate(Parameter = gsub("1","2",Parameter))
 
-###### Tabulate Results
+
+### Merge Results
+
+merged <- results %>% ungroup %>%
+left_join(results2, by = c("Parameter","simid","r"), suffix = c("",".death")) %>%
+left_join(results3, by = c("Parameter","simid"), suffix = c("",".discharge"))
+
 sumtab <-
-results %>% ungroup %>%
-left_join(results2, by = c("Parameter","r")) %>%
-left_join(results3, by = c("Parameter","r")) %>%
+merged %>%
+group_by(r, Parameter) %>%
+mutate(Estimate = ifelse(Parameter == "Sigma", Estimate^2,Estimate))%>%
+summarise(
+          Truth = Truth[1],
+          Mean = mean(Estimate[error=="None"]),
+          SD = sd(Estimate[error=="None"], na.rm=T),
+     Correct = 100*mean(LB95 < Truth & UB95 > Truth),
+     Mean.death = mean(Estimate.death[error.death=="None"]),
+     SD.death = sd(Estimate.death[error.death=="None"], na.rm=T),
+     Correct.death = 100*mean(LB95.death < Truth & UB95.death > Truth),
+     Mean.discharge = mean(Estimate.discharge[error.discharge=="None"]),
+     SD.discharge = sd(Estimate.discharge[error.discharge=="None"], na.rm=T),
+     Correct.discharge = 100*mean(LB95.discharge < Truth & UB95.discharge > Truth)
+)%>%
 mutate(r = paste("Scenario",r))
 
 save(sumtab, file = "Averaged_Estimates.rdata")
@@ -71,6 +81,7 @@ save(sumtab, file = "Averaged_Estimates.rdata")
 ######################################################################3
 #### Tabulate Results
 sumtab %>%
+filter(r=="Scenario 1")%>%
 mutate(order = sapply(Parameter,
 	          function(x) which(competingJoint[[1]]$Parameter == x))) %>%
 arrange(r, order) %>%
@@ -81,16 +92,21 @@ tab_stubhead(label = "Parameter")%>%
 tab_header(title = md(paste0("**Competing Joint Model Simulation Results(R =",
 		     110,", n = ", 1500,")**")))%>%
 cols_label(Mean = html("Competing Estimate"),
-           MeanDeath = html("Death Estimate"),
-           MeanDischarge = html("Discharge Estimate"),
+           Mean.death = html("Death Estimate"),
+           Mean.discharge = html("Discharge Estimate"),
+           Correct = html("Correct %"),
+           Correct.death = html("Correct %"),
+           Correct.discharge = html("Correct %"),
            SD = html("SE"),
-           SDDeath = html("SE"),
-           SDDischarge = html("SE")
+           SD.death = html("SE"),
+           SD.discharge = html("SE")
 	) %>%
-	fmt_number(c(5,7,9),pattern = "({x})")%>%
-	fmt_number(c(4,6,8)) %>%
-	fmt_missing(columns = 1:9, missing_text = "") %>%
-	cols_align(columns = c(5,6,9), align = c("left"))
+	fmt_number(c(5,8,11),pattern = "({x})")%>%
+	fmt_number(c(4,7,10)) %>%
+	fmt_number(c(6,9,12),decimals = 1) %>%
+	fmt_missing(columns = 1:12, missing_text = "") %>%
+	cols_align(columns = c(5,8,11), align = c("left")) %>%
+cols_align(columns = c(6,9,12), align = c("center"))
 
 ######################################################################3
 
@@ -99,8 +115,8 @@ sumtab %>%
 mutate(order = sapply(Parameter,
 	          function(x) which(competingJoint[[1]]$Parameter == x)),
        bias = Mean - Truth,
-       bias.death = MeanDeath - Truth,
-       bias.discharge = MeanDischarge - Truth)
+       bias.death = Mean.death - Truth,
+       bias.discharge = Mean.discharge - Truth)
 
 Truth2 <- do.call(Truth, what = "rbind") %>% as_tibble
 Truth2 <- Truth2[(simid %/% 729)==1,]
@@ -175,7 +191,7 @@ summary
 plottab %>%
 filter(Parameter=="Recurrent: trt") %>%
 bind_cols(Truth2)%>%
-lm(formula = MeanDeath ~ theta+alpha1+alpha2+factor(trtR)+factor(trtD)+factor(trtD2)) %>%
+lm(formula = Mean.death ~ theta+alpha1+alpha2+factor(trtR)+factor(trtD)+factor(trtD2)) %>%
 summary
 
 ### Examine Parameters Biasing trtR
@@ -183,7 +199,7 @@ plottab %>%
 filter(Parameter=="Recurrent: trt") %>%
 bind_cols(Truth2)%>%
 arrange(abs(bias.death)) %>%
-dplyr::select(bias.death, theta : trtD2) %>%
+dplyr::select(Parameter, bias.death, theta : trtD2) %>%
 head(20) %>% arrange(bias.death)
 
 ###################################################
