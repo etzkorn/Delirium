@@ -1,0 +1,111 @@
+---
+title: "Reduce Analysis"
+author: "Lacey Etzkorn"
+date: "2/9/2021"
+output: html_document
+params: 
+  output_dir: "../reduce_analysis_output/"
+---
+
+```{r setup, echo = FALSE,message = FALSE}
+library(frailtypack); library(gt); library(tidyverse)
+knitr::opts_chunk$set(echo = FALSE,message = FALSE)
+load(file = "../reduce_analysis_output/processed_data.rdata")
+df2 <- df2 %>% ungroup %>%
+filter(study_arm!=3)%>% 
+mutate(gap = tstop - tstart,
+       id = dense_rank(id),
+       treatment = 1*(study_arm==2)  )
+table(df2$treatment, useNA = "ifany")
+```
+
+```{r, echo = FALSE,message = FALSE}
+if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_20220113.rdata")){
+#############################
+# GAP Time Models (with/without initialization)
+gap.model <-
+multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
+		terminal(death) + terminal2(discharge) + cluster(id),
+	formula.terminalEvent = ~treatment,
+	formula.terminalEvent2= ~treatment,
+	data = df2,
+	gapTimes = T,
+	jointGeneral = F,
+	hazard = "Weibull",
+	maxit = 300, 
+	initialize = T)
+#############################
+# Calendar Time Model
+cal.model <-
+multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
+		terminal(death) + terminal2(discharge) + cluster(id),
+	formula.terminalEvent = ~treatment,
+	formula.terminalEvent2= ~treatment,
+	data = df2, 
+	initialize = T)
+save(gap.model, cal.model,
+     file = "../reduce_analysis_output/REDUCE_Weibull_Models_20220113.rdata")
+}else load("../reduce_analysis_output/REDUCE_Weibull_Models_20220113.rdata")
+```
+
+
+```{r}
+m1 <-select(cal.model$summary.table, Parameter, Estimate, Estimate.SE)
+m2 <-select(cal.model$initialization$summary.table1, Parameter, Estimate, Estimate.SE)
+m3 <-select(cal.model$initialization$summary.table2, Parameter, Estimate, Estimate.SE) %>%
+	mutate(Parameter = gsub("1","2",Parameter))
+m4 <-select(gap.model$summary.table, Parameter, Estimate, Estimate.SE)
+m5 <-select(gap.model$initialization$summary.table1, Parameter, Estimate, Estimate.SE)
+m6 <-select(gap.model$initialization$summary.table2, Parameter, Estimate, Estimate.SE)%>%
+	mutate(Parameter = gsub("1","2",Parameter))
+tab.start <- 
+left_join(m1, m2, by = "Parameter") %>%
+left_join(m3, by = "Parameter") %>%
+left_join(m4, by = "Parameter") %>%
+left_join(m5, by = "Parameter") %>%
+left_join(m6, by = "Parameter")
+colnames(tab.start)<-paste0("V",1:13)
+	
+
+gt(tab.start , rowname_col = "Parameter")%>%
+tab_stubhead(label = "Parameter")%>%
+tab_header(
+    title = md("**REDUCE Trial: Weibull Model Estimates**"))%>%
+cols_label(
+    V4 = html("Joint (Death)"),
+    V6 = html("Joint (Discharge)"),
+    V2 = html("Competing Shared"),
+    V10 = html("Joint (Death)"),
+    V12 = html("Joint (Discharge)"),
+    V8 = html("Competing Shared"),
+    V3 = html("SE"),
+    V5 = html("SE"),
+    V7 = html("SE"),
+    V9 = html("SE"),
+    V11 = html("SE"),
+    V13 = html("SE")
+)%>%fmt_missing(columns = 1:13, missing_text = "")  %>%
+tab_spanner(
+    label = "Gap Times",
+    columns = 8:13
+  ) %>% 
+tab_spanner(
+    label = "Calendar Times",
+    columns = 2:7
+  ) %>%
+tab_style(
+    style = list(
+      cell_borders(sides = "left")
+    ),
+    locations = list(
+      cells_body(
+        columns = vars(V8)
+      )
+    )
+  ) %>% 
+text_transform(
+  locations = cells_body(columns = c(3,5,7,9,11,13)),
+  fn = function(x) ifelse(x == "","",paste0("(",x,")"))
+  ) %>%
+fmt_number(columns = 2:13,decimals = 2)
+```

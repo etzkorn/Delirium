@@ -12,7 +12,7 @@
 #' multivPenal(formula, formula.Event2, formula.terminalEvent, formula.terminalEvent2,
 #' data, data.Event2, initialize = TRUE, recurrentAG = FALSE, n.knots, kappa, maxit = 350,
 #' hazard = "Weibull", nb.int, print.times = TRUE, GHpoints = 32, save.progress = F,
-#' init.hazard = c(1,0.5,1,1,1,1), init.Theta = 0.5,
+#' init.hazard = c(1,0.5,1,1,1,1), init.Sigma = 0.5,
 #' init.Alpha1 = 0.1, init.Alpha2 = -0.1, init.B = c(0,0,0))
 #'
 #' @param formula a formula object, with the response for the first recurrent
@@ -45,7 +45,7 @@
 #' events and Cox proportional hazards models for the terminal events.
 #' Default is TRUE.
 #' When FALSE, parameters are initialized via the arguments
-#' init.hazard, init.Theta, init.Alpha1, init.Alpha2, init.B.
+#' init.hazard, init.Sigma, init.Alpha1, init.Alpha2, init.B.
 #'
 #' @param recurrentAG Logical value. Is Andersen-Gill model fitted? If so
 #' indicates that recurrent event times with the counting process approach of
@@ -96,7 +96,7 @@
 #'
 #' @param init.hazard Numeric. = c(1,0.5,1,1,1,1),
 #'
-#' @param init.Theta Numeric, Initialization value for the variance of the
+#' @param init.Sigma Numeric, Initialization value for the standard deviation of the
 #' normally-distributed random effects.
 #'
 #' @param init.Alpha1 Numeric. Initialization value for the parameter alpha that
@@ -506,7 +506,7 @@
            tolerance = rep(10^-3, 3),
            save.progress = F,
            init.hazard = NULL,
-           init.Theta = 0.5,
+           init.Sigma = 0.5,
            init.Alpha1 = 0.1,
            init.Alpha2 = -0.1,
            init.B = NULL)
@@ -849,11 +849,11 @@ if(typeof == "Weibull" & length(init.hazard != 2 * (2 + event2.ind + terminal2.i
 }else if(typeof == "Splines" & length(init.hazard != (n.knots + 2) * (2 + event2.ind + terminal2.ind))){
 		stop("init.hazard must have length (n.knots + 2) * number of event types (3 or 4) for splines.")
 }
-if(jointGeneral & length(init.Theta)!=3){
-	stop("init.Theta must have length 3 when jointGeneral = T.\n
-	     Order should be: c(frailtyVarianceTerminal1,  frailtyVarianceTerminal2, frailtyCorrelation)")
-}else if(!jointGeneral & length(init.Theta)!=1){
-	stop("init.Theta must have length 1 when jointGeneral = F.")
+if(jointGeneral & length(init.Sigma)!=3){
+	stop("init.Sigma must have length 3 when jointGeneral = T.\n
+	     Order should be: c(frailtySDTerminal1,  frailtySDTerminal2, frailtyCorrelation)")
+}else if(!jointGeneral & length(init.Sigma)!=1){
+	stop("init.Sigma must have length 1 when jointGeneral = F.")
 }
 if(length(init.B) != nvar){
 	stop("init.B must be the same length as the number of coefficients.")
@@ -926,12 +926,12 @@ if(initialize){
 
 	# Random Effect Variance
 	if(!jointGeneral){
-		init.Theta <- (mod.joint1$b[5+n.knots*2]^2 + mod.joint2$b[5+n.knots*2]^2)/2
+		init.Sigma <- (abs(mod.joint1$b[5+n.knots*2]) + abs(mod.joint2$b[5+n.knots*2]))/2
 			# average estimates from the two models
 	}else{
-		init.Theta[1] <- mod.joint1$b[5+n.knots*2]^2
-		init.Theta[2] <- mod.joint2$b[5+n.knots*2]^2
-		init.Theta[3] <- 0 # rho, covariance
+		init.Sigma[1] <- abs(mod.joint1$b[5+n.knots*2])
+		init.Sigma[2] <- abs(mod.joint2$b[5+n.knots*2])
+		init.Sigma[3] <- 0 # rho, covariance
 	}
 
 	# Alpha
@@ -954,13 +954,13 @@ if(initialize){
 # Fill parameter vector
 if(!jointGeneral){
 	b <- c(sqrt(init.hazard),
-	       log(sqrt(init.Theta)),
+	       log(init.Sigma),
 	       init.Alpha1, init.Alpha2,
 	       init.B)
 }else{
 	b <- c(sqrt(init.hazard),
-	       log(sqrt(init.Theta[1:2])), # variance
-	       log((init.Theta[3]+1)/(1-init.Theta[3])), # rho transformed using scale-logit
+	       log(init.Sigma[1:2]), # variance
+	       log((init.Sigma[3]+1)/(1-init.Sigma[3])), # rho transformed using scale-logit
 	       init.Alpha1, init.Alpha2,
 	       init.B)
 }
@@ -1171,7 +1171,7 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		  paste0("Terminal2: ",colnames(modelmatrix4)))
  }else if(jointGeneral == T & hazard == "Weibull"){
  	f <- function(b){
- 		c(b[1:6]^2#exp(b[1:6])^2,
+ 		c(b[1:6]^2,#exp(b[1:6])^2,
  		  exp(b[7:8]),
  		  (exp(b[9]) - 1)/(exp(b[9]) + 1),
  		  b[(np-nvar-1):np])
@@ -1254,12 +1254,12 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
 
 	# Extract Transformed Parameters
  	f1 <- function(b, i=3){
- 		c(b[1:(length(b)-nvar+nbvar[i])]^2,
- 		  b[(length(b)-nvar+nbvar[i]+1):length(b)])
+ 		c(b[1:(length(b)-nvar+nbvar[i]-1)]^2,
+ 		  b[(length(b)-nvar+nbvar[i]):length(b)])
  	}
  	f1.prime <- function(b, i = 3){
- 		diag(c(2*b[1:(length(b)-nvar+nbvar[i])],
- 		       rep(1,nvar-nbvar[i])))
+ 		diag(c(2*b[1:(length(b)-nvar+nbvar[i]-1)],
+ 		       rep(1,nvar-nbvar[i]+1)))
  	}
  	Parameters1 = c("Shape, Recurrent", "Scale, Recurrent",
  		  "Shape, Terminal1", "Scale, Terminal1",
