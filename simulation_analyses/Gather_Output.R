@@ -1,8 +1,8 @@
 
 ############## Cluster
 nodeid <- as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))
-minid <- as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))
-maxid <- as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))
+#minid <- as.numeric(as.character(Sys.getenv("MINID")))
+#maxid <- as.numeric(as.character(Sys.getenv("MAXID")))
 
 # File names
 output.files <- dir("Simulation_Results", full.names = T)
@@ -13,7 +13,7 @@ simids <- gsub(".rdata","", simids)
 simids <- as.numeric(simids)
 
 # Filter File IDS
-output.files <- output.files[simids >= minid & simids <= maxid]
+#output.files <- output.files[simids >= minid & simids <= maxid]
 
 # Create Empty Objects for Results
 results <-
