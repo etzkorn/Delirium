@@ -10,7 +10,9 @@ source("Simulation_Scripts/random_weibull.R")
 
 simid <- as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))
 metadata <- readRDS(file = "Simulation_Values_MetaData.rdata")
-par <- unlist(metadata[simid,1:12])
+par <- unlist(metadata[simid,
+	           c("betaR", "etaR", "betaD", "etaD", "betaD2", "etaD2",
+	             "theta", "alpha1", "alpha2", "trtR", "trtD", "trtD2")])
 seed <- metadata$seed[simid]
 n <- metadata$n[simid]
 
@@ -27,7 +29,7 @@ multivPenal(formula = Surv(t0, t, event)~cluster(id)+trt+terminal(terminal1)+ter
 	data=data,
 	jointGeneral = F,
 	initialize = T,
-	save.progress = T,
+	save.progress = F,
 	hazard = "Weibull",
 	gapTimes=T,
 	maxit = 350)

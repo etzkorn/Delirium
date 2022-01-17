@@ -1,46 +1,53 @@
 
 ############## Cluster
 nodeid <- as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))
-# Task ids will be 1:8
-#start.index <- ((0:7)*10000 + 1)[nodeid]
-output.files <- dir("Simulation_Results", full.names = T)#[start.index:(start.index+9999)]
+minid <- as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))
+maxid <- as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))
+
+# File names
+output.files <- dir("Simulation_Results", full.names = T)
+
+# Get File IDs
 simids <- gsub("Simulation_Results/Sim_","", output.files)
 simids <- gsub(".rdata","", simids)
 simids <- as.numeric(simids)
-output.files <- output.files[simids > 80000]
+
+# Filter File IDS
+output.files <- output.files[simids >= minid & simids <= maxid]
 
 # Create Empty Objects for Results
-competingJoint <- list()
-deathJoint <- list()
-dischargeJoint <- list()
-
-competingError <- rep(0, length = length(output.files))
-deathError <- rep(0, length = length(output.files))
-dischargeError <- rep(0, length = length(output.files))
-
-Truth <- list()
-simid <- rep(0, length = length(output.files))
-
-b0 <- matrix(0, nrow = length(output.files),ncol = 12)
+results <-
+tibble(simid = numeric(),
+       competingJoint = list(),
+       deathJoint = list(),
+       dischargeJoint = list(),
+       competingError = numeric(),
+       deathError = numeric(),
+       dischargeError = numeric(),
+       betaR= numeric(), etaR= numeric(),
+       betaD= numeric(), etaD= numeric(),
+       betaD2= numeric(), etaD2= numeric(),
+       theta= numeric(), alpha1= numeric(), alpha2= numeric(),
+       trtR= numeric(), trtD= numeric(), trtD2= numeric())
 
 for(i in 1:length(output.files)){
 	model <- readRDS(output.files[i])
-	competingJoint[[i]] <- model$summary.table
-	deathJoint[[i]] <- model$initialization$summary.table1
-	dischargeJoint[[i]] <- model$initialization$summary.table2
 
-	competingError[i] <- model$critCV[2]
-	deathError[i] <- model$initialization$joint1$istop
-	dischargeError[i] <- model$initialization$joint2$istop
+	results <-
+	tibble(simid = numeric(),
+	       competingJoint = list(model$summary.table),
+	       deathJoint = list(model$initialization$summary.table1),
+	       dischargeJoint = list(model$initialization$summary.table2),
+	       competingError = numeric(model$critCV[2]),
+	       deathError = numeric(model$initialization$joint1$istop),
+	       dischargeError = numeric(model$initialization$joint2$istop)) %>%
+	bind_cols(as.data.frame(t(model$simulation.values))) %>%
+	bind_rows(results)
 
-	Truth[[i]] <- model$simulation.values
-	simid[i] <- model$simulation.id
-
-	b0[i,] <- model$b
 }
 
-now <- gsub(" ","_",date())
+minid <- min(results$simid)
+maxid <- max(results$simid)
 
-save(Truth, simid, competingJoint, deathJoint, dischargeJoint,
-     competingError, deathError, dischargeError, b0,
-     file = paste0("Gathered_Results/Simulation_Results_",now,".rdata"))
+save(results,
+     file = paste0("Gathered_Results/Simulation_Results_",minid,"_",maxid,".rdata"))

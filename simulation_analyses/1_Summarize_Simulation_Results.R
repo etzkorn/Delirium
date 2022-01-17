@@ -16,6 +16,7 @@ load(file)
 # Competing Joint Model
 results <- tibble(
 	Truth = Truth,
+	scenario = map(Truth, ~paste(., collapse = " ")) %>% unlist,
 	simid = simid,
 	Parameter = map(competingJoint, ~.$Parameter),
 	Estimate = map(competingJoint, ~.$Estimate),
@@ -71,11 +72,6 @@ rm(results, results2, results3, simid,
    competingError, competingJoint, deathError, deathJoint,
    dischargeError, dischargeJoint, b0, Truth)
 }
-
-truth$scenario <- select(truth, betaR:trtD2) %>%
-	apply(1, paste, collapse = " ") %>%
-	factor() %>%
-	as.numeric
 
 merged <- left_join(merged, truth, by = "simid")
 
