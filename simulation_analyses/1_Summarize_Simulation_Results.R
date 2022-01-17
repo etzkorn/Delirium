@@ -3,13 +3,19 @@ rm(list = ls())
 library(tidyverse)
 library(gt)
 
-load("../simulation_results/Simulation_Results80000.rdata")
-#load("../simulation_results/Simulation_Results486.rdata")
+file.list <- c("../simulation_results/Simulation_Results_Fri_Jan_14_12:04:38_2022.rdata",
+	   "../simulation_results/Simulation_Results80000.rdata")
+
+meta <- readRDS("../simulation_results/Simulation_Values_MetaData.rdata")
+merged <- tibble()
+truth <- tibble()
+
+for(file in file.list){
+load(file)
 
 # Competing Joint Model
 results <- tibble(
 	Truth = Truth,
-	r = ((simid-1)%%729)+1,
 	simid = simid,
 	Parameter = map(competingJoint, ~.$Parameter),
 	Estimate = map(competingJoint, ~.$Estimate),
@@ -24,7 +30,6 @@ unnest(c(Truth, Parameter, Estimate, LB95, UB95))
 # Death Joint Model
 results2 <-
 tibble(
-	r = ((simid-1)%%729)+1,
 	simid = simid,
 	Parameter = map(deathJoint, ~.$Parameter),
 	Estimate = map(deathJoint, ~.$Estimate),
@@ -38,7 +43,6 @@ unnest(c(Parameter, Estimate, LB95, UB95))
 
 # Discharge Joint Model
 results3 <- tibble(
-	r = ((simid-1)%%729)+1,
 	simid = simid,
 	Parameter = map(dischargeJoint, ~.$Parameter),
 	Estimate = map(dischargeJoint, ~.$Estimate),
@@ -53,15 +57,38 @@ mutate(Parameter = gsub("1","2",Parameter))
 
 
 ### Merge Results
-
 merged <- results %>% ungroup %>%
-left_join(results2, by = c("Parameter","simid","r"), suffix = c("",".death")) %>%
-left_join(results3, by = c("Parameter","simid"), suffix = c("",".discharge"))
+left_join(results2, by = c("Parameter","simid"), suffix = c("",".death")) %>%
+left_join(results3, by = c("Parameter","simid"), suffix = c("",".discharge")) %>%
+bind_rows(merged)
+
+truth <- do.call(Truth, what = "rbind")  %>%
+	as.data.frame %>% mutate(simid = simid) %>%
+	bind_rows(truth) %>%
+	arrange(simid)
+
+rm(results, results2, results3, simid,
+   competingError, competingJoint, deathError, deathJoint,
+   dischargeError, dischargeJoint, b0, Truth)
+}
+
+truth$scenario <- select(truth, betaR:trtD2) %>%
+	apply(1, paste, collapse = " ") %>%
+	factor() %>%
+	as.numeric
+
+merged <- left_join(merged, truth, by = "simid")
+
+######################################################################
+### Summarize Results
 
 sumtab <-
 merged %>%
-group_by(r, Parameter) %>%
-mutate(Estimate = ifelse(Parameter == "Sigma", Estimate^2,Estimate))%>%
+mutate( old = simid <80001) %>%
+group_by(scenario, Parameter, old) %>%
+mutate(Estimate = ifelse(Parameter == "Sigma", Estimate^2, Estimate),
+       LB95 = ifelse(Parameter == "Sigma", LB95^2, LB95),
+       UB95 = ifelse(Parameter == "Sigma", UB95^2, UB95))%>%
 summarise(
           Truth = Truth[1],
           Mean = mean(Estimate[error=="None"]),
@@ -74,23 +101,24 @@ summarise(
      SD.discharge = sd(Estimate.discharge[error.discharge=="None"], na.rm=T),
      Correct.discharge = 100*mean(LB95.discharge < Truth & UB95.discharge > Truth)
 )%>%
-mutate(r = paste("Scenario",r))
+mutate(Scenario = paste("Scenario",scenario))
 
 save(sumtab, file = "Averaged_Estimates.rdata")
 
 ######################################################################3
-#### Tabulate Results
+#### Tabulate Results (Example)
 sumtab %>%
-filter(r=="Scenario 1")%>%
+ungroup %>%
+filter(Scenario=="Scenario 1")%>%
 mutate(order = sapply(Parameter,
-	          function(x) which(competingJoint[[1]]$Parameter == x))) %>%
-arrange(r, order) %>%
-dplyr::select(-order)%>%
+	          function(x) which(merged$Parameter[1:12] == x))) %>%
+arrange(scenario, order) %>%
+dplyr::select(-order, -scenario) %>%
 gt(rowname_col = "Parameter",
-   groupname_col = "r")%>%
+   groupname_col = "Scenario")%>%
 tab_stubhead(label = "Parameter")%>%
 tab_header(title = md(paste0("**Competing Joint Model Simulation Results(R =",
-		     110,", n = ", 1500,")**")))%>%
+		     round(nrow(merged)/12/729),", n = ", 1500,")**")))%>%
 cols_label(Mean = html("Competing Estimate"),
            Mean.death = html("Death Estimate"),
            Mean.discharge = html("Discharge Estimate"),
@@ -101,11 +129,12 @@ cols_label(Mean = html("Competing Estimate"),
            SD.death = html("SE"),
            SD.discharge = html("SE")
 	) %>%
-	fmt_number(c(5,8,11),pattern = "({x})")%>%
-	fmt_number(c(4,7,10)) %>%
-	fmt_number(c(6,9,12),decimals = 1) %>%
-	fmt_missing(columns = 1:12, missing_text = "") %>%
-	cols_align(columns = c(5,8,11), align = c("left")) %>%
+fmt_number(c(3,6,9)) %>%
+fmt_number(c(4,7,10),pattern = "({x})")%>%
+fmt_number(c(5,8,11),decimals = 1) %>%
+fmt_missing(columns = 1:12, missing_text = "") %>%
+cols_align(columns = 3, align = c("center")) %>%
+cols_align(columns = c(5,8,11), align = c("left")) %>%
 cols_align(columns = c(6,9,12), align = c("center"))
 
 ######################################################################3
@@ -178,6 +207,49 @@ theme_classic(20),
 nrow = 2
 )
 dev.off()
+
+
+###################################################
+### Plot Correctness as Function of Alpha2, Treatment Effect on Discharge
+png("../simulation_results/TreatmentEffect_Correctness_Boxplots.png",
+    width = 1200, height = 600)
+gridExtra::grid.arrange(
+plottab %>%
+filter(Parameter=="Recurrent: trt") %>%
+bind_cols(Truth2) %>%
+ggplot(aes(y = Correct,
+           fill = factor(trtD2),
+           x = factor(alpha2)))+
+geom_hline(yintercept = 95, linetype=3)+
+geom_boxplot(alpha = 0.5, position="dodge") +
+ylim(50, 100)+
+xlab("Alpha2")+
+ylab("95% CI Coverage for Treatment\nEffect on Delirium")+
+ggtitle("Competing Joint Model") +
+scale_fill_discrete("Discharge\nTreatment\nEffect") +
+theme_classic(20)+
+theme(legend.position = c(.8,.2)),
+
+plottab %>%
+filter(Parameter=="Recurrent: trt") %>%
+bind_cols(Truth2) %>%
+ggplot(aes(y = Correct.death,
+           fill = factor(trtD2),
+           x = factor(alpha2)))+
+geom_hline(yintercept = 95, linetype=3)+
+geom_boxplot(alpha = 0.5) +
+ylim(50, 100) +
+xlab("Alpha2") +
+ggtitle("Joint Death Model")+
+scale_fill_discrete("Discharge\nTreatment\nEffect")+
+theme_classic(20)+
+theme(legend.position = "none",
+      #axis.title.x = element_blank(),
+      axis.title.y = element_blank()),
+nrow = 1
+)
+dev.off()
+
 
 ###################################################
 ### Model Bias of trtR as Function of all Parameters
