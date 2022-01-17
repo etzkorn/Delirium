@@ -24,6 +24,15 @@ tibble(simid = numeric(),
        competingError = numeric(),
        deathError = numeric(),
        dischargeError = numeric(),
+       deaths = numeric(),
+       discharges = numeric(),
+       events =  numeric(),
+       deaths.trt = numeric(),
+       discharges.trt = numeric(),
+       events.trt =  numeric(),
+       deaths.pl = numeric(),
+       discharges.pl = numeric(),
+       events.pl =  numeric(),
        betaR= numeric(), etaR= numeric(),
        betaD= numeric(), etaD= numeric(),
        betaD2= numeric(), etaD2= numeric(),
@@ -40,11 +49,21 @@ for(i in 1:length(output.files)){
 	       dischargeJoint = list(model$initialization$summary.table2),
 	       competingError = numeric(model$critCV[2]),
 	       deathError = numeric(model$initialization$joint1$istop),
-	       dischargeError = numeric(model$initialization$joint2$istop)) %>%
+	       dischargeError = numeric(model$initialization$joint2$istop),
+	       deaths = mean(model$icdc0),
+	       discharges = mean(1 - model$icdc0),
+	       events =  sum(model$ic0)/1500,
+	       deaths.trt = mean(model$icdc0[model$vaxdc0==1]),
+	       discharges.trt = mean(1 - model$icdc0[model$vaxdc0==1]),
+	       events.trt =  sum(model$ic0[model$vax0 == 1])/sum(model$vax0 == 1),
+	       deaths.pl = mean(model$icdc0[model$vaxdc0==0]),
+	       discharges.pl = mean(1 - model$icdc0[model$vaxdc0==0]),
+	       events.pl =  sum(model$ic0[model$vax0 == 0])/sum(model$vax0 == 0)) %>%
 	bind_cols(as.data.frame(t(model$simulation.values))) %>%
 	bind_rows(results)
 
 }
+
 
 minid <- min(results$simid)
 maxid <- max(results$simid)
