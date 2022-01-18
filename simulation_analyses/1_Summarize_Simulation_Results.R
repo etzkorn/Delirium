@@ -3,99 +3,74 @@ rm(list = ls())
 library(tidyverse)
 library(gt)
 
-file.list <- c("../simulation_results/Simulation_Results_Fri_Jan_14_12:04:38_2022.rdata",
+file.list <- c("../simulation_results/Simulation_Results_80003_155000.rdata",
 	   "../simulation_results/Simulation_Results80000.rdata")
 
-meta <- readRDS("../simulation_results/Simulation_Values_MetaData.rdata")
-merged <- tibble()
-truth <- tibble()
+#meta <- readRDS("../simulation_results/Simulation_Values_MetaData.rdata")
+
 
 for(file in file.list){
 load(file)
+truth <- select(results, simid, betaR:trtD2) %>%
+	pivot_longer(names_to = "Parameter", values_to = "Truth", cols = betaR:trtD2) %>%
+	mutate(Parameter = rep(results$competingJoint[[1]]$Parameter, nrow(results)))
 
-# Competing Joint Model
-results <- tibble(
-	Truth = Truth,
-	scenario = map(Truth, ~paste(., collapse = " ")) %>% unlist,
-	simid = simid,
-	Parameter = map(competingJoint, ~.$Parameter),
-	Estimate = map(competingJoint, ~.$Estimate),
-	LB95 = map(competingJoint, ~.$LB95),
-	UB95 = map(competingJoint, ~.$UB95),
-	error = factor(competingError,
-		   labels = c("None","Maxit","Calculation"),levels = c(1,2,4))) %>%
-arrange(simid) %>%
-distinct(simid, .keep_all = T) %>%
-unnest(c(Truth, Parameter, Estimate, LB95, UB95))
+results1 <- results %>%
+	select(competingJoint, simid,betaR:trtD2, competingError) %>%
+	unnest(competingJoint)%>%
+	select(-Raw, -Raw.SE, -p, -H0) %>%
+	mutate(Estimate = ifelse(Parameter == "Sigma", Estimate^2, Estimate),
+	       LB95 = ifelse(Parameter == "Sigma", LB95^2, LB95),
+	       UB95 = ifelse(Parameter == "Sigma", UB95^2, UB95))
+
+results1$scenario <- select(results1, betaR:trtD2) %>% apply(1, paste0, collapse=" ") %>% factor %>% as.numeric
 
 # Death Joint Model
-results2 <-
-tibble(
-	simid = simid,
-	Parameter = map(deathJoint, ~.$Parameter),
-	Estimate = map(deathJoint, ~.$Estimate),
-	LB95 = map(deathJoint, ~.$Estimate - 2*.$Estimate.SE),
-	UB95 = map(deathJoint, ~.$Estimate + 2*.$Estimate.SE),
-	error = factor(deathError,
-		   labels = c("None","Maxit","Calculation"),levels = c(1,2,4))) %>%
-arrange(simid) %>%
-distinct(simid, .keep_all = T) %>%
-unnest(c(Parameter, Estimate, LB95, UB95))
+results2 <-results %>%
+	select(deathJoint, simid, deathError) %>%
+	unnest(deathJoint) %>%
+	select(-Raw, -Raw.SE, -p) %>%
+	mutate(
+	LB95 = Estimate - 2*Estimate.SE,
+	UB95 = Estimate + 2*Estimate.SE)
 
 # Discharge Joint Model
-results3 <- tibble(
-	simid = simid,
-	Parameter = map(dischargeJoint, ~.$Parameter),
-	Estimate = map(dischargeJoint, ~.$Estimate),
-	LB95 = map(dischargeJoint, ~.$Estimate - 2*.$Estimate.SE),
-	UB95 = map(dischargeJoint, ~.$Estimate + 2*.$Estimate.SE),
-	error = factor(dischargeError,
-		   labels = c("None","Maxit","Calculation"),levels = c(1,2,4))) %>%
-arrange(simid) %>%
-distinct(simid, .keep_all = T) %>%
-unnest(c(Parameter, Estimate, LB95, UB95))%>%
-mutate(Parameter = gsub("1","2",Parameter))
-
+results3 <- results %>%
+	select(dischargeJoint, simid, dischargeError) %>%
+	unnest(dischargeJoint) %>%
+	select(-Raw, -Raw.SE, -p) %>%
+	mutate(
+		LB95 = Estimate - 2*Estimate.SE,
+		UB95 = Estimate + 2*Estimate.SE,
+		Parameter = gsub("1","2",Parameter))
 
 ### Merge Results
-merged <- results %>% ungroup %>%
+merged <- results1 %>% ungroup %>%
 left_join(results2, by = c("Parameter","simid"), suffix = c("",".death")) %>%
 left_join(results3, by = c("Parameter","simid"), suffix = c("",".discharge")) %>%
-bind_rows(merged)
+left_join(truth, by = c("Parameter","simid"))
 
-truth <- do.call(Truth, what = "rbind")  %>%
-	as.data.frame %>% mutate(simid = simid) %>%
-	bind_rows(truth) %>%
-	arrange(simid)
-
-rm(results, results2, results3, simid,
-   competingError, competingJoint, deathError, deathJoint,
-   dischargeError, dischargeJoint, b0, Truth)
+rm(results)
 }
-
-merged <- left_join(merged, truth, by = "simid")
 
 ######################################################################
 ### Summarize Results
 
 sumtab <-
 merged %>%
-mutate( old = simid <80001) %>%
-group_by(scenario, Parameter, old) %>%
-mutate(Estimate = ifelse(Parameter == "Sigma", Estimate^2, Estimate),
-       LB95 = ifelse(Parameter == "Sigma", LB95^2, LB95),
-       UB95 = ifelse(Parameter == "Sigma", UB95^2, UB95))%>%
+#mutate( old = simid <80001) %>%
+group_by(scenario, Parameter) %>%
 summarise(
-          Truth = Truth[1],
-          Mean = mean(Estimate[error=="None"]),
-          SD = sd(Estimate[error=="None"], na.rm=T),
-     Correct = 100*mean(LB95 < Truth & UB95 > Truth),
-     Mean.death = mean(Estimate.death[error.death=="None"]),
-     SD.death = sd(Estimate.death[error.death=="None"], na.rm=T),
-     Correct.death = 100*mean(LB95.death < Truth & UB95.death > Truth),
-     Mean.discharge = mean(Estimate.discharge[error.discharge=="None"]),
-     SD.discharge = sd(Estimate.discharge[error.discharge=="None"], na.rm=T),
-     Correct.discharge = 100*mean(LB95.discharge < Truth & UB95.discharge > Truth)
+     Truth = Truth[1],
+     Mean = mean(Estimate[competingError==1]),
+     SD = sd(Estimate[competingError==1], na.rm=T),
+     Correct = 100*mean((LB95 < Truth & UB95 > Truth)[competingError==1]),
+     Mean.death = mean(Estimate.death[deathError==1]),
+     SD.death = sd(Estimate.death[deathError==1], na.rm=T),
+     Correct.death = 100*mean((LB95.death < Truth & UB95.death > Truth)[deathError==1]),
+     Mean.discharge = mean(Estimate.discharge[dischargeError==1]),
+     SD.discharge = sd(Estimate.discharge[dischargeError==1], na.rm=T),
+     Correct.discharge = 100*mean((LB95.discharge < Truth & UB95.discharge > Truth)[dischargeError==1])
 )%>%
 mutate(Scenario = paste("Scenario",scenario))
 

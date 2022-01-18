@@ -1,5 +1,6 @@
 
 ############## Cluster
+library(tidyverse)
 nodeid <- as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))
 #minid <- as.numeric(as.character(Sys.getenv("MINID")))
 #maxid <- as.numeric(as.character(Sys.getenv("MAXID")))
@@ -13,7 +14,7 @@ simids <- gsub(".rdata","", simids)
 simids <- as.numeric(simids)
 
 # Filter File IDS
-#output.files <- output.files[simids >= minid & simids <= maxid]
+output.files <- output.files[simids >= 80003 & simids <= 155000]
 
 # Create Empty Objects for Results
 results <-
@@ -43,13 +44,13 @@ for(i in 1:length(output.files)){
 	model <- readRDS(output.files[i])
 
 	results <-
-	tibble(simid = numeric(),
+	tibble(simid = model$simulation.id,
 	       competingJoint = list(model$summary.table),
 	       deathJoint = list(model$initialization$summary.table1),
 	       dischargeJoint = list(model$initialization$summary.table2),
-	       competingError = numeric(model$critCV[2]),
-	       deathError = numeric(model$initialization$joint1$istop),
-	       dischargeError = numeric(model$initialization$joint2$istop),
+	       competingError = model$critCV[2],
+	       deathError = model$initialization$joint1$istop,
+	       dischargeError = model$initialization$joint2$istop,
 	       deaths = mean(model$icdc0),
 	       discharges = mean(1 - model$icdc0),
 	       events =  sum(model$ic0)/1500,
