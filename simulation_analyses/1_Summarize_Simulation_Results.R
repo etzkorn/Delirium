@@ -4,8 +4,8 @@ library(tidyverse)
 library(gt)
 library(grDevices)
 
-file.list <- c("../simulation_results/Simulation_Results_Fri_Jan_14_12:04:38_2022.rdata")
-
+#file.list <- c("../simulation_results/Simulation_Results_Fri_Jan_14_12:04:38_2022.rdata")
+file.list <- c("../simulation_results/Simulation_Results_100001_152000.rdata")
 #file = "../simulation_results/Test_Simulation_Results_1_1000.rdata"
 #file = "../simulation_results/Simulation_Results_155001_161746.rdata"
 
@@ -13,22 +13,22 @@ file.list <- c("../simulation_results/Simulation_Results_Fri_Jan_14_12:04:38_202
 #meta <- readRDS("../simulation_results/Simulation_Values_MetaData.rdata")
 
 
-file<- c("../simulation_results/Simulation_Results80000.rdata")
-load(file)
-results <-
-	tibble(simid = simid,
-	       competingJoint = competingJoint,
-	       deathJoint = deathJoint,
-	       dischargeJoint = dischargeJoint,
-	       competingError = competingError,
-	       deathError = deathError,
-	       dischargeError = dischargeError) %>%
-	bind_cols(as.data.frame(do.call(Truth, what = "rbind"))) %>%
-filter(simid < 80001)
+# file<- c("../simulation_results/Simulation_Results80000.rdata")
+# load(file)
+# results <-
+# 	tibble(simid = simid,
+# 	       competingJoint = competingJoint,
+# 	       deathJoint = deathJoint,
+# 	       dischargeJoint = dischargeJoint,
+# 	       competingError = competingError,
+# 	       deathError = deathError,
+# 	       dischargeError = dischargeError) %>%
+# 	bind_cols(as.data.frame(do.call(Truth, what = "rbind"))) %>%
+# filter(simid < 80001)
 
 
 for(file in file.list){
-#load(file)
+load(file)
 truth <- dplyr::select(results, simid, betaR:trtD2) %>%
 	pivot_longer(names_to = "Parameter", values_to = "Truth", cols = betaR:trtD2) %>%
 	mutate(Parameter = rep(results$competingJoint[[1]]$Parameter, nrow(results)),
