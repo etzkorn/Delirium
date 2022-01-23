@@ -12,18 +12,16 @@ source("Simulation_Scripts/random_weibull.R")
 metadata <- readRDS( file = "Simulation_Values_MetaData_Limited.rdata")
 simids <- metadata$simid[metadata$simid > 155000]
 simid <- simids[as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))]
-message("simid = ", simid)
 
 #### Full Sim
 #metadata <- readRDS(file = "Simulation_Values_MetaData.rdata")
 #simid <- as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))
 
-par <- unlist(metadata[simid,
+par <- unlist(metadata[metadata$simid == simid,
 	           c("betaR", "etaR", "betaD", "etaD", "betaD2", "etaD2",
 	             "theta", "alpha1", "alpha2", "trtR", "trtD", "trtD2")])
-seed <- metadata$seed[simid]
-message("seed = ", seed)
-n <- metadata$n[simid]
+seed <- as.integer(metadata$seed[metadata$simid == simid])
+n <- metadata$n[metadata$simid == simid]
 
 set.seed(seed)
 

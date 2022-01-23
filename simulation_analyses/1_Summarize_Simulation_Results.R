@@ -2,18 +2,37 @@
 rm(list = ls())
 library(tidyverse)
 library(gt)
+library(grDevices)
 
-file.list <- c("../simulation_results/Simulation_Results_80003_155000.rdata",
-	   "../simulation_results/Simulation_Results80000.rdata")
+file.list <- c("../simulation_results/Simulation_Results_Fri_Jan_14_12:04:38_2022.rdata")
 
+#file = "../simulation_results/Test_Simulation_Results_1_1000.rdata"
+#file = "../simulation_results/Simulation_Results_155001_161746.rdata"
+
+#file = file.list[2]
 #meta <- readRDS("../simulation_results/Simulation_Values_MetaData.rdata")
 
 
-for(file in file.list){
+file<- c("../simulation_results/Simulation_Results80000.rdata")
 load(file)
-truth <- select(results, simid, betaR:trtD2) %>%
+results <-
+	tibble(simid = simid,
+	       competingJoint = competingJoint,
+	       deathJoint = deathJoint,
+	       dischargeJoint = dischargeJoint,
+	       competingError = competingError,
+	       deathError = deathError,
+	       dischargeError = dischargeError) %>%
+	bind_cols(as.data.frame(do.call(Truth, what = "rbind"))) %>%
+filter(simid < 80001)
+
+
+for(file in file.list){
+#load(file)
+truth <- dplyr::select(results, simid, betaR:trtD2) %>%
 	pivot_longer(names_to = "Parameter", values_to = "Truth", cols = betaR:trtD2) %>%
-	mutate(Parameter = rep(results$competingJoint[[1]]$Parameter, nrow(results)))
+	mutate(Parameter = rep(results$competingJoint[[1]]$Parameter, nrow(results)),
+	       scenario = ((simid-1) %% 729)+1)
 
 results1 <- results %>%
 	select(competingJoint, simid,betaR:trtD2, competingError) %>%
@@ -23,7 +42,7 @@ results1 <- results %>%
 	       LB95 = ifelse(Parameter == "Sigma", LB95^2, LB95),
 	       UB95 = ifelse(Parameter == "Sigma", UB95^2, UB95))
 
-results1$scenario <- select(results1, betaR:trtD2) %>% apply(1, paste0, collapse=" ") %>% factor %>% as.numeric
+#results1$scenario <- select(results1, betaR:trtD2) %>% apply(1, paste0, collapse=" ") %>% factor %>% as.numeric
 
 # Death Joint Model
 results2 <-results %>%
@@ -50,7 +69,7 @@ left_join(results2, by = c("Parameter","simid"), suffix = c("",".death")) %>%
 left_join(results3, by = c("Parameter","simid"), suffix = c("",".discharge")) %>%
 left_join(truth, by = c("Parameter","simid"))
 
-rm(results)
+rm(results, results1, results2, results3)
 }
 
 ######################################################################
@@ -71,22 +90,33 @@ summarise(
      Mean.discharge = mean(Estimate.discharge[dischargeError==1]),
      SD.discharge = sd(Estimate.discharge[dischargeError==1], na.rm=T),
      Correct.discharge = 100*mean((LB95.discharge < Truth & UB95.discharge > Truth)[dischargeError==1])
-)%>%
-mutate(Scenario = paste("Scenario",scenario))
+)
 
 save(sumtab, file = "Averaged_Estimates.rdata")
 
 ######################################################################3
-#### Tabulate Results (Example)
+#### Find scenarios that I want to examine
+Truth <- do.call(Truth, what = "rbind") %>% as.data.frame
+Truth$simid <- simid
+Truth$scenario <- simid
+
+simids1 <- simid[Truth$theta == 0.2 & Truth$alpha2 == -0.5 & Truth$alpha1 == 0.5 &
+	     	Truth$trtR == -0.1 & Truth$trtD == -0.1 & Truth$trtD2 == 0.1]
+scenarios1 <- merged %>% filter(simid%in%simids1) %>% group_by(scenario) %>% summarise()  %>% unlist
+simids2 <- simid[Truth$alpha1 == 0.5 & Truth$trtR == -0.1 & Truth$trtD == -0.1 & Truth$theta == 0.2]
+scenarios2 <- merged %>% filter(simid%in%simids2) %>% group_by(scenario) %>% summarise()  %>% unlist
+
+######################################################################3
+#### Tabulate Results (One Example Table)
 sumtab %>%
 ungroup %>%
-filter(Scenario=="Scenario 1")%>%
+filter(scenario %in% scenarios1) %>%
 mutate(order = sapply(Parameter,
 	          function(x) which(merged$Parameter[1:12] == x))) %>%
 arrange(scenario, order) %>%
-dplyr::select(-order, -scenario) %>%
+dplyr::select(-order) %>%
 gt(rowname_col = "Parameter",
-   groupname_col = "Scenario")%>%
+   groupname_col = "scenario")%>%
 tab_stubhead(label = "Parameter")%>%
 tab_header(title = md(paste0("**Competing Joint Model Simulation Results(R =",
 		     round(nrow(merged)/12/729),", n = ", 1500,")**")))%>%
@@ -100,16 +130,173 @@ cols_label(Mean = html("Competing Estimate"),
            SD.death = html("SE"),
            SD.discharge = html("SE")
 	) %>%
-fmt_number(c(3,6,9)) %>%
-fmt_number(c(4,7,10),pattern = "({x})")%>%
-fmt_number(c(5,8,11),decimals = 1) %>%
+fmt_number(c(4,7,10)) %>%
+fmt_number(c(5,8,11),pattern = "({x})")%>%
+fmt_number(1, pattern = "Scenario {x}")%>%
+fmt_number(c(6,9,12),decimals = 1) %>%
 fmt_missing(columns = 1:12, missing_text = "") %>%
 cols_align(columns = 3, align = c("center")) %>%
 cols_align(columns = c(5,8,11), align = c("left")) %>%
-cols_align(columns = c(6,9,12), align = c("center"))
+cols_align(columns = c(6,9,12), align = c("center")) %>%
+as_latex %>% as.character %>% cat
 
 ######################################################################3
+#### Tabulate Results (Across Alpha2, TrtD2)
+sumtab %>%
+ungroup %>%
+filter(scenario %in% scenarios2,
+       Parameter %in% c("Alpha, Terminal1", "Recurrent: trt", "Terminal1: trt")) %>%
+select(-Mean.discharge:-Correct.discharge) %>%
+gt(rowname_col = "Parameter",
+   groupname_col = "scenario")%>%
+tab_stubhead(label = "Parameter")%>%
+tab_header(title = md(paste0("**Competing Joint Model Simulation Results(R =",
+		     round(nrow(merged)/12/729),", n = ", 1500,")**")))%>%
+cols_label(Mean = html("Competing Estimate"),
+           Mean.death = html("Death Estimate"),
+           Correct = html("Correct %"),
+           Correct.death = html("Correct %"),
+           SD = html("SE"),
+           SD.death = html("SE"),
+) %>%
+fmt_number(c(4,7)) %>%
+fmt_number(c(5,8),pattern = "({x})")%>%
+fmt_number(1, pattern = "Scenario {x}")%>%
+fmt_number(c(6,9),decimals = 1) %>%
+fmt_missing(columns = 1:9, missing_text = "") %>%
+cols_align(columns = 3, align = c("center")) %>%
+cols_align(columns = c(5,8), align = c("left")) %>%
+cols_align(columns = c(6,9), align = c("center")) %>%
+as_latex() %>%
+as.character() %>%
+cat()
 
+#### Tabulate A Different way (Across Alpha2, TrtD2)
+sumtab %>%
+ungroup %>%
+filter(scenario %in% scenarios2,
+       Parameter %in% c("Alpha, Terminal1", "Recurrent: trt", "Terminal1: trt")) %>%
+select(-Mean.discharge:-Correct.discharge, -Mean:-Correct) %>%
+mutate(cell = paste0(round(Mean.death, 2), " (",round(Correct.death,2),"%)"))
+	gt(rowname_col = "Parameter",
+	   groupname_col = "scenario")%>%
+	tab_stubhead(label = "Parameter")%>%
+	tab_header(title = md(paste0("**Competing Joint Model Simulation Results(R =",
+			     round(nrow(merged)/12/729),", n = ", 1500,")**")))%>%
+	cols_label(Mean = html("Competing Estimate"),
+	           Mean.death = html("Death Estimate"),
+	           Correct = html("Correct %"),
+	           Correct.death = html("Correct %"),
+	           SD = html("SE"),
+	           SD.death = html("SE"),
+	) %>%
+	fmt_number(c(4,7)) %>%
+	fmt_number(c(5,8),pattern = "({x})")%>%
+	fmt_number(1, pattern = "Scenario {x}")%>%
+	fmt_number(c(6,9),decimals = 1) %>%
+	fmt_missing(columns = 1:9, missing_text = "") %>%
+	cols_align(columns = 3, align = c("center")) %>%
+	cols_align(columns = c(5,8), align = c("left")) %>%
+	cols_align(columns = c(6,9), align = c("center"))
+
+truth %>% select(-simid) %>%
+distinct() %>%
+pivot_wider(id_cols = c("scenario"),
+	names_from = "Parameter", values_from = "Truth") %>%
+arrange(scenario) %>%
+right_join(sumtab, by = "scenario") %>%
+filter(scenario %in% scenarios2,
+       Parameter %in% c("Alpha, Terminal1", "Recurrent: trt", "Terminal1: trt")) %>%
+mutate(`Alpha, Terminal2` =  factor(`Alpha, Terminal2`,
+			levels = c(-0.5, 0, 0.5),
+			labels = c("...longer time\nto discharge.",
+			           "...similar time\nto discharge.",
+			           "...shorter time\nto discharge."),
+			ordered = T),
+			`Terminal2: trt` =  factor( `Terminal2: trt` ,
+					    levels = c(-0.1, 0, 0.1),
+					    labels = c("...lengthens time\nto discharge.",
+					               "...does not\nchange time\nto discharge.",
+					               "...shortens time\nto discharge."),
+					    ordered = T)) %>%
+select(scenario, Parameter, Mean.death:Correct.death, `Terminal2: trt`, `Alpha, Terminal2`) %>%
+mutate(lab1 = paste0("beta_r = ",
+	         round(Mean.death, 2),
+	         "(",round(Correct.death,1),")"),
+       lab2 =paste0("beta_1 = ", round(Mean.death, 2),
+       	 "(",round(Correct.death,1),")"),
+       lab3 = paste0("alpha_1 = ", round(Mean.death, 2),
+       	  "(",round(Correct.death,1),")"),
+       lab = ifelse(Parameter == "Alpha, Terminal1", lab3,
+		ifelse(Parameter == "Recurrent: trt", lab1, lab2))) %>%
+select(-lab1:-lab3, -Mean.death:-Correct.death) %>%
+#group_by(scenario, `Terminal2: trt`, `Alpha, Terminal2`) %>%
+#summarise(lab = paste(lab,collapse = "")) %>%
+#ungroup %>%
+pivot_wider(names_from = `Alpha, Terminal2`, values_from = lab, id_cols = c("Terminal2: trt","Parameter")) %>%
+mutate(`Terminal2: trt` = ifelse(Parameter == "Alpha, Terminal1",as.character(`Terminal2: trt`),"")) %>%
+select(-Parameter) %>%
+knitr::kable(format = "latex",escape = F)
+
+### Plot Table
+plottab1 <-
+truth %>% select(-simid) %>%
+distinct() %>%
+pivot_wider(id_cols = c("scenario"),
+	names_from = "Parameter", values_from = "Truth") %>%
+arrange(scenario) %>%
+right_join(sumtab, by = "scenario") %>%
+filter(scenario %in% scenarios2,
+       Parameter %in% c("Alpha, Terminal1", "Recurrent: trt", "Terminal1: trt")) %>%
+mutate(`Alpha, Terminal2` =  factor(`Alpha, Terminal2`,
+			levels = c(-0.5, 0, 0.5),
+			labels = c("...longer time\nto discharge.",
+			           "...similar time\nto discharge.",
+			           "...shorter time\nto discharge."),
+			ordered = T),
+       `Terminal2: trt` =  factor( `Terminal2: trt` ,
+       		     levels = c(-0.1, 0, 0.1),
+       		     labels = c("...lengthens time\nto discharge.",
+       		                "...does not\nchange time\nto discharge.",
+       		                "...shortens time\nto discharge."),
+       		     ordered = T)) %>%
+select(-Mean.discharge:-Correct.discharge) %>%
+mutate(lab1 = paste0("hat(beta)[r] == ",
+	         round(Mean.death, 2),
+	         "~(",round(Correct.death,1),")"),
+       lab2 =paste0("hat(beta)[1] == ", round(Mean.death, 2),
+       	 "~(",round(Correct.death,1),")"),
+       lab3 = paste0("hat(alpha)[1] == ", round(Mean.death, 2),
+       	  "~(",round(Correct.death,1),")"))
+
+png("../simulation_results/ExampleTable9.png",
+    width = 1200, height = 900)
+ggplot() +
+geom_text(data = filter(plottab1, Parameter == "Recurrent: trt"),
+          aes(x = `Alpha, Terminal2`, y = `Terminal2: trt`,
+              label = lab1),
+          nudge_y = .2, parse = T, size = 12) +
+geom_text(data = filter(plottab1, Parameter == "Terminal1: trt"),
+          aes(x = `Alpha, Terminal2`, y = `Terminal2: trt`,
+              label = lab2),
+          nudge_y = 0, parse = T, size = 12) +
+geom_text(data = filter(plottab1, Parameter == "Alpha, Terminal1"),
+          aes(x = `Alpha, Terminal2`, y = `Terminal2: trt`,
+              label = lab3),
+          nudge_y = -.2, parse = T, size = 12) +
+ylab("")+
+scale_x_discrete("People with higher daily rate of delirium have...",
+	     position = "top") +
+annotate("text", x = -.1, y = 3.25, label = "Treatment...", size = 14)+
+coord_cartesian(clip = "off", xlim = c(1,3)) +
+theme_bw(30)+
+theme(axis.title.x = element_text(hjust = 0, size = 38),
+      panel.grid =  element_blank(),
+      axis.text = element_text(size = 30)) +
+labs(caption = bquote(beta[r]==-0.1~~~~beta[1]==-0.1~~~~alpha[1]==-0.5))
+dev.off()
+
+######################################################################3
 plottab <-
 sumtab %>%
 mutate(order = sapply(Parameter,
@@ -117,20 +304,6 @@ mutate(order = sapply(Parameter,
        bias = Mean - Truth,
        bias.death = Mean.death - Truth,
        bias.discharge = Mean.discharge - Truth)
-
-Truth2 <- do.call(Truth, what = "rbind") %>% as_tibble
-Truth2 <- Truth2[(simid %/% 729)==1,]
-# Truth2 <- Truth2 %>%
-# mutate(alpha1 = factor(alpha1, levels = c(0, -0.5, 0.5),
-# 	           labels  = as.character(c(0, -0.5, 0.5)), ordered = T),
-#        alpha2 = factor(alpha2, levels = c(0, -0.5, 0.5),
-#        	    labels  = as.character(c(0, -0.5, 0.5)), ordered = T),
-#        trtD = factor(trtD, levels = c(0, -0.1, 0.1),
-#        	  labels  = as.character(c(0, -0.1, 0.1)), ordered = T),
-#        trtD2 = factor(trtD2, levels = c(0, -0.1, 0.1),
-#        	   labels  = as.character(c(0, -0.1, 0.1)), ordered = T),
-#        trtR = factor(trtR, levels = c(0, -0.1, 0.1),
-#        	  labels  = as.character(c(0, -0.1, 0.1)), ordered = T))
 
 plottab %>%
 filter(Parameter=="Alpha, Terminal1")%>%

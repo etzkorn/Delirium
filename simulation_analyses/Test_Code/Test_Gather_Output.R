@@ -1,3 +1,4 @@
+
 ############## Cluster
 library(tidyverse)
 nodeid <- as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))
@@ -5,15 +6,15 @@ nodeid <- as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))
 #maxid <- as.numeric(as.character(Sys.getenv("MAXID")))
 
 # File names
-output.files <- dir("Simulation_Results", full.names = T)
+output.files <- dir("Simulation_Results_Test", full.names = T)
 
 # Get File IDs
-simids <- gsub("Simulation_Results/Sim_","", output.files)
+simids <- gsub("Simulation_Results_Test/Sim_","", output.files)
 simids <- gsub(".rdata","", simids)
 simids <- as.numeric(simids)
 
 # Filter File IDS
-output.files <- output.files[simids > 80000 & simids < 155001]
+#output.files <- output.files[simids >= 80003 & simids <= 155000]
 
 # Create Empty Objects for Results
 results <-
@@ -40,12 +41,10 @@ results <-
 	       trtR= numeric(), trtD= numeric(), trtD2= numeric())
 
 for(i in 1:length(output.files)){
-	message(output.files[i],"/n")
 	model <- readRDS(output.files[i])
 
 	results <-
 		tibble(simid = model$simulation.id,
-		       seed = model$seed,
 		       competingJoint = list(model$summary.table),
 		       deathJoint = list(model$initialization$summary.table1),
 		       dischargeJoint = list(model$initialization$summary.table2),
@@ -63,16 +62,11 @@ for(i in 1:length(output.files)){
 		       events.pl =  sum(model$ic0[model$vax0 == 0])/sum(model$vax0 == 0)) %>%
 		bind_cols(as.data.frame(t(model$simulation.values))) %>%
 		bind_rows(results)
-
-	if(i%%1000 == 0){
-		minid <- min(results$simid)
-		maxid <- max(results$simid)
-		save(results,
-		     file = paste0("Gathered_Results/Simulation_Results_",minid,"_",maxid,".rdata"))
-		sapply(output.files[(i-999):i], FUN = file.remove)
-	}
-
 }
 
+
+minid <- min(results$simid)
+maxid <- max(results$simid)
+
 save(results,
-     file = paste0("Gathered_Results/Simulation_Results_",minid,"_",maxid,".rdata"))
+     file = paste0("Gathered_Results/Test_Simulation_Results_",minid,"_",maxid,".rdata"))
