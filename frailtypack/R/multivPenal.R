@@ -1201,11 +1201,11 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		       exp(b[7]),
  		       rep(1,nvar + 2)))
 	}
- 	Parameter = c("Shape, Recurrent", "Scale, Recurrent",
- 		  "Shape, Terminal1", "Scale, Terminal1",
- 		  "Shape, Terminal2", "Scale, Terminal2",
+ 	Parameter = c("Recurrent: Shape", "Recurrent: Scale",
+ 		  "Terminal1: Shape", "Terminal1: Scale",
+ 		  "Terminal2: Shape", "Terminal2: Scale",
  		  "Sigma",
- 		  "Alpha, Terminal1", "Alpha, Terminal2",
+ 		  "Terminal1: Alpha", "Terminal2: Alpha",
  		  paste0("Recurrent: ",colnames(modelmatrix1)),
  		  paste0("Terminal1: ",colnames(modelmatrix2)),
  		  paste0("Terminal2: ",colnames(modelmatrix4)))
@@ -1222,11 +1222,11 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		       2*exp(2*b[9])/(1+exp(b[9]))^2,
  		       rep(1,nvar+2)))
  	}
- 	Parameter = c("Shape, Recurrent", "Scale, Recurrent",
- 		  "Shape, Terminal1", "Scale, Terminal1",
- 		  "Shape, Terminal2", "Scale, Terminal2",
- 		  "Sigma, Terminal1", "Sigma, Terminal2", "Rho",
- 		  "Alpha, Terminal1", "Alpha, Terminal2",
+ 	Parameter = c("Recurrent: Shape", "Recurrent: Scale",
+ 		  "Terminal1: Shape", "Terminal1: Scale",
+ 		  "Terminal2: Shape", "Terminal2: Scale",
+ 		  "Terminal1: Sigma", "Terminal2: Sigma", "Rho",
+ 		  "Terminal1: Alpha", "Terminal2: Alpha",
  		  paste0("Recurrent: ",colnames(modelmatrix1)),
  		  paste0("Terminal1: ",colnames(modelmatrix2)),
  		  paste0("Terminal2: ",colnames(modelmatrix4)))
@@ -1254,22 +1254,22 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
 
 	# Extract Transformed Parameters
  	f1 <- function(b, i=3){
- 		c(b[1:(length(b)-nvar+nbvar[i]-1)]^2,
- 		  b[(length(b)-nvar+nbvar[i]):length(b)])
+ 		c(b[1:(length(b)-nvar+nbvar[i]-2)]^2,
+ 		  b[(length(b)-nvar+nbvar[i]-1):length(b)])
  	}
  	f1.prime <- function(b, i = 3){
- 		diag(c(2*b[1:(length(b)-nvar+nbvar[i]-1)],
- 		       rep(1,nvar-nbvar[i]+1)))
+ 		diag(c(2*b[1:(length(b)-nvar+nbvar[i]-2)],
+ 		       rep(1,nvar-nbvar[i]+2)))
  	}
- 	Parameters1 = c("Shape, Recurrent", "Scale, Recurrent",
- 		  "Shape, Terminal1", "Scale, Terminal1",
- 		  "Sigma", "Alpha, Terminal1",
+ 	Parameters1 = c("Recurrent: Shape", "Recurrent: Scale",
+ 		  "Terminal1: Shape", "Terminal1: Scale",
+ 		  "Sigma", "Terminal1: Alpha",
  		  paste0("Recurrent: ",colnames(modelmatrix1)),
  		  paste0("Terminal1: ",colnames(modelmatrix2)))
 
- 	Parameters2 = c("Shape, Recurrent", "Scale, Recurrent",
- 		    "Shape, Terminal2", "Scale, Terminal2",
- 		    "Sigma", "Alpha, Terminal2",
+ 	Parameters2 = c("Recurrent: Shape", "Recurrent: Scale",
+ 		    "Terminal2: Shape", "Terminal2: Scale",
+ 		    "Sigma", "Terminal2: Alpha",
  		    paste0("Recurrent: ",colnames(modelmatrix1)),
  		    paste0("Terminal2: ",colnames(modelmatrix4)))
 
@@ -1295,6 +1295,8 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		Raw.SE = sqrt(diag(ans$initialization$joint2$varHtotal)),
  		Estimate = f1(ans$initialization$joint2$b, i=4),
  		Estimate.SE = sqrt(diag(ans$initialization$varH.Estimate2)),
+ 		LB95 = Estimate - 2*Estimate.SE,
+ 		UB95 = Estimate + 2*Estimate.SE,
  		p = 2*pnorm(q = -abs(Raw), mean = 0, sd = Raw.SE)
  	)
 
