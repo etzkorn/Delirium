@@ -6,6 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+load("../simulation_results/metaData.rdata")
 knitr::opts_chunk$set(echo = TRUE)
 library(frailtypack); library(tidyverse)
 source("../delirium_package/R/joint_simulate_data.R")
@@ -17,11 +18,30 @@ source("../delirium_package/R/random_weibull.R")
 ```{r simulate}
 data0 <- simulate.competing.data(
 	n = 5000,truncate = 28,
-	par0 = c(betaR = 1, etaR = 20,
+	par0 = c(betaR = 1, etaR = 10,
          betaD = 1, etaD = 10,
          betaD2 = 1, etaD2 = 10,
-         theta = .2, alpha1 = 0, alpha2 = 0,
-         trtR = 0, trtD = 0.5, trtD2 = 0))
+         sigma = .2, alpha1 = 0, alpha2 = 0,
+         trtR = 0, trtD = 0.25, trtD2 = 0)) 
+data.patient <- data0 %>%
+	group_by(id) %>%
+	summarise(
+	         w = w[1],
+	         event = sum(event),
+	         trt = mean(trt),
+	         terminal1 = sum(terminal1),
+	         terminal2 = sum(terminal2),
+	         t = max(t)) %>%
+	ungroup
+data.sum <- data.patient %>%
+	group_by(trt, terminal1, terminal2) %>%
+	summarise(n = n(),
+	          t25 = quantile(t,probs = 0.25),
+	          t75 = quantile(t,probs = 0.75),
+	          t50 = median(t),
+	          event = sum(event)) %>%
+	ungroup %>% group_by(trt) %>% mutate(n/sum(n))
+data.sum
 ```
 
 # Plot Frailties
