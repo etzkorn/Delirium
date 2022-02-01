@@ -36,26 +36,32 @@ for(i in 1:length(output.files)){
 	results2 <-results %>%
 		select(summary.table1, simid, deathError=istop1) %>%
 		unnest(summary.table1) %>%
-		select(-Raw, -Raw.SE, -p) %>%
-		mutate(
-			LB95 = Estimate - 2*Estimate.SE,
-			UB95 = Estimate + 2*Estimate.SE,
-			Estimate = ifelse(Parameter =="Sigma", Estimate^.5,Estimate),
-			LB95 = ifelse(Parameter =="Sigma", LB95^.5,LB95),
-			UB95 = ifelse(Parameter =="Sigma", UB95^.5,UB95))
-
-	# Discharge Joint Model
-	results3 <- results %>%
-		select(summary.table2, simid, dischargeError=istop2) %>%
-		unnest(summary.table2) %>%
-		select(-Raw, -Raw.SE, -p) %>%
 		mutate(
 			LB95 = Estimate - 2*Estimate.SE,
 			UB95 = Estimate + 2*Estimate.SE,
 			Estimate = ifelse(Parameter =="Sigma", Estimate^.5,Estimate),
 			LB95 = ifelse(Parameter =="Sigma", LB95^.5,LB95),
 			UB95 = ifelse(Parameter =="Sigma", UB95^.5,UB95),
-			Parameter = gsub("1","2",Parameter))
+			Estimate = ifelse(Parameter =="Alpha, Terminal1", Raw, Estimate),
+			LB95 = ifelse(Parameter =="Alpha, Terminal1", Raw - 2*Raw.SE,LB95),
+			UB95 = ifelse(Parameter =="Alpha, Terminal1", Raw + 2*Raw.SE,UB95)) %>%
+		select(-Raw, -Raw.SE, -p)
+
+	# Discharge Joint Model
+	results3 <- results %>%
+		select(summary.table2, simid, dischargeError=istop2) %>%
+		unnest(summary.table2) %>%
+		mutate(
+			LB95 = Estimate - 2*Estimate.SE,
+			UB95 = Estimate + 2*Estimate.SE,
+			Estimate = ifelse(Parameter =="Sigma", Estimate^.5,Estimate),
+			LB95 = ifelse(Parameter =="Sigma", LB95^.5,LB95),
+			UB95 = ifelse(Parameter =="Sigma", UB95^.5,UB95),
+			Estimate = ifelse(Parameter =="Alpha, Terminal2", Raw, Estimate),
+			LB95 = ifelse(Parameter =="Alpha, Terminal2", Raw - 2*Raw.SE, LB95),
+			UB95 = ifelse(Parameter =="Alpha, Terminal2", Raw + 2*Raw.SE, UB95),
+			Parameter = gsub("1","2",Parameter))%>%
+		select(-Raw, -Raw.SE, -p)
 
 	### Merge Results
 	sumtab <- results1 %>% ungroup %>%
