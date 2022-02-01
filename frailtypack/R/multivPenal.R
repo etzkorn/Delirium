@@ -1161,11 +1161,11 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		       exp(b[7]),
  		       rep(1,nvar + 2)))
  	}
- 	Parameter = c("Shape, Recurrent", "Scale, Recurrent",
- 		  "Shape, Terminal1", "Scale, Terminal1",
- 		  "Shape, Terminal2", "Scale, Terminal2",
+ 	Parameter = c("Recurrent: Shape", "Recurrent: Scale",
+ 		  "Terminal1: Shape", "Terminal1: Scale",
+ 		  "Terminal2: Shape", "Terminal2: Scale",
  		  "Sigma",
- 		  "Alpha, Terminal1", "Alpha, Terminal2",
+ 		  "Terminal1: Alpha", "Terminal2: Alpha",
  		  paste0("Recurrent: ",colnames(modelmatrix1)),
  		  paste0("Terminal1: ",colnames(modelmatrix2)),
  		  paste0("Terminal2: ",colnames(modelmatrix4)))
@@ -1182,11 +1182,11 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  		       2*exp(2*b[9])/(1+exp(b[9]))^2,
  		       rep(1,nvar+2)))
  	}
- 	Parameter = c("Shape, Recurrent", "Scale, Recurrent",
- 		  "Shape, Terminal1", "Scale, Terminal1",
- 		  "Shape, Terminal2", "Scale, Terminal2",
- 		  "Sigma, Terminal1", "Sigma, Terminal2", "Rho",
- 		  "Alpha, Terminal1", "Alpha, Terminal2",
+ 	Parameter = c("Recurrent: Shape", "Recurrent: Scale",
+ 		  "Terminal1: Shape", "Terminal1: Scale",
+ 		  "Terminal2: Shape", "Terminal2: Scale",
+ 		  "Terminal1: Sigma", "Terminal2: Sigma", "Rho",
+ 		  "Terminal1: Alpha", "Terminal2: Alpha",
  		  paste0("Recurrent: ",colnames(modelmatrix1)),
  		  paste0("Terminal1: ",colnames(modelmatrix2)),
  		  paste0("Terminal2: ",colnames(modelmatrix4)))

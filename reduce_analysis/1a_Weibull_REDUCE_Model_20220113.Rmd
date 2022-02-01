@@ -20,7 +20,7 @@ table(df2$treatment, useNA = "ifany")
 ```
 
 ```{r, echo = FALSE,message = FALSE}
-if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_20220113.rdata")){
+if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_20220201.rdata")){
 #############################
 # GAP Time Models (with/without initialization)
 gap.model <-
@@ -44,20 +44,18 @@ multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
 	data = df2, 
 	initialize = T)
 save(gap.model, cal.model,
-     file = "../reduce_analysis_output/REDUCE_Weibull_Models_20220113.rdata")
-}else load("../reduce_analysis_output/REDUCE_Weibull_Models_20220113.rdata")
+     file = "../reduce_analysis_output/REDUCE_Weibull_Models_20220201.rdata")
+}else load("../reduce_analysis_output/REDUCE_Weibull_Models_20220201.rdata")
 ```
 
 
 ```{r}
-m1 <-select(cal.model$summary.table, Parameter, Estimate, Estimate.SE)
-m2 <-select(cal.model$initialization$summary.table1, Parameter, Estimate, Estimate.SE)
-m3 <-select(cal.model$initialization$summary.table2, Parameter, Estimate, Estimate.SE) %>%
-	mutate(Parameter = gsub("1","2",Parameter))
-m4 <-select(gap.model$summary.table, Parameter, Estimate, Estimate.SE)
-m5 <-select(gap.model$initialization$summary.table1, Parameter, Estimate, Estimate.SE)
-m6 <-select(gap.model$initialization$summary.table2, Parameter, Estimate, Estimate.SE)%>%
-	mutate(Parameter = gsub("1","2",Parameter))
+m1 <-dplyr::select(cal.model$summary.table, Parameter, Estimate, Estimate.SE)
+m2 <-dplyr::select(cal.model$initialization$summary.table1, Parameter, Estimate, Estimate.SE)
+m3 <-dplyr::select(cal.model$initialization$summary.table2, Parameter, Estimate, Estimate.SE)
+m4 <-dplyr::select(gap.model$summary.table, Parameter, Estimate, Estimate.SE)
+m5 <-dplyr::select(gap.model$initialization$summary.table1, Parameter, Estimate, Estimate.SE)
+m6 <-dplyr::select(gap.model$initialization$summary.table2, Parameter, Estimate, Estimate.SE)
 tab.start <- 
 left_join(m1, m2, by = "Parameter") %>%
 left_join(m3, by = "Parameter") %>%

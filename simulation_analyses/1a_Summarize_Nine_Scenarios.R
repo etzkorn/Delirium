@@ -1,4 +1,9 @@
 
+# Note: At the time these models were run, there was a problem with how
+# some parameters (alpha, sigma) from the initialization models were transformed.
+# This has since been fixed in the local software, and the lines below that
+# correct the previous mistake should be removed if models are fit using the updated software.
+
 rm(list = ls())
 library(tidyverse)
 library(gt)
@@ -17,15 +22,13 @@ truth <- dplyr::select(results, scenario, simid, truth) %>%
 
 results1 <- results %>%
 	unnest(truth) %>%
-	select(summary.table, simid, betaR:trtD2,  competingError=critCV) %>%
+	dplyr::select(summary.table, simid, betaR:trtD2,  competingError=critCV) %>%
 	unnest(summary.table) %>%
-	select(-Raw, -Raw.SE, -p, -H0)
-
-#results1$scenario <- select(results1, betaR:trtD2) %>% apply(1, paste0, collapse=" ") %>% factor %>% as.numeric
+	dplyr::select(-Raw, -Raw.SE, -p, -H0)
 
 # Death Joint Model
 results2 <-results %>%
-	select(summary.table1, simid, deathError=istop1) %>%
+	dplyr::select(summary.table1, simid, deathError=istop1) %>%
 	unnest(summary.table1) %>%
 	mutate(
 	LB95 = Estimate - 2*Estimate.SE,
@@ -36,11 +39,11 @@ results2 <-results %>%
 	Estimate = ifelse(Parameter =="Alpha, Terminal1", Raw, Estimate),
 	LB95 = ifelse(Parameter =="Alpha, Terminal1", Raw - 2*Raw.SE,LB95),
 	UB95 = ifelse(Parameter =="Alpha, Terminal1", Raw + 2*Raw.SE,UB95)) %>%
-	select(-Raw, -Raw.SE, -p)
+	dplyr::select(-Raw, -Raw.SE, -p)
 
 # Discharge Joint Model
 results3 <- results %>%
-	select(summary.table2, simid, dischargeError=istop2) %>%
+	dplyr::select(summary.table2, simid, dischargeError=istop2) %>%
 	unnest(summary.table2) %>%
 	mutate(
 		LB95 = Estimate - 2*Estimate.SE,
@@ -49,10 +52,10 @@ results3 <- results %>%
 		LB95 = ifelse(Parameter =="Sigma", LB95^.5,LB95),
 		UB95 = ifelse(Parameter =="Sigma", UB95^.5,UB95),
 		Estimate = ifelse(Parameter =="Alpha, Terminal2", Raw, Estimate),
-		LB95 = ifelse(Parameter =="Alpha, Terminal2", Raw - 2*Raw.SE,LB95),
-		UB95 = ifelse(Parameter =="Alpha, Terminal2", Raw + 2*Raw.SE,UB95),
+		LB95 = ifelse(Parameter =="Alpha, Terminal2", Raw - 2*Raw.SE, LB95),
+		UB95 = ifelse(Parameter =="Alpha, Terminal2", Raw + 2*Raw.SE, UB95),
 		Parameter = gsub("1","2",Parameter)) %>%
-	select(-Raw, -Raw.SE, -p)
+	dplyr::select(-Raw, -Raw.SE, -p)
 
 ### Merge Results
 merged <- results1 %>% ungroup %>%
@@ -129,7 +132,7 @@ as_latex %>% as.character %>% cat
 sumtab %>% ungroup %>%
 filter(Parameter %in% c("Alpha, Terminal1", "Recurrent: trt", "Terminal1: trt")) %>%
 dplyr::select(scenario, Parameter, trtD2, alpha2, Mean:Correct.discharge) %>%
-select(-Mean.discharge:-Correct.discharge) %>%
+dplyr::select(-Mean.discharge:-Correct.discharge) %>%
 gt(rowname_col = "Parameter",
    groupname_col = "scenario")%>%
 tab_stubhead(label = "Parameter")%>%
@@ -150,7 +153,7 @@ fmt_number(c(6,9)+1,decimals = 1) %>%
 fmt_missing(columns = (1:9)+1, missing_text = "") %>%
 cols_align(columns = 3+1, align = c("center")) %>%
 cols_align(columns = c(5,8)+1, align = c("left")) %>%
-cols_align(columns = c(6,9)+1, align = c("center")) %>%
+cols_align(columns = c(6,9)+1, align = c("center")) #%>%
 as_latex() %>%as.character() %>%cat()
 
 #### Tabulate A Different way (Across Alpha2, TrtD2)
@@ -179,3 +182,33 @@ mutate(cell = paste0(round(Mean.death, 2), " (",round(Correct.death,2),"%)")) %>
 	cols_align(columns = 3, align = c("center")) %>%
 	cols_align(columns = c(5,8), align = c("left")) %>%
 	cols_align(columns = c(6,9), align = c("center"))
+
+#####################################################################################
+# Calculate p-values for bias
+merged %>%
+group_by(scenario, Parameter,
+         betaR, etaR, betaD, etaD, betaD2, etaD2, sigma, alpha1, alpha2,
+         trtR, trtD, trtD2) %>%
+summarise(
+	Truth = Truth[1],
+	Mean = mean(Estimate[competingError==1]),
+	SD = sd(Estimate[competingError==1], na.rm=T),
+	n = sum(competingError==1),
+	Correct = 100*mean((LB95 < Truth & UB95 > Truth)[competingError==1]),
+	Mean.death = mean(Estimate.death[deathError==1]),
+	SD.death = sd(Estimate.death[deathError==1], na.rm=T),
+	Correct.death = 100*mean((LB95.death < Truth & UB95.death > Truth)[deathError==1]),
+	n.death = sum(deathError==1),
+	Mean.discharge = mean(Estimate.discharge[dischargeError==1]),
+	SD.discharge = sd(Estimate.discharge[dischargeError==1], na.rm=T),
+	Correct.discharge = 100*mean((LB95.discharge < Truth & UB95.discharge > Truth)[dischargeError==1]),
+	n.discharge = sum(dischargeError==1)
+) %>%
+ungroup %>%
+filter(Parameter %in% c("Alpha, Terminal1", "Recurrent: trt", "Terminal1: trt")) %>%
+dplyr::select(Parameter, Truth, trtD2, alpha2, Mean:SD, Mean.death:SD.death, n, n.death) %>%
+mutate(t = (Mean- Truth)*sqrt(n)/SD,
+       t.death = (Mean.death - Truth)*sqrt(n.death)/SD.death) %>%
+arrange(Parameter, trtD2) %>%
+dplyr::select(Parameter:alpha2, t, t.death) %>%
+print.data.frame
