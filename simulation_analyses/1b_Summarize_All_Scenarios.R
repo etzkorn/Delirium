@@ -5,6 +5,7 @@ library(gt)
 library(grDevices)
 
 load("../simulation_results/Simulation_Results_Fri_Jan_28.rdata")
+load("../simulation_results/Simulation_Results_Mon_Jan_31_.rdata")
 head(sumtab)
 
 sumtab %>%
@@ -35,8 +36,8 @@ geom_point()+
 #facet_wrap("Parameter", scales = "free") +
 geom_vline(xintercept = 0, col = "blue")+
 geom_hline(yintercept = 0, col = "blue")+
-facet_wrap("alpha1", nrow = 2)+
-coord_fixed(xlim = c(-1,27), ylim= c(-1,27))
+facet_wrap("alpha1", nrow = 2)#+
+#coord_fixed(xlim = c(-1,27), ylim= c(-1,27))
 
 ###################################################
 ### Plot Bias as Function of Alpha2, Treatment Effect on Discharge
@@ -45,28 +46,28 @@ png("../simulation_results/TreatmentEffect_Bias_Boxplots.png",
 gridExtra::grid.arrange(
 plottab %>%
 filter(Parameter=="Recurrent: trt") %>%
-ggplot(aes(y = bias,
+ggplot(aes(y = Mean,
            fill = factor(trtD2),
            x = factor(alpha2)))+
-geom_hline(yintercept = 0, linetype=3)+
+geom_hline(yintercept = -0.25, linetype=3)+
 geom_boxplot(alpha = 0.5, position="dodge") +
-ylim(-0.02, 0.02)+
+ylim(-0.27, -0.23)+
 xlab(expression(alpha[2]))+
-ylab(expression(Bias~of~beta[r]))+
+ylab(expression(Mean~Estimate~of~beta[r]))+
 ggtitle("Competing Joint Model") +
 theme_classic(20)+
 	theme(legend.position = "none"),
 
 plottab %>%
 filter(Parameter=="Recurrent: trt") %>%
-ggplot(aes(y = bias.death,
+ggplot(aes(y = Mean.death,
            fill = factor(trtD2),
            x = factor(alpha2)))+
-geom_hline(yintercept = 0, linetype=3)+
+geom_hline(yintercept = -0.25, linetype=3)+
 geom_boxplot(alpha = 0.5) +
-ylim(-0.02, 0.02) +
+	ylim(-0.27, -0.23)+
 xlab(expression(alpha[2])) +
-ylab(expression(Bias~of~beta[r]))+
+ylab(expression(Mean~Estimate~of~beta[r]))+
 ggtitle("Joint Death Model")+
 scale_fill_discrete(expression(beta[2]))+
 theme_classic(20)+
