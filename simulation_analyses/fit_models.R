@@ -10,8 +10,9 @@ source("Simulation_Scripts/random_weibull.R")
 
 #### Limit Scope
 scenario.id <- as.numeric(as.character(Sys.getenv("SGE_TASK_ID")))
+scenario.id <- c(8,17,26,251,260,269,494,503,512)[scenario.id]
 
-load(file = "metaData.rdata")
+load(file = "metaData2.rdata")
 meta <- meta %>% filter(scenario == scenario.id)
 results <- tibble()
 
@@ -76,4 +77,4 @@ bind_rows(results)
 }
 
 # (3) Save Results Under Simulation ID
-save(results, file = paste0("Simulation_Results_New/Scenario_",scenario.id,".rdata" ))
+save(results, file = paste0("Simulation_Results_New/Scenario_",scenario.id,"_5000.rdata" ))

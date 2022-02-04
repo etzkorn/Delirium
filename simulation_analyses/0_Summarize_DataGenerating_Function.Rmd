@@ -17,12 +17,12 @@ results <- tibble()
 
 
 ```{r}
-meta1 <- filter(meta, sigma == .75, alpha1 == 0, alpha2 == 0,
-         trtR == 0, trtD == 0, trtD2 == 0) %>%
+meta1 <- filter(meta, sigma == .75, alpha1 == 0.5, alpha2 == 0,
+         trtR == -0.25, trtD == -0.25, trtD2 == 0) %>%
 	filter(simid==min(simid))
 data0 <- simulate.competing.data(
 	n = 10000,truncate = 28,
-	par0 = unlist(select(meta1, betaR:trtD2))) 
+	par0 = unlist(dplyr::select(meta1, betaR:trtD2))) 
 
 data0 %>%
 	group_by(id) %>%
@@ -34,27 +34,31 @@ data0 %>%
 	         terminal2 = sum(terminal2),
 	         t = max(t)) %>%
 	ungroup %>%
-	group_by(terminal1, terminal2) %>%
+	group_by(terminal1, terminal2, trt) %>%
 	summarise(n = n(),
 	          st = sum(t),
-	          anyevent = sum(event>0),
-	          event = sum(event), 
+	          terminalPct = 100*n/sum(n),
 	          .groups = "drop",
-	          eventsPerDay = event / st) %>%
-	mutate(100*n/sum(n),
-	       sum(event)/sum(st),
-	       sum(anyevent)/sum(n))
+	          anyevent = sum(event>0),
+	       event = sum(event),
+	       eventsPer100Day = 100*event / st) %>%
+	ungroup %>%
+	group_by(trt) %>% 
+	mutate(anyevent.trt = 100*sum(anyevent)/sum(n),
+	       eventsPer100Day.trt = 100*sum(event) / sum(st)) %>%
+	arrange(trt, desc(n))
 ```
 ### Effect on Death
 
 ```{r}
-meta2 <- filter(meta, sigma == .75, alpha1 == 0, alpha2 == 0,
-         trtR == 0, trtD == -.25, trtD2 == 0) %>%
+meta1 <- filter(meta, sigma == .75, alpha1 == 0.5, alpha2 == -0.5,
+         trtR == -0.25, trtD == -0.25, trtD2 == -0.25) %>%
 	filter(simid==min(simid))
-data0 <- simulate.competing.data(
+data1 <- simulate.competing.data(
 	n = 10000,truncate = 28,
-	par0 = unlist(select(meta2, betaR:trtD2))) 
-data0 %>%
+	par0 = unlist(dplyr::select(meta1, betaR:trtD2))) 
+
+data1 %>%
 	group_by(id) %>%
 	summarise(
 	         w = w[1],
@@ -64,123 +68,17 @@ data0 %>%
 	         terminal2 = sum(terminal2),
 	         t = max(t)) %>%
 	ungroup %>%
-	group_by(trt, terminal1, terminal2) %>%
+	group_by(terminal1, terminal2, trt) %>%
 	summarise(n = n(),
 	          st = sum(t),
-	          event = sum(event), .groups = "drop",
-	          eventsPerDay = event / st) %>%
-	group_by(trt) %>% mutate(100*n/sum(n))
-```
-
-### Effect on Discharge
-
-```{r}
-meta2 <- filter(meta, sigma == .75, alpha1 == 0, alpha2 == 0,
-         trtR == 0, trtD == 0, trtD2 == 0.25) %>%
-	filter(simid==min(simid))
-data0 <- simulate.competing.data(
-	n = 10000,truncate = 28,
-	par0 = unlist(select(meta2, betaR:trtD2))) 
-data0 %>%
-	group_by(id) %>%
-	summarise(
-	         w = w[1],
-	         event = sum(event),
-	         trt = mean(trt),
-	         terminal1 = sum(terminal1),
-	         terminal2 = sum(terminal2),
-	         t = max(t)) %>%
-	ungroup %>%
-	group_by(trt, terminal1, terminal2) %>%
-	summarise(n = n(),
-	          st = sum(t),
-	          event = sum(event), .groups = "drop",
-	          eventsPerDay = event / st) %>%
-	group_by(trt) %>% mutate(100*n/sum(n))
-```
-
-### Effect on Delirium
-
-```{r}
-meta2 <- filter(meta, sigma == .75, alpha1 == 0, alpha2 == 0,
-         trtR == -0.25, trtD == 0, trtD2 == 0) %>%
-	filter(simid==min(simid))
-data0 <- simulate.competing.data(
-	n = 10000,truncate = 28,
-	par0 = unlist(select(meta2, betaR:trtD2))) 
-data0 %>%
-	group_by(id) %>%
-	summarise(
-	         w = w[1],
-	         event = sum(event),
-	         trt = mean(trt),
-	         terminal1 = sum(terminal1),
-	         terminal2 = sum(terminal2),
-	         t = max(t)) %>%
-	ungroup %>%
-	group_by(trt, terminal1, terminal2) %>%
-	summarise(n = n(),
-	          st = sum(t),
-	          anyevent = sum(event>0),
-	          event = sum(event), 
+	          terminalPct = 100*n/sum(n),
 	          .groups = "drop",
-	          eventsPerDay = event / st) %>%
-	group_by(trt) %>%
-	summarise(sum(anyevent)/sum(n),
-	          sum(event)/sum(st))
-```
-
-### Alpha1
-
-```{r}
-meta2 <- filter(meta, sigma == .75, alpha1 == 0.5, alpha2 == 0,
-         trtR == 0, trtD == 0, trtD2 == 0) %>%
-	filter(simid==min(simid))
-data0 <- simulate.competing.data(
-	n = 10000,truncate = 28,
-	par0 = unlist(select(meta2, betaR:trtD2))) 
-data0 %>%
-	group_by(id) %>%
-	summarise(
-	         w = w[1],
-	         event = sum(event),
-	         trt = mean(trt),
-	         terminal1 = sum(terminal1),
-	         terminal2 = sum(terminal2),
-	         t = max(t)) %>%
+	          anyevent = sum(event>0),
+	       event = sum(event),
+	       eventsPer100Day = 100*event / st) %>%
 	ungroup %>%
-	group_by(trt, terminal1, terminal2) %>%
-	summarise(n = n(),
-	          st = sum(t),
-	          event = sum(event), .groups = "drop",
-	          eventsPerDay = event / st) %>%
-	group_by(trt) %>% mutate(100*n/sum(n))
+	group_by(trt) %>% 
+	mutate(anyevent.trt = 100*sum(anyevent)/sum(n),
+	       eventsPer100Day.trt = 100*sum(event) / sum(st)) %>%
+	arrange(trt, desc(n))
 ```
-
-### Alpha2
-
-```{r}
-meta2 <- filter(meta, sigma == .75, alpha1 == 0, alpha2 == 0.5,
-         trtR == 0, trtD == 0, trtD2 == 0) %>%
-	filter(simid==min(simid))
-data0 <- simulate.competing.data(
-	n = 10000,truncate = 28,
-	par0 = unlist(select(meta2, betaR:trtD2))) 
-data0 %>%
-	group_by(id) %>%
-	summarise(
-	         w = w[1],
-	         event = sum(event),
-	         trt = mean(trt),
-	         terminal1 = sum(terminal1),
-	         terminal2 = sum(terminal2),
-	         t = max(t)) %>%
-	ungroup %>%
-	group_by(trt, terminal1, terminal2) %>%
-	summarise(n = n(),
-	          st = sum(t),
-	          event = sum(event), .groups = "drop",
-	          eventsPerDay = event / st) %>%
-	group_by(trt) %>% mutate(100*n/sum(n))
-```
-
