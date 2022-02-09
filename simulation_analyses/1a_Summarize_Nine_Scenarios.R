@@ -9,7 +9,7 @@ library(tidyverse)
 library(gt)
 library(grDevices)
 
-file.list <- grep("Scenario",dir("../simulation_results/",full.names = T),value = T)
+file.list <- grep("Scenario_[0-9]",dir("../simulation_results/",full.names = T),value = T)
 merged <- tibble()
 
 for(file in file.list){
@@ -74,7 +74,6 @@ rm(file, file.list, truth)
 
 sumtab <-
 merged %>%
-#mutate( old = simid <80001) %>%
 group_by(scenario, Parameter,
          betaR, etaR, betaD, etaD, betaD2, etaD2, sigma, alpha1, alpha2,
          trtR, trtD, trtD2) %>%
@@ -97,8 +96,17 @@ summarise(
      n.discharge = sum(dischargeError==1, na.rm=T)
 )
 
-save(sumtab, file = paste0("Averaged_Estimates",substr(date(),0,11),".rdata"))
-#load("Averaged_EstimatesWed Feb  2 .rdata")
+save(sumtab, file = paste0("../simulation_results/Averaged_Estimates",
+		   substr(date(),0,11),".rdata"))
+######################################################################
+# Error Rates
+#load("Averaged_EstimatesSun Feb  6 .rdata")
+sumtab %>%
+group_by(scenario) %>%
+summarise(1 - max(n)/5000, 1- max(n.death)/5000, 1-max(n.discharge)/5000,
+          5000 - max(n), 5000 -max(n.death), 5000 - max(n.discharge))
+# take max because not all parameters are estimated for each model
+
 
 ######################################################################3
 #### Tabulate Results (One Example Table)
@@ -107,7 +115,7 @@ filter(scenario==260) %>% # alpha2 = 0, betaD2 = 0
 mutate(order = sapply(Parameter,
 	          function(x) which(merged$Parameter[1:12] == x))) %>%
 arrange(scenario, order) %>%
-dplyr::select(scenario, Parameter, Truth:Correct.discharge) %>%
+dplyr::select(scenario, Parameter, bias:Correct.discharge) %>%
 gt(rowname_col = "Parameter",
    groupname_col = "scenario")%>%
 tab_stubhead(label = "Parameter")%>%
@@ -127,25 +135,24 @@ cols_label(#Mean = html("Competing Estimate"),
            SD.death = html("SE"),
            SD.discharge = html("SE")
 	) %>%
-fmt_number(c(4,7,10),decimals = 4) %>%
-fmt_number(c(5,8,11),pattern = "({x})",decimals = 4)%>%
+fmt_number(c(4,7,10)-1,decimals = 4) %>%
+fmt_number(c(5,8,11)-1,pattern = "({x})",decimals = 4)%>%
 fmt_number(1, pattern = "Scenario {x}")%>%
-fmt_number(c(6,9,12),decimals = 1) %>%
-fmt_missing(columns = 1:12, missing_text = "") %>%
-cols_align(columns = 3, align = c("center")) %>%
-cols_align(columns = c(5,8,11), align = c("left")) %>%
-cols_align(columns = c(6,9,12), align = c("center")) #%>%
+fmt_number(c(6,9,12)-1,decimals = 1) %>%
+fmt_missing(columns = 1:11, missing_text = "") %>%
+#cols_align(columns = 2, align = c("center")) %>%
+cols_align(columns = c(5,8,11)-1, align = c("left")) %>%
+cols_align(columns = c(6,9,12)-1, align = c("center")) %>%
 as_latex %>% as.character %>% cat
 
 ######################################################################3
-#### Tabulate Results (Across Alpha2, TrtD2)
+#### Tabulate Results  9 Scenarios (Across Alpha2, TrtD2)
 sumtab %>% ungroup %>%
 filter(Parameter %in% c("Alpha, Terminal1", "Recurrent: trt", "Terminal1: trt")) %>%
-dplyr::select(scenario, Parameter, trtD2, alpha2, bias:Correct.discharge) %>%
+dplyr::select(trtD2, alpha2, Parameter, bias:Correct.discharge) %>%
 dplyr::select(-bias.discharge:-Correct.discharge) %>%
-gt(rowname_col = "Parameter",
-   groupname_col = "scenario")%>%
-tab_stubhead(label = "Parameter")%>%
+gt()%>%
+#tab_stubhead(label = "Parameter")%>%
 tab_header(title = md(paste0("**Competing Joint Model Simulation Results(R =",
      round(nrow(merged)/12/length(unique(merged$scenario))),
      ", n = ", 1500,")**")))%>%
@@ -156,20 +163,20 @@ cols_label(bias = html("Competing Estimate"),
            SD = html("SE"),
            SD.death = html("SE"),
 ) %>%
-fmt_number(c(4,7)+1,decimals = 4) %>%
-fmt_number(c(5,8)+1,pattern = "({x})",decimals = 4)%>%
-fmt_number(1+1, pattern = "Scenario {x}")%>%
-fmt_number(c(6,9)+1,decimals = 1) %>%
-fmt_missing(columns = (1:9)+1, missing_text = "") %>%
-cols_align(columns = 3+1, align = c("center")) %>%
-cols_align(columns = c(5,8)+1, align = c("left")) %>%
-cols_align(columns = c(6,9)+1, align = c("center")) %>%
+fmt_number(c(4,7),decimals = 4) %>%
+fmt_number(c(5,8),pattern = "({x})",decimals = 4)%>%
+#fmt_number(1+1, pattern = "Scenario {x}")%>%
+fmt_number(c(6,9),decimals = 1) %>%
+fmt_missing(columns = (1:9), missing_text = "") %>%
+cols_align(columns = 3, align = c("center")) %>%
+cols_align(columns = c(5,8), align = c("left")) %>%
+cols_align(columns = c(6,9), align = c("center")) %>%
 as_latex() %>%as.character() %>%cat()
 
 #############################################################################
 # Plot Recurrent Event Treatment Effect Bias with Bias confidence intervals
 png("../simulation_results/NineScenario_Bias_TrtR.png",
-    width = 1200, height = 600)
+    width = 1000, height = 500)
 gridExtra::grid.arrange(
 sumtab %>% filter(Parameter == "Recurrent: trt") %>%
 ggplot() +
@@ -216,7 +223,7 @@ dev.off()
 #############################################################################
 # Plot Death Treatment Effect Bias with Bias confidence intervals
 png("../simulation_results/NineScenario_Bias_TrtD.png",
-    width = 1200, height = 600)
+    width = 1000, height = 500)
 gridExtra::grid.arrange(
 sumtab %>% filter(Parameter == "Terminal1: trt") %>%
 ggplot() +
@@ -233,7 +240,7 @@ geom_errorbar(aes(x = trtD2+alpha2/20,
 	scale_x_continuous(breaks = c(-0.25, 0, 0.25))+
 theme_bw(20)+
 theme(legend.position = "none")+
-ylim(-0.08, 0.04)+
+ylim(-0.1, 0.03)+
 scale_color_discrete(expression(alpha[2]))+
 xlab(expression(beta[2]))+
 ylab(expression(Bias~beta[1]))+
@@ -255,7 +262,7 @@ geom_errorbar(aes(x = trtD2+alpha2/20,
 theme_bw(20)+
 theme(legend.position = c(0.35,0.25),
       legend.background = element_rect(color = "grey80"))+
-ylim(-0.08, 0.04)+
+ylim(-0.1, 0.03)+
 scale_color_discrete(expression(alpha[2]))+
 xlab(expression(beta[2]))+
 ylab(expression(Bias~beta[1]))+
@@ -267,7 +274,7 @@ dev.off()
 #############################################################################
 # Plot Alpha1 Bias confidence intervals
 png("../simulation_results/NineScenario_Bias_Alpha.png",
-    width = 1200, height = 600)
+    width = 1000, height = 500)
 gridExtra::grid.arrange(
 	sumtab %>% filter(Parameter == "Alpha, Terminal1") %>%
 ggplot() +
@@ -284,7 +291,7 @@ geom_errorbar(aes(x = trtD2+alpha2/20,
 scale_x_continuous(breaks = c(-0.25, 0, 0.25))+
 theme_bw(20)+
 theme(legend.position = "none")+
-ylim(-0.2, 0.6)+
+ylim(-0.15, 0.5)+
 scale_color_discrete(expression(alpha[2]))+
 xlab(expression(beta[2]))+
 ylab(expression(Bias~alpha[1]))+
@@ -304,9 +311,9 @@ geom_errorbar(aes(x = trtD2+alpha2/20,
 	  size = 1)+
 scale_x_continuous(breaks = c(-0.25, 0, 0.25))+
 theme_bw(20)+
-theme(legend.position = c(0.35,0.25),
+theme(legend.position = c(0.25,0.85),
       legend.background = element_rect(color = "grey80"))+
-ylim(-0.2, 0.6)+
+ylim(-0.15, 0.5)+
 scale_color_discrete(expression(alpha[2]))+
 xlab(expression(beta[2]))+
 ylab(expression(Bias~alpha[1]))+

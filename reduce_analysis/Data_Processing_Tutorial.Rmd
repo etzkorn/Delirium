@@ -1,0 +1,20 @@
+---
+title: "Data Simulation and Processing for the Competing Joint Model"
+author: "Lacey Etzkorn"
+date: "2/5/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Simulating Data
+
+### Processing Data
+
+Data for delirium trials often comes in a wide format where each day of a participants stay (1-28) has its own column.
+
+```{r}
+
+```
