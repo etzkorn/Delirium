@@ -8,7 +8,7 @@ mutate(letter = substr(CRF_letter_number, 0,1)) %>%
 mutate(study_arm = factor(study_arm,
 		  labels = c("Placebo", "Haloperidol (2mg)", "Haloperidol (1mg)"))) %>%
 filter(!letter %in% c("L","M","N","Q","R","T","U")) %>%
-select(died, gender, age, delirium_yes_no, apache,
+select(died, gender, age, (delirium.coma.days>0), apache,
        losic, number_days_survived_28days,
        study_arm, delirium_number_of_days, coma_number_of_days, matches(c("d.._coma","d.._delirium"))) %>%
 mutate( id = 1:n(),
@@ -18,24 +18,16 @@ mutate( id = 1:n(),
         censored = losic > 28,
         outcome = ifelse(died, "Death", ifelse(discharged, "Discharged", "Censored")))
 
-# count delirium days
+# count delirium/coma days
 df <-
 df %>%
-select(id, d01_delirium:d28_delirium) %>%
-pivot_longer(cols = d01_delirium:d28_delirium) %>%
+select(id, d01_delirium:d28_delirium, d01_coma:d28_coma) %>%
+pivot_longer(cols = c(d01_delirium:d28_delirium,d01_coma:d28_coma)) %>%
+separate(name, into = c("d", "state")) %>%
 mutate(value = ifelse(value < 0, NA, value)) %>%
+pivot_wider(id_cols = c("id", "d"),names_from = "state", values_from = "value") %>%
 group_by(id) %>%
-summarise(delirium_days = sum(value, na.rm = T)) %>%
-left_join(df, by = "id")
-
-# count coma days
-df <-
-df %>%
-select(id, d01_coma:d28_coma) %>%
-pivot_longer(cols = d01_coma:d28_coma) %>%
-mutate(value = ifelse(value < 0, NA, value)) %>%
-group_by(id) %>%
-summarise(coma_days = sum(value, na.rm = T)) %>%
+summarise(delirium.coma.days = sum(as.numeric(delirium==1|coma==1), na.rm = T)) %>%
 left_join(df, by = "id")
 
 ########################################################################
@@ -43,8 +35,8 @@ left_join(df, by = "id")
 df%>%
 group_by(study_arm) %>%
 summarise(size = paste0("(n=",n(),")"),
-          `Any Delirium (overall)` = paste0(sum(delirium_yes_no),
-          	         " (",100*round(mean(delirium_yes_no),3),"%)"),
+          `Any Delirium (overall)` = paste0(sum(delirium.coma.days>0),
+          	         " (",100*round(mean(delirium.coma.days>0),3),"%)"),
           `Length of Stay`= paste0(round(mean(pmin(losic, 28)),2),
           		 " (",round(sd(pmin(losic, 28)),2),")"),
           Died = paste0(sum(died),
@@ -54,20 +46,23 @@ summarise(size = paste0("(n=",n(),")"),
           Censored = paste0(sum(censored),
           	      " (",100*round(mean(censored),3),"%)"),
 
-          `Delirium among Discharges` = paste0(sum(delirium_yes_no[discharged]),
-          		" (",100*round(mean(delirium_yes_no[discharged]),3),"%)"),
+          `Delirium among Discharges` = paste0(sum((delirium.coma.days>0)[discharged]),
+          		" (",100*round(mean((delirium.coma.days>0)[discharged]),3),"%)"),
           `Length of Stay for Discharges`= paste0(round(mean(pmin(losic, 28)[discharged]),2),
           			    " (",round(sd(pmin(losic, 28)[discharged]),2),")"),
 
-          `Delirium among Deaths` = paste0(sum(delirium_yes_no[died]),
-          			 " (",100*round(mean(delirium_yes_no[died]),3),"%)"),
+          `Delirium among Deaths` = paste0(sum((delirium.coma.days>0)[died]),
+          			 " (",100*round(mean((delirium.coma.days>0)[died]),3),"%)"),
           `Length of Stay for Mortalities`= paste0(round(mean(pmin(losic, 28)[died]),2),
           		 " (",round(sd(pmin(losic, 28)[died]),2),")"),
 
-          `Delirium among Censored` = paste0(sum(delirium_yes_no[censored]),
-          		           " (",100*round(mean(delirium_yes_no[censored]),3),"%)"),) %>%
-t() %>%
+          `Delirium among Censored` = paste0(sum((delirium.coma.days>0)[censored]),
+          		           " (",100*round(mean((delirium.coma.days>0)[censored]),3),"%)"),) %>%
+t() #%>%
 knitr::kable("latex")
+
+mean((df$delirium.coma.days>0)[df$died])
+mean((df$delirium.coma.days>0)[df$discharged])
 
 ########################################################################
 # Summarize by Observation Days
@@ -75,26 +70,24 @@ df%>%
 group_by(study_arm) %>%
 summarise(
 `Total Days` = paste0("(t = ",sum(pmin(losic, 28))," days)"),
-`Delirium Days, t(%)` = paste0(sum(delirium_days)," (",round(100*sum(delirium_days)/sum(pmin(losic, 28)),1),"%)"),
-`Coma Days, t(%)` = paste0(sum(coma_days)," (",round(100*sum(coma_days)/sum(pmin(losic, 28)),1),"%)"),
+`Delirium Days, t(%)` = paste0(sum(delirium.coma.days)," (",round(100*sum(delirium.coma.days)/sum(pmin(losic, 28)),1),"%)"),
 
 `Discharges: Total Days` = paste0("(t = ",sum(pmin(losic[discharged], 28))," days)"),
-`Discharges: Total Delirium Days` = paste0(sum(delirium_days[discharged]),
-			       " (",round(100*sum(delirium_days[discharged])/sum(pmin(losic[discharged], 28)),1),"%)"),
-`Discharges: Total Coma Days` = paste0(sum(coma_days[discharged]),
-			   " (",round(100*sum(coma_days[discharged])/sum(pmin(losic[discharged], 28)),1),"%)"),
-
+`Discharges: Total Delirium Days` = paste0(sum(delirium.coma.days[discharged]),
+			       " (",round(100*sum(delirium.coma.days[discharged])/sum(pmin(losic[discharged], 28)),1),"%)"),
 `Deaths: Total Days` = paste0("(t = ",sum(pmin(losic[died], 28))," days)"),
-`Deaths: Total Delirium Days` = paste0(sum(delirium_days[died]),
-		" (",round(100*sum(delirium_days[died])/sum(pmin(losic[died],28)),1),"%)"),
-`Deaths: Total Coma Days` = paste0(sum(coma_days[died]),
-		" (",round(100*sum(coma_days[died])/sum(pmin(losic[died], 28)),1),"%)")) %>%
-t()%>%
+`Deaths: Total Delirium Days` = paste0(sum(delirium.coma.days[died]),
+		" (",round(100*sum(delirium.coma.days[died])/sum(pmin(losic[died],28)),1),"%)")) %>%
+t() #%>%
 knitr::kable("latex")
+
+sum((df$delirium.coma.days)[df$died])/sum((df$losic)[df$died])
+sum((df$delirium.coma.days)[df$discharged])/sum((df$losic)[df$discharged])
+
 
 ########################################################################
 # Plot Prevalence by Apache Score
-ggplot(df,aes(x=apache, y=delirium_yes_no))+ geom_jitter()+stat_smooth()
+ggplot(df,aes(x=apache, y=(delirium.coma.days>0)))+ geom_jitter()+stat_smooth()
 
 df <- read_csv("../reduce_analysis_output/reduce data.csv")
 head(df)
@@ -138,9 +131,8 @@ geom_line(aes(y = cumprev, x = day, group = study_arm, color = factor(study_arm)
 df %>%
 mutate(study_los = pmin(losic, 28) + 1) %>%
 group_by(outcome,study_los) %>%
-summarise(del_rate = mean(delirium_days/study_los),
-          coma_rate = mean(coma_days/study_los),
-          delirium_prev = mean(delirium_yes_no)) %>%
+summarise(del_rate = mean((delirium.coma.days+coma_days)/study_los),
+          delirium_prev = mean((delirium.coma.days>0))) %>%
 ungroup %>%
 filter(study_los > 0) %>%
 ggplot() +
@@ -157,7 +149,7 @@ facet_wrap("outcome")
 df %>%
 mutate(study_los = pmin(losic, 28) + 1) %>%
 group_by(outcome,study_los) %>%
-summarise(delirium_prev = mean(delirium_yes_no)) %>%
+summarise(delirium_prev = mean((delirium.coma.days>0))) %>%
 ungroup %>%
 filter(study_los > 0) %>%
 ggplot() +
