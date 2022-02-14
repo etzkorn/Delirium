@@ -10,7 +10,7 @@ params:
 ```{r setup, echo = FALSE,message = FALSE}
 library(frailtypack); library(gt); library(tidyverse)
 knitr::opts_chunk$set(echo = FALSE,message = FALSE)
-load(file = "../reduce_analysis_output/processed_data_coma_delirium.rdata")
+load(file = "../reduce_data/processed_data_coma_delirium_2mgonly.rdata")
 df2 <- df2 %>% ungroup %>%
 filter(study_arm!=3)%>% 
 mutate(gap = tstop - tstart,
@@ -18,6 +18,8 @@ mutate(gap = tstop - tstart,
        treatment = 1*(study_arm==2)  )
 table(df2$treatment, useNA = "ifany")
 ```
+
+# Treatment (2mg) Effect Only
 
 ```{r, echo = FALSE,message = FALSE}
 if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_20220204.rdata")){
@@ -94,64 +96,15 @@ save(gap.model, cal.model,
 }else load("../reduce_analysis_output/REDUCE_Weibull_Models_20220201.rdata")
 ```
 
+### Tabulate Parameter Estimates
 
-```{r}
+```{r, eval = F}
 m1 <-dplyr::select(cal.model$summary.table, Parameter, Estimate, Estimate.SE, p)
 m2 <-dplyr::select(cal.model$initialization$summary.table1, Parameter, Estimate, Estimate.SE, p)
 m3 <-dplyr::select(cal.model$initialization$summary.table2, Parameter, Estimate, Estimate.SE, p)
 m4 <-dplyr::select(gap.model$summary.table, Parameter, Estimate, Estimate.SE, p)
 m5 <-dplyr::select(gap.model$initialization$summary.table1, Parameter, Estimate, Estimate.SE, p)
 m6 <-dplyr::select(gap.model$initialization$summary.table2, Parameter, Estimate, Estimate.SE, p)
-tab.start <- 
-left_join(m1, m2, by = "Parameter") %>%
-left_join(m3, by = "Parameter") %>%
-left_join(m4, by = "Parameter") %>%
-left_join(m5, by = "Parameter") %>%
-left_join(m6, by = "Parameter")
-colnames(tab.start)<- c("",rep(c("Fit", "(SE)", "p"),6))
-	
-
-gt(tab.start , rowname_col = "Parameter")%>%
-tab_stubhead(label = "Parameter")%>%
-tab_header(
-    title = md("**REDUCE Trial: Weibull Model Estimates**"))%>%
-cols_label(
-    V4 = html("Joint (Death)"),
-    V6 = html("Joint (Discharge)"),
-    V2 = html("Competing Shared"),
-    V10 = html("Joint (Death)"),
-    V12 = html("Joint (Discharge)"),
-    V8 = html("Competing Shared"),
-    V3 = html("SE"),
-    V5 = html("SE"),
-    V7 = html("SE"),
-    V9 = html("SE"),
-    V11 = html("SE"),
-    V13 = html("SE")
-)%>%fmt_missing(columns = 1:13, missing_text = "")  %>%
-tab_spanner(
-    label = "Gap Times",
-    columns = 8:13
-  ) %>% 
-tab_spanner(
-    label = "Calendar Times",
-    columns = 2:7
-  ) %>%
-tab_style(
-    style = list(
-      cell_borders(sides = "left")
-    ),
-    locations = list(
-      cells_body(
-        columns = vars(V8)
-      )
-    )
-  ) %>% 
-text_transform(
-  locations = cells_body(columns = c(3,5,7,9,11,13)),
-  fn = function(x) ifelse(x == "","",paste0("(",x,")"))
-  ) %>%
-fmt_number(columns = 2:13,decimals = 2)
 ```
 
 ```{r}
@@ -170,15 +123,14 @@ text_transform(
   locations = cells_body(columns = c(3,6,9)),
   fn = function(x) ifelse(x == "","",paste0("(",x,")"))
   ) %>%
-fmt_number(columns = c(2,3,5,6,8,9),decimals = 2)%>%
+fmt_number(columns = c(2,3,5,6,8,9),decimals = 3)%>%
 fmt_number(columns = c(4,7,10),decimals = 3) %>%
 as_latex() %>%as.character() %>%cat()
 ```
 
 
 
-```{r}
-
+```{r, eval = FALSE}
 gap.model1 <-
 frailtyPenal(formula = Surv(tstart, tstop, del) ~ treatment+
 		terminal(death) + cluster(id),
@@ -193,3 +145,94 @@ frailtyPenal(formula = Surv(tstart, tstop, del) ~ treatment+
 	maxit = 300)
 ```
 
+
+# Include Age and Apache Score Effects
+
+```{r, echo = FALSE,message = FALSE}
+if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220214.rdata")){
+
+# the death initialization model for the gap.model doesn't work, so we set some starting vals
+gap.model1 <-
+frailtyPenal(formula = Surv(gap, del) ~ treatment+ apache +
+		terminal(death) + cluster(id),
+	formula.terminalEvent = ~treatment,
+	data = df2, 
+	recurrentAG = F,
+	hazard = "Weibull", RandDist = "LogN", 
+	init.Alpha = 14,
+	init.B = c(-0.0182,-0.0504),
+	init.Theta = 0.238^2,
+	maxit = 300)
+
+#############################
+# GAP Time Models (with/without initialization)
+gap.model <-
+multivPenal(formula = Surv(tstart, tstop, del) ~ treatment + apache +
+		terminal(death) + terminal2(discharge) + cluster(id),
+	formula.terminalEvent = ~treatment+ apache,
+	formula.terminalEvent2= ~treatment+ apache,
+	data = df2,
+	gapTimes = T,
+	jointGeneral = F,
+	hazard = "Weibull",
+	maxit = 300, 
+	initialize = T)
+
+# Extract Transformed Parameters
+gap.model$initialization$joint1 <- gap.model1
+ f1 <- function(b){
+ 	c(b[1:(length(b)-3+1-2)]^2,
+ 	  b[(length(b)-3+1-1):length(b)])
+ }
+ f1.prime <- function(b){
+ 	diag(c(2*b[1:(length(b)-3+1-2)],
+ 	       rep(1,3-1+2)))
+ }
+ Parameters1 = c("Recurrent: Shape", "Recurrent: Scale",
+ 	  "Terminal1: Shape", "Terminal1: Scale",
+ 	  "Sigma", "Terminal1: Alpha",
+ 	  paste0("Recurrent: ","treatment"),
+ 	  paste0("Terminal1: ","treatment"))
+ gap.model$initialization$varH.Estimate1 <-
+		f1.prime(gap.model$initialization$joint1$b) %*%
+ 		gap.model$initialization$joint1$varHtotal %*%
+ 		f1.prime(gap.model$initialization$joint1$b)
+ gap.model$initialization$summary.table1 <- tibble(
+ 		Parameter = Parameters1,
+ 		Raw = gap.model$initialization$joint1$b,
+ 		Raw.SE = sqrt(diag(gap.model$initialization$joint1$varHtotal)),
+ 		Estimate = f1(gap.model$initialization$joint1$b),
+ 		Estimate.SE = sqrt(diag(gap.model$initialization$varH.Estimate1)),
+ 		p = 2*pnorm(q = -abs(Raw), mean = 0, sd = Raw.SE)
+ )
+
+#############################
+# Calendar Time Model
+cal.model <-
+multivPenal(formula = Surv(tstart, tstop, del) ~ treatment +
+		terminal(death) + terminal2(discharge) + cluster(id),
+	formula.terminalEvent = ~treatment,
+	formula.terminalEvent2= ~treatment,
+	data = df2,
+	jointGeneral = F,
+	hazard = "Weibull",
+	maxit = 300, 
+	initialize = T)
+save(gap.model, cal.model,
+     file = "../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220214.rdata")
+}else load("../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220214.rdata")
+
+
+
+
+frailtyPenal(formula = Surv(tstart, tstop, del) ~ treatment + apache +
+		terminal(death) + cluster(id),
+			 # this line drops the "terminal2" term from the original model formula
+			 formula.terminalEvent = ~ treatment + apache,
+			 jointGeneral = F,
+			 data = data,
+			 recurrentAG= !gapTimes,
+			 hazard = "Weibull", RandDist = "LogN",
+			 maxit = 100, print.times = F)
+
+```

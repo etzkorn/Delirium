@@ -8,13 +8,13 @@ head(df)
 df1 <- df %>%
 mutate(letter = substr(CRF_letter_number, 0,1)) %>%
 filter(!letter %in% c("L","M","N","Q","R","T","U")) %>%
-dplyr::select(died, apache, study_arm, losic, number_days_survived_28days, matches(c("d.._coma","d.._delirium"))) %>%
+dplyr::select(died, apache, age, study_arm, losic, number_days_survived_28days, matches(c("d.._coma","d.._delirium"))) %>%
 mutate( id = 1:n()) %>%
 mutate(d00_dead = died, `d-1_dead` = died) %>%
 dplyr::select(-died) %>%
 pivot_longer(cols = c(d00_dead, `d-1_dead`, d01_coma:d28_delirium)) %>%
 separate(col = name, into = c("day", "state"), sep = "_") %>%
-pivot_wider(id_cols = c(id, day, apache, study_arm, losic, number_days_survived_28days), names_from = state) %>%
+pivot_wider(id_cols = c(id, day, apache, age, study_arm, losic, number_days_survived_28days), names_from = state) %>%
 mutate(day = as.numeric(gsub("d","", day)),
        discharge = as.numeric(day == 0 & number_days_survived_28days>losic),
        death = as.numeric(day == 0 & number_days_survived_28days<=losic)) %>%
@@ -50,7 +50,8 @@ summarise(tstart = min(tstart),
           prev.state = prev.state[1],
           next.state = next.state[n()],
           study_arm = study_arm[1],
-          apache=apache[1]) %>%
+          apache=apache[1],
+          age = age[1]) %>%
 
 # Create indicators for events
 mutate(del = as.numeric(next.state == "Delirium, Coma"),
@@ -59,13 +60,13 @@ mutate(del = as.numeric(next.state == "Delirium, Coma"),
 
 # Remove intervals of active delirium
 filter(state != "Delirium, Coma" ) %>%
-dplyr::select(id, tstart, tstop, apache, study_arm, del:discharge)
+dplyr::select(id, tstart, tstop, apache, age, study_arm, del:discharge)
 
 
-save(df2, file = "../reduce_analysis_output/processed_data_coma_delirium.rdata")
+save(df2, file = "../reduce_data/processed_data_coma_delirium.rdata")
 
 df2 <- df2 %>%
-filter(study_arm %in% c(0,2)) %>%
+filter(study_arm %in% c(1,2)) %>%
 mutate(treatment = as.numeric(study_arm==2))
 
-save(df2, file = "../reduce_analysis_output/processed_data_2mgonly.rdata")
+save(df2, file = "../reduce_data/processed_data_coma_delirium_2mgonly.rdata")

@@ -8,7 +8,7 @@ mutate(letter = substr(CRF_letter_number, 0,1)) %>%
 mutate(study_arm = factor(study_arm,
 		  labels = c("Placebo", "Haloperidol (2mg)", "Haloperidol (1mg)"))) %>%
 filter(!letter %in% c("L","M","N","Q","R","T","U")) %>%
-select(died, gender, age, (delirium.coma.days>0), apache,
+dplyr::select(died, gender, age, delirium_yes_no, apache,
        losic, number_days_survived_28days,
        study_arm, delirium_number_of_days, coma_number_of_days, matches(c("d.._coma","d.._delirium"))) %>%
 mutate( id = 1:n(),
@@ -21,7 +21,7 @@ mutate( id = 1:n(),
 # count delirium/coma days
 df <-
 df %>%
-select(id, d01_delirium:d28_delirium, d01_coma:d28_coma) %>%
+dplyr::select(id, d01_delirium:d28_delirium, d01_coma:d28_coma) %>%
 pivot_longer(cols = c(d01_delirium:d28_delirium,d01_coma:d28_coma)) %>%
 separate(name, into = c("d", "state")) %>%
 mutate(value = ifelse(value < 0, NA, value)) %>%
@@ -63,6 +63,11 @@ knitr::kable("latex")
 
 mean((df$delirium.coma.days>0)[df$died])
 mean((df$delirium.coma.days>0)[df$discharged])
+
+table(coma = (df$coma_number_of_days>0),
+      del = df$delirium_number_of_days>0) %>% prop.table(1)
+table(coma = (df$coma_number_of_days>0)>0)
+
 
 ########################################################################
 # Summarize by Observation Days

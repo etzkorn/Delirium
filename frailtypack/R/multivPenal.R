@@ -791,16 +791,6 @@ if(terminal2.ind == 1) {
   modelmatrix4 = matrix(0)
 }
 
-############################################################
-# Compute Gap Times (If Applicable)
-
-if(gapTimes){
-  tt11 <- tt11 - tt10
-  tt10 <- 0 * tt10
-  tt1meta0 <- tt1meta0 - tt0meta0
-  tt0meta0 <- 0 * tt0meta0
-}
-
 #########################################################################
 # Configure Parameters
 
@@ -866,15 +856,23 @@ if(initialize){
 	init.B <- init.B*0
 
 	# recreate time variable in original data set in case of gap times, create new formula
-	if(gapTimes){
-		data$gapTimes <- tt11
-		initialization.formula <-
-			paste("Surv(gapTimes, ", EVENT1, ")",
-			      paste(gsub("Surv(.*)","", as.character(formula)), collapse = ""),
-			      collapse = "")
-	}else{
-		initialization.formula <- formula
-	}
+	# if(gapTimes){
+	# 	#data$gapTimes <- tt11
+	# 	initialization.formula <-
+	# 		paste("Surv(gapTimes, ", EVENT1, ")",
+	# 		      paste(gsub("Surv(.*)","", as.character(formula)), collapse = ""),
+	# 		      collapse = "")
+	#
+	#
+	#
+	# 	data$gapTimes <- tt11
+	# 	initialization.formula <-
+	# 		paste("Surv(gapTimes, ", EVENT1, ")",
+	# 		      paste(gsub("Surv(.*)","", as.character(formula)), collapse = ""),
+	# 		      collapse = "")
+	# }else{
+	# 	initialization.formula <- formula
+	# }
 	initialization.formula <- formula(initialization.formula)
 
 	# create separate formulas for each initialization model
@@ -899,7 +897,7 @@ if(initialize){
 			 jointGeneral = F,
 			 data = data,
 			 recurrentAG= !gapTimes,
-			 hazard = "Weibull",RandDist = "LogN",
+			 hazard = "Weibull", RandDist = "LogN",
 			 maxit = 100, print.times = F)
 
 	mod.joint2<-
@@ -951,6 +949,17 @@ if(initialize){
 	}
 }
 
+############################################################
+# Compute Gap Times (If Applicable)
+
+if(gapTimes){
+	tt11 <- tt11 - tt10
+	tt10 <- 0 * tt10
+	tt1meta0 <- tt1meta0 - tt0meta0
+	tt0meta0 <- 0 * tt0meta0
+}
+
+############################################################
 # Fill parameter vector
 if(!jointGeneral){
 	b <- c(sqrt(init.hazard),
