@@ -12,11 +12,15 @@ library(frailtypack); library(gt); library(tidyverse)
 knitr::opts_chunk$set(echo = FALSE,message = FALSE)
 load(file = "../reduce_data/processed_data_coma_delirium_2mgonly.rdata")
 df2 <- df2 %>% ungroup %>%
-filter(study_arm!=3)%>% 
+filter(study_arm!=3 & (apache > 0) & !is.na(apache))%>% 
 mutate(gap = tstop - tstart,
        id = dense_rank(id),
        treatment = 1*(study_arm==2)  )
+#table(df2$apache, useNA = "ifany")
+#table(df2$age, useNA = "ifany")
 table(df2$treatment, useNA = "ifany")
+df2 %>% group_by(id) %>% summarise(apache = apache[1], age = age[1]) %>% 
+summarise(mean(apache), mean(age), sd(apache), sd(age), cor(age, apache))
 ```
 
 # Treatment (2mg) Effect Only
@@ -150,89 +154,52 @@ frailtyPenal(formula = Surv(tstart, tstop, del) ~ treatment+
 
 ```{r, echo = FALSE,message = FALSE}
 if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220214.rdata")){
-
 # the death initialization model for the gap.model doesn't work, so we set some starting vals
 gap.model1 <-
-frailtyPenal(formula = Surv(gap, del) ~ treatment+ apache +
+frailtyPenal(formula = Surv(gap, del) ~ treatment + I(apache/5 - 19/5) + I(age/10 - 65/10) +
 		terminal(death) + cluster(id),
-	formula.terminalEvent = ~treatment,
+	formula.terminalEvent = ~treatment + I(apache/5 - 19/5) + I(age/10 - 65/10),
 	data = df2, 
 	recurrentAG = F,
 	hazard = "Weibull", RandDist = "LogN", 
 	init.Alpha = 14,
-	init.B = c(-0.0182,-0.0504),
+	init.B = c(-0.0216,0.0636,0.0283,-0.0519,0.0807,0.236),
+	init.Theta = 0.238^2,
+	maxit = 300)
+
+gap.model1 <-
+frailtyPenal(formula = Surv(gap, del) ~ treatment + I(apache/5 - 19/5) + I(age/10 - 65/10) +
+		terminal(discharge) + cluster(id),
+	formula.terminalEvent = ~treatment + I(apache/5 - 19/5) + I(age/10 - 65/10),
+	data = df2, 
+	recurrentAG = F,
+	hazard = "Weibull", RandDist = "LogN", 
+	init.Alpha = 14,
+	init.B = c(-0.0216,0.0636,0.0283,-0.0519,0.0807,0.236),
 	init.Theta = 0.238^2,
 	maxit = 300)
 
 #############################
 # GAP Time Models (with/without initialization)
 gap.model <-
-multivPenal(formula = Surv(tstart, tstop, del) ~ treatment + apache +
+multivPenal(formula = Surv(tstart, tstop, del) ~ treatment + I(apache/5 - 19/5) + I(age/10 - 65/10)+
 		terminal(death) + terminal2(discharge) + cluster(id),
-	formula.terminalEvent = ~treatment+ apache,
-	formula.terminalEvent2= ~treatment+ apache,
+	formula.terminalEvent = ~treatment+ I(apache/5- 19/5)+ I(age/10 - 65/10),
+	formula.terminalEvent2= ~treatment+ I(apache/5- 19/5)+ I(age/10 - 65/10),
 	data = df2,
 	gapTimes = T,
 	jointGeneral = F,
 	hazard = "Weibull",
 	maxit = 300, 
-	initialize = T)
-
-# Extract Transformed Parameters
-gap.model$initialization$joint1 <- gap.model1
- f1 <- function(b){
- 	c(b[1:(length(b)-3+1-2)]^2,
- 	  b[(length(b)-3+1-1):length(b)])
- }
- f1.prime <- function(b){
- 	diag(c(2*b[1:(length(b)-3+1-2)],
- 	       rep(1,3-1+2)))
- }
- Parameters1 = c("Recurrent: Shape", "Recurrent: Scale",
- 	  "Terminal1: Shape", "Terminal1: Scale",
- 	  "Sigma", "Terminal1: Alpha",
- 	  paste0("Recurrent: ","treatment"),
- 	  paste0("Terminal1: ","treatment"))
- gap.model$initialization$varH.Estimate1 <-
-		f1.prime(gap.model$initialization$joint1$b) %*%
- 		gap.model$initialization$joint1$varHtotal %*%
- 		f1.prime(gap.model$initialization$joint1$b)
- gap.model$initialization$summary.table1 <- tibble(
- 		Parameter = Parameters1,
- 		Raw = gap.model$initialization$joint1$b,
- 		Raw.SE = sqrt(diag(gap.model$initialization$joint1$varHtotal)),
- 		Estimate = f1(gap.model$initialization$joint1$b),
- 		Estimate.SE = sqrt(diag(gap.model$initialization$varH.Estimate1)),
- 		p = 2*pnorm(q = -abs(Raw), mean = 0, sd = Raw.SE)
- )
-
-#############################
-# Calendar Time Model
-cal.model <-
-multivPenal(formula = Surv(tstart, tstop, del) ~ treatment +
-		terminal(death) + terminal2(discharge) + cluster(id),
-	formula.terminalEvent = ~treatment,
-	formula.terminalEvent2= ~treatment,
-	data = df2,
-	jointGeneral = F,
-	hazard = "Weibull",
-	maxit = 300, 
-	initialize = T)
-save(gap.model, cal.model,
-     file = "../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220214.rdata")
+	initialize = F,
+	init.Sigma = 0.25, 
+	init.Alpha1 = 14, 
+	init.Alpha2 = -5, 
+	init.hazard = c(0.34, 6.64, 2.6, 78.5, 1.51, 8.23),
+	init.B = rep(0,9))
 }else load("../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220214.rdata")
 
-
-
-
-frailtyPenal(formula = Surv(tstart, tstop, del) ~ treatment + apache +
-		terminal(death) + cluster(id),
-			 # this line drops the "terminal2" term from the original model formula
-			 formula.terminalEvent = ~ treatment + apache,
-			 jointGeneral = F,
-			 data = data,
-			 recurrentAG= !gapTimes,
-			 hazard = "Weibull", RandDist = "LogN",
-			 maxit = 100, print.times = F)
-
+gap.model$summary.table %>% 
+dplyr::select(Parameter, Estimate, Estimate.SE, p) %>%
+knitr::kable(format = "latex")
 ```

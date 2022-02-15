@@ -100,7 +100,7 @@ save(sumtab, file = paste0("../simulation_results/Averaged_Estimates",
 		   substr(date(),0,11),".rdata"))
 ######################################################################
 # Error Rates
-#load("Averaged_EstimatesSun Feb  6 .rdata")
+#load("../simulation_results/Averaged_EstimatesSun Feb  6 .rdata")
 sumtab %>%
 group_by(scenario) %>%
 summarise(1 - max(n)/5000, 1- max(n.death)/5000, 1-max(n.discharge)/5000,
@@ -175,150 +175,164 @@ as_latex() %>%as.character() %>%cat()
 
 #############################################################################
 # Plot Recurrent Event Treatment Effect Bias with Bias confidence intervals
-png("../simulation_results/NineScenario_Bias_TrtR.png",
-    width = 1000, height = 500)
+png("../simulation_results/NineScenario_Bias.png",
+    width = 1000, height = 1200)
 gridExtra::grid.arrange(
 sumtab %>% filter(Parameter == "Recurrent: trt") %>%
 ggplot() +
-geom_hline(aes(yintercept = 0), linetype = 4)+
-geom_point(aes(x = trtD2+alpha2/20, y = bias, color = factor(alpha2)),
+geom_hline(aes(yintercept = Truth), linetype = 4)+
+geom_point(aes(x = trtD2+alpha2/20, y = Truth+bias, color = factor(alpha2)),
            size = 4) +
 #geom_line(aes(x = trtD2+alpha2/20,, y = bias, color = factor(alpha2), group = factor(alpha2))) +
 geom_errorbar(aes(x = trtD2+alpha2/20,
-	      ymin = bias-2*SD/sqrt(n), ymax = bias+2*SD/sqrt(n),
+	      ymin = Truth+bias-2*SD/sqrt(n), ymax = Truth+bias+2*SD/sqrt(n),
 	      color = factor(alpha2), group = factor(alpha2)),
 	  size = 1)+
-	theme_bw(20)+
-	theme(legend.position = "none")+
-ylim(-0.02, 0.02)+
-	scale_color_discrete(expression(alpha[2]))+
+	theme_bw(25)+
+	theme(legend.position = "none",
+	      plot.margin = margin(0,.25,.25,.5,"cm"),
+	      axis.title.x = element_blank(),
+	      axis.ticks.x = element_blank(),
+	      axis.text.x = element_blank())+
+	ylim(-0.27, -0.23)+
+	scale_color_discrete(expression(alpha[d]))+
 	scale_x_continuous(breaks = c(-0.25, 0, 0.25))+
-	xlab(expression(beta[2]))+
-	ylab(expression(Bias~beta[r]))+
-	ggtitle("Competing Death and Discharge"),
+	xlab(expression(beta[d]))+
+	ylab(expression(Average~Estimate~beta[r]))+
+	ggtitle("Competing Joint Model (a)"),
 
 sumtab %>% filter(Parameter == "Recurrent: trt") %>%
 ggplot() +
-geom_hline(aes(yintercept = 0), linetype = 2)+
-geom_point(aes(x = trtD2+alpha2/20, y = bias.death, color = factor(alpha2)),
+geom_hline(aes(yintercept = Truth), linetype = 2)+
+geom_point(aes(x = trtD2+alpha2/20, y = Truth+bias.death, color = factor(alpha2)),
            size = 4) +
 #geom_line(aes(x = trtD2+alpha2/20,, y = bias.death, color = factor(alpha2), group = factor(alpha2))) +
 geom_errorbar(aes(x = trtD2+alpha2/20,
-	      ymin = bias.death-2*SD.death/sqrt(n.death),
-	      ymax = bias.death+2*SD.death/sqrt(n.death),
+	      ymin = Truth+bias.death-2*SD.death/sqrt(n.death),
+	      ymax = Truth+bias.death+2*SD.death/sqrt(n.death),
 	      color = factor(alpha2), group = factor(alpha2)),
 	  size = 1)+
-theme_bw(20)+
-theme(legend.position = c(0.5,0.85),
-      legend.background = element_rect(color = "grey80"))+
-ylim(-0.02, 0.02)+
-scale_color_discrete(expression(alpha[2]))+
+theme_bw(25)+
+theme(legend.position = "none",
+      legend.background = element_rect(color = "grey80"),
+      plot.margin = margin(0,.25,.25,.5,"cm"),
+      axis.title.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.text.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.text.y = element_blank())+
+ylim(-0.27, -0.23)+
+scale_color_discrete(expression(alpha[d]))+
 scale_x_continuous(breaks = c(-0.25, 0, 0.25))+
-xlab(expression(beta[2]))+
-ylab(expression(Bias~beta[r]))+
-ggtitle("Joint, Death"),
-nrow=1)
-dev.off()
+xlab(expression(beta[d]))+
+ylab(expression(Average~Estimate~beta[r]))+
+ggtitle("Joint, Death (b)"),
 
-#############################################################################
-# Plot Death Treatment Effect Bias with Bias confidence intervals
-png("../simulation_results/NineScenario_Bias_TrtD.png",
-    width = 1000, height = 500)
-gridExtra::grid.arrange(
 sumtab %>% filter(Parameter == "Terminal1: trt") %>%
 ggplot() +
-geom_hline(aes(yintercept = 0), linetype = 2)+
-geom_point(aes(x = trtD2+alpha2/20, y = bias, color = factor(alpha2)),
+geom_hline(aes(yintercept = Truth), linetype = 2)+
+geom_point(aes(x = trtD2+alpha2/20, y = Truth+bias, color = factor(alpha2)),
            size = 4) +
 #geom_line(aes(x = trtD2+alpha2/20,, y = bias, color = factor(alpha2), group = factor(alpha2))) +
 geom_errorbar(aes(x = trtD2+alpha2/20,
-	      ymin = bias-2*SD/sqrt(n),
-	      ymax = bias+2*SD/sqrt(n),
+	      ymin = Truth+bias-2*SD/sqrt(n),
+	      ymax = Truth+bias+2*SD/sqrt(n),
 	      color = factor(alpha2),
 	      group = factor(alpha2)),
 	  size = 1)+
 	scale_x_continuous(breaks = c(-0.25, 0, 0.25))+
-theme_bw(20)+
-theme(legend.position = "none")+
-ylim(-0.1, 0.03)+
-scale_color_discrete(expression(alpha[2]))+
-xlab(expression(beta[2]))+
-ylab(expression(Bias~beta[1]))+
-ggtitle("Competing Death and Discharge"),
+theme_bw(25)+
+theme(legend.position = "none",
+      plot.margin = margin(0,.25,.25,.5,"cm"),
+      axis.title.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.text.x = element_blank())+
+	ylim(-0.35, -0.22)+
+	scale_color_discrete(expression(alpha[d]))+
+xlab(expression(beta[d]))+
+	scale_y_continuous(expression(Average~Estimate~beta[m]),
+		       breaks = c(-0.22,-0.25,-0.28, -0.31, -0.34),
+		       limits = c(-0.35, -0.22))+
+	ylab(expression(Average~Estimate~beta[m])),
 
 sumtab %>% filter(Parameter == "Terminal1: trt") %>%
 ggplot() +
-geom_hline(aes(yintercept = 0), linetype = 2)+
-geom_point(aes(x = trtD2+alpha2/20, y = bias.death, color = factor(alpha2)),
+geom_hline(aes(yintercept = Truth), linetype = 2)+
+geom_point(aes(x = trtD2+alpha2/20, y = Truth+bias.death, color = factor(alpha2)),
            size = 4) +
 #geom_line(aes(x = trtD2+alpha2/20,, y = bias.death, color = factor(alpha2), group = factor(alpha2))) +
 geom_errorbar(aes(x = trtD2+alpha2/20,
-	      ymin = bias.death-2*SD.death/sqrt(n.death),
-	      ymax = bias.death+2*SD.death/sqrt(n.death),
+	      ymin = Truth+bias.death-2*SD.death/sqrt(n.death),
+	      ymax = Truth+bias.death+2*SD.death/sqrt(n.death),
 	      color = factor(alpha2),
 	      group = factor(alpha2)),
 	  size = 1)+
-	scale_x_continuous(breaks = c(-0.25, 0, 0.25))+
-theme_bw(20)+
+scale_x_continuous(breaks = c(-0.25, 0, 0.25))+
+theme_bw(25)+
 theme(legend.position = c(0.35,0.25),
-      legend.background = element_rect(color = "grey80"))+
-ylim(-0.1, 0.03)+
-scale_color_discrete(expression(alpha[2]))+
-xlab(expression(beta[2]))+
-ylab(expression(Bias~beta[1]))+
-ggtitle("Joint Death"),
-	nrow=1)
-dev.off()
+      plot.margin = margin(0,.25,.25,.5,"cm"),
+      axis.title.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.text.x = element_blank(),
+      #title = element_blank(),
+      legend.background = element_rect(color = "grey80"),
+      axis.title.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.text.y = element_blank())+
+scale_color_discrete(expression(alpha[d]))+
+scale_y_continuous(expression(Average~Estimate~beta[m]),
+	       breaks = c(-0.22,-0.25,-0.28, -0.31, -0.34),
+	       limits = c(-0.35, -0.22))+
+xlab(expression(beta[d])),
 
-
-#############################################################################
-# Plot Alpha1 Bias confidence intervals
-png("../simulation_results/NineScenario_Bias_Alpha.png",
-    width = 1000, height = 500)
-gridExtra::grid.arrange(
-	sumtab %>% filter(Parameter == "Alpha, Terminal1") %>%
+sumtab %>% filter(Parameter == "Alpha, Terminal1") %>%
 ggplot() +
-geom_hline(aes(yintercept = 0), linetype = 2)+
-geom_point(aes(x = trtD2+alpha2/20, y = bias, color = factor(alpha2)),
+geom_hline(aes(yintercept = Truth), linetype = 2)+
+geom_point(aes(x = trtD2+alpha2/20, y = Truth+bias, color = factor(alpha2)),
            size = 4) +
 #geom_line(aes(x = trtD2+alpha2/20,, y = bias, color = factor(alpha2), group = factor(alpha2))) +
 geom_errorbar(aes(x = trtD2+alpha2/20,
-	      ymin = bias-2*SD/sqrt(n),
-	      ymax = bias+2*SD/sqrt(n),
+	      ymin = Truth+bias-2*SD/sqrt(n),
+	      ymax = Truth+bias+2*SD/sqrt(n),
 	      color = factor(alpha2),
 	      group = factor(alpha2)),
 	  size = 1)+
 scale_x_continuous(breaks = c(-0.25, 0, 0.25))+
-theme_bw(20)+
-theme(legend.position = "none")+
-ylim(-0.15, 0.5)+
-scale_color_discrete(expression(alpha[2]))+
-xlab(expression(beta[2]))+
-ylab(expression(Bias~alpha[1]))+
-ggtitle("Competing Death and Discharge"),
+theme_bw(25)+
+theme(legend.position = "none",
+      plot.margin = margin(0.1,.25,.25,1,"cm"))+
+ylim(0.35, 1)+
+scale_color_discrete(expression(alpha[d]))+
+xlab(expression(beta[d]))+
+ylab(expression(Average~Estimate~alpha[m])),
 
-	sumtab %>% filter(Parameter == "Alpha, Terminal1") %>%
+sumtab %>% filter(Parameter == "Alpha, Terminal1") %>%
 ggplot() +
-geom_hline(aes(yintercept = 0), linetype = 2)+
-geom_point(aes(x = trtD2+alpha2/20, y = bias.death, color = factor(alpha2)),
+geom_hline(aes(yintercept = Truth), linetype = 2)+
+geom_point(aes(x = trtD2+alpha2/20, y = Truth+bias.death, color = factor(alpha2)),
            size = 4) +
 #geom_line(aes(x = trtD2+alpha2/20,, y = bias.death, color = factor(alpha2), group = factor(alpha2))) +
 geom_errorbar(aes(x = trtD2+alpha2/20,
-	      ymin = bias.death-2*SD.death/sqrt(n.death),
-	      ymax = bias.death+2*SD.death/sqrt(n.death),
+	      ymin = Truth+bias.death-2*SD.death/sqrt(n.death),
+	      ymax = Truth+bias.death+2*SD.death/sqrt(n.death),
 	      color = factor(alpha2),
 	      group = factor(alpha2)),
 	  size = 1)+
 scale_x_continuous(breaks = c(-0.25, 0, 0.25))+
-theme_bw(20)+
-theme(legend.position = c(0.25,0.85),
-      legend.background = element_rect(color = "grey80"))+
-ylim(-0.15, 0.5)+
+theme_bw(25)+
+theme(legend.position = "none",
+      plot.margin = margin(0,.25,.25,.5,"cm"),
+      #title = element_blank(),
+      legend.background = element_rect(color = "grey80"),
+      axis.title.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.text.y = element_blank())+
+ylim(0.35, 1)+
 scale_color_discrete(expression(alpha[2]))+
-xlab(expression(beta[2]))+
-ylab(expression(Bias~alpha[1]))+
-ggtitle("Joint Death"),
-	nrow=1)
+xlab(expression(beta[d]))+
+ylab(expression(Average~Estimate~alpha[m])),
+nrow=3)
 dev.off()
 
 #############################################################################
