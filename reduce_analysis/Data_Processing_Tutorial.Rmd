@@ -5,16 +5,162 @@ date: "2/5/2022"
 output: html_document
 ---
 
+In this appendix, we will simulate data from the competing joint model which we fit to the reduce data.
+We will discretize the data so that it appears as the data made available to us from the REDUCE trial. 
+Then, we will re-process the data so that it is again suitable for fitting the competing joint model.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse,quietly = T)
+set.seed(654321)
 ```
 
-### Simulating Data
+# Parameter Values
 
-### Processing Data
+First, we save the parameter estimates from the REDUCE results to a named vector `par0`. 
+We will change the treatment effects so that treatment decreases the frequency of delirium events, 
+decreases the hazard of mortality, and decreases times to discharge.
+Here we also set our trial size `n` and the time of administrative censoring `K`.
+
+```{r}
+par0 <- c(shapeR = 0.34, scaleR = 6.64, shapeM = 2.59, scaleM = 78.5, shapeD = 1.51, scaleD = 8.23,
+		  sigma = 0.24, alphaM = 14.7, alphaD = -6.1, betaR = -0.25, betaM = -0.25, betaD = 0.25)
+n <- 1500
+K <- 28
+```
+
+# Data Simulation
+
+First, it is helpful to define a function which simulates data from a weibull distribution with a particular shape, scale, and relative hazard.
+
+```{r}
+rweibRH <- function(n, shape ,scale , rh){
+	rweibull(n, shape = shape, scale = scale * rh^(-1/shape))
+}
+```
+
+Now we can simulate our data set.
+We define the subject id (`id`), 
+treatment indicator (`trt`), 
+random frailty (`w`),
+latent time of death (`T1`),
+latent time of discharge (`T2`),
+observed endpoint (`y`),
+indicators for which terminal event occurred (`terminal1` and `terminal2`),
+and event times (`t`).
+
+```{r}
+df <- tibble(
+id = 1:n,
+trt = rbinom(n,1,.5),
+	# treatment is assigned independently with equal probability
+w = rnorm(n, 0, par0["sigma"]),
+	# draw frailty terms from a multivariate normal
+T1 = rweibRH(n,
+	 shape = par0["shapeM"],
+	 scale = par0["scaleM"],
+	 rh = exp(w*par0["alphaM"] + par0["betaM"] * trt)),
+	# draw a mortality time
+T2 = rweibRH(n,
+	 shape = par0["shapeD"],
+	 scale = par0["scaleD"],
+	 rh = exp(w*par0["alphaD"] + par0["betaD"] * trt)),
+	# draw a discharge time
+y = pmin(T1, T2, K),
+	# determine the timing of the endpoint 
+terminal1 = as.numeric(T1 < T2 & T1 < K),
+terminal2 = as.numeric(T2 < T1 & T2 < K),
+	# determine which endpoint we observe (death, discharge, or censoring)
+t =  map2(w,trt,
+          ~tibble(
+          	t = rweibRH(50,
+          	            shape = par0["shapeR"],
+          	            scale = par0["scaleR"],
+          	            rh = exp(.x + par0["betaR"] * .y)) %>%
+		  	    rbind(rweibull(50, shape = 1, scale = 2)) %>%
+		  	    cumsum,
+		  	event = rep(1:0, length = 100)
+		  	)
+	)
+)
+	# we draw a large number (50) of iid gap times for delirium onset and 
+	# alternate them with independent gap times for delirium duration and 
+	# take the cumulative sum.
+head(df)
+```
+For this data, we had to draw random variables that represent the duration of the delirium events. 
+We will assume for now that they are independent of the frailty terms and follow a weibull model with
+shape 1 and scale 2 (roughly two days per delirium event).
+
+In the main paper, we did not perform this step, and simulated data based on the simplification that 
+delirium events had no duration. Since we are interested in data processing here, we add this extra step.
+
+Now, our simulated data needs further processing.
+Our goal is to structure the data so that each row corresponds to a particular risk period
+for a particular individual.
+We will want that row to contain information about:
+
+1. Whether the person is at risk for delirium in a given period.
+2. When the period started (`tstart`)
+3. When the period ended (`t`)
+4. Which type of event ended the risk period (`event`, `terminal1`, or `terminal2`).
+
+Toward this goal, we need to remove all the events that occurred after the observed terminal event. 
+
+```{r}
+df <- df %>%
+dplyr::select(-T1, -T2, -w) %>%
+	# throw out the unobserved variables
+unnest(t) %>%
+	# unnest the gap times
+group_by(id) %>%
+mutate(tstart = c(0, t[-n()])) %>%
+	# create a variable that represents the beginning of the risk period
+dplyr::filter(tstart<=y)
+	# eliminate recurrent events that have risk periods which begin 
+	# after the observed terminal event
+head(df)
+```
+
+Now we can clean up the event indicators.
+The terminal event indicators should only be 1 for the risk period 
+which they terminated.
+The event indicator should be 0 for the row which corresponds to the
+terminal event.
+The last observation time `t` needs to be set to the terminal event time.
+
+```{r}
+df <- df %>%
+mutate(terminal1 = terminal1*(t > y),
+	   terminal2 = terminal2*(t > y),
+	   event = event*(t < y),
+	   t = ifelse(t > y, y, t)) %>%
+dplyr::select(-y) %>%
+	#the timing of the terminal event is no longer needed as a separate variable.
+ungroup
+head(df)
+```
+
+We can now read the data frame and determine what happened to an individual. 
+For example, we know that participant 3 received treatment. 
+They experienced their first delirium event very soon (`r df$t[3]` days) after arriving at the hospital.
+This delirium event ceased at `r round(df$t[4],2)` days after admission.
+They were discharged (`terminal2`) `r round(df$t[5],2)` days after admission.
+
+At this point, we could fit the competing joint model to this data. 
+
+# Discretization
+
+```{r}
+
+```
+
+# Data Processing
 
 Data for delirium trials often comes in a wide format where each day of a participants stay (1-28) has its own column.
 
 ```{r}
 
 ```
+
+# Model Fitting
