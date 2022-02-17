@@ -151,8 +151,42 @@ At this point, we could fit the competing joint model to this data.
 
 # Discretization
 
-```{r}
+Data from the REDUCE clinical trial did not come in the format we generated above.
+In the reduce trial, there was one row per individual, and one column that indicated the delirium status for each individual  at the time of the delirium screening on a particular day. 
 
+```{r}
+wide_df <- 
+df %>%
+group_by(id) %>%
+group_modify(
+	~ tibble(day = 1:28,
+			 # for each day 1:28, we grab the delirium status of the interval that the
+			 # day falls into. if there is no corresponding interval, we get an NA.
+			 delirium = sapply(1:28, 
+			 				  function(d){
+			 				  		status <- .x$event[(d+.5)>.x$tstart &(d+.5)<.x$t]
+			 				  		if(length(status)==0) return(NA) else return(status)
+			 				  	})
+	)
+) %>%
+ungroup %>%
+pivot_wider(names_from = day, names_prefix = "d",
+			values_from = delirium)
+	# pivot the data into a wide format to get one row per person 
+wide_df
+```
+
+There are also variables `losic` (ICU length of stay) and `died` if the patient's ICU stay was terminated by death. 
+We create these and append them to the wide data.
+
+```{r}
+wide_df <- df %>% 
+group_by(id) %>%
+summarise(died = sum(terminal1),
+		  losic = round(max(t)), 
+		  trt = trt[1]) %>%
+left_join(wide_df, by = "id")
+wide_df
 ```
 
 # Data Processing
