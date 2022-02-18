@@ -863,8 +863,6 @@ if(initialize){
 	# 		      paste(gsub("Surv(.*)","", as.character(formula)), collapse = ""),
 	# 		      collapse = "")
 	#
-	#
-	#
 	# 	data$gapTimes <- tt11
 	# 	initialization.formula <-
 	# 		paste("Surv(gapTimes, ", EVENT1, ")",
@@ -873,7 +871,7 @@ if(initialize){
 	# }else{
 	# 	initialization.formula <- formula
 	# }
-	initialization.formula <- formula(initialization.formula)
+	initialization.formula <- formula
 
 	# create separate formulas for each initialization model
 	initialization.formula1 <- drop.terms(terms(initialization.formula),

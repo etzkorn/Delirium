@@ -20,13 +20,13 @@ mutate(gap = tstop - tstart,
 #table(df2$age, useNA = "ifany")
 table(df2$treatment, useNA = "ifany")
 df2 %>% group_by(id) %>% summarise(apache = apache[1], age = age[1]) %>% 
-summarise(mean(apache), mean(age), sd(apache), sd(age), cor(age, apache))
+summarise(length(unique(id)),mean(apache), mean(age), sd(apache), sd(age), cor(age, apache))
 ```
 
 # Treatment (2mg) Effect Only
 
 ```{r, echo = FALSE,message = FALSE}
-if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_20220204.rdata")){
+if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_20220218.rdata")){
 
 # the death initialization model for the gap.model doesn't work, so we set some starting vals
 gap.model1 <-
@@ -96,8 +96,8 @@ multivPenal(formula = Surv(tstart, tstop, del) ~ treatment +
 	maxit = 300, 
 	initialize = T)
 save(gap.model, cal.model,
-     file = "../reduce_analysis_output/REDUCE_Weibull_Models_20220201.rdata")
-}else load("../reduce_analysis_output/REDUCE_Weibull_Models_20220201.rdata")
+     file = "../reduce_analysis_output/REDUCE_Weibull_Models_20220218.rdata")
+}else load("../reduce_analysis_output/REDUCE_Weibull_Models_20220218.rdata")
 ```
 
 ### Tabulate Parameter Estimates
@@ -153,7 +153,7 @@ frailtyPenal(formula = Surv(tstart, tstop, del) ~ treatment+
 # Include Age and Apache Score Effects
 
 ```{r, echo = FALSE,message = FALSE}
-if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220214.rdata")){
+if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220218.rdata")){
 # the death initialization model for the gap.model doesn't work, so we set some starting vals
 gap.model1 <-
 frailtyPenal(formula = Surv(gap, del) ~ treatment + I(apache/5 - 19/5) + I(age/10 - 65/10) +
