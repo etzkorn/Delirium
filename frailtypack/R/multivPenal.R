@@ -243,11 +243,39 @@
            init.Alpha2 = -0.1,
            init.B = NULL)
 {
+#############################################################
+#############################################################
+# Outline of competingPenal.R
+# (1) Verify/extract event indicators, times, groups
+# (2) Configure Hazards
+# (3) Configure Model Matrices
+# (4) Configure Parameters
+# (5) Define Gauss-Hermite Nodes and Weights
+# (6) Fill Starting Parameter Vector with User-Defined Values
+#		OR Initialize Models
+# (7) Compute Gap times, if gapTimes == TRUE
+# (8) Check Dimensions of all variables being sent to Fortran
+#       for debugging
+# (9) Send to Fortran for optimization
+# (10) Format Model Summary Table
+# (11) Format Initialization Model Summary Tables
+#		(if initialization == TRUE)
+#############################################################
+#############################################################
+
+n.knots <- 0 # remove when splines models are available
+kappa <- rep(0, 4)
+crossVal <- 0
+
 if (class(formula) != "formula")
   stop("The argument formula must be a formula")
 
 if (nrow(data) == 0)
   stop("No (non-missing) observations")
+
+#############################################################
+#############################################################
+# (1) Verify/extract event indicators, times, groups
 
 ############################ Verify Event 1 / Times
 # NN =  names of time gap and recurrent event 1
@@ -280,6 +308,10 @@ tt11 <- Y1[, 2]
 
 ############################ Verify recurrent event 2 (Not yet implemented)
 event2.ind <- 0
+event2 <- 0
+tt0meta0 <- 0
+tt1meta0 <- 0
+
 # if (!missing(formula.Event2)) {
 #   Y2 <- get_all_vars(update(formula.Event2, "~1"), data.Event2)
 #
@@ -367,10 +399,9 @@ if (event2.ind == 1){
 		stop("all groups must be represented in data.Event2")
 	}
 }
-
 ##########################################################################
-# Hazard specification
-
+##########################################################################
+# (2) Configure Hazards
 
 if (hazard != "Weibull") {
   stop("Only 'Weibull' has been implemented in competing joint model.")
@@ -438,7 +469,8 @@ if(typeof == 0) {
 
 # End Hazard Configuration
 #########################################################################
-# Configure Model Matrices
+#########################################################################
+# (3) Configure Model Matrices
 
 # noVarEvent indicates whether there are no explanatory variables for the
 # recurrent1, terminal1, recurrent2, and terminal2 events (in that order)
@@ -542,16 +574,15 @@ if((terminal2.ind == 1)) {
     terminal2 <- data.terminal[[TERMINAL1]]*0
     modelmatrix4 = matrix(0)
 }
-
 #########################################################################
-# Configure Parameters
+#########################################################################
+# (4) Configure Parameters
 
 ### Total number of parameters
-nvar = ncol(modelmatrix1) +
-  ncol(modelmatrix2)  +
-  ncol(modelmatrix3) * event2.ind+
-  ncol(modelmatrix4) * terminal2.ind
-nvar = nvar * (1-noVarEvent) # remove for empty model matricies
+nvar = ncol(modelmatrix1) * (1-noVarEvent[1]) +
+  ncol(modelmatrix2) * (1-noVarEvent[2])  +
+  ncol(modelmatrix3) * event2.ind * (1-noVarEvent[3])+
+  ncol(modelmatrix4) * terminal2.ind * (1-noVarEvent[4])
 
 nbvar = c(
 	ncol(modelmatrix1),
@@ -568,17 +599,21 @@ if(typeof==0 ){ # splines, single random effect
 	np = (2 * (2 + event2.ind + terminal2.ind) + nvar + 3 + 2*jointGeneral)
 }
 
-###################################################
-# Define GH nodes Weights
+#########################################################################
+#########################################################################
+# (5) Define GH nodes Weights
 
 gh <- statmod::gauss.quad(GHpoints, kind="hermite")
 ghNodes = gh$nodes
 ghWeights = gh$weights * exp(gh$nodes^2)
 
-#####################################################################
-# Fill Parameter Vector with User-Defined Values OR Initialize Models
+#########################################################################
+#########################################################################
+# (6) Fill Parameter Vector with User-Defined Values OR Initialize Models
 
 # Check if user entered values for hazard, input 1s if not
+
+
 if(is.null(init.hazard)) init.hazard <- rep(1, np - nvar - 3 - 2*jointGeneral)
 
 # Check if user entered values for coefficients, input 0s if not
@@ -624,9 +659,10 @@ if(initialize){
 	}else{
 		initialization.formula <- formula
 	}
-	#initialization.formula <- formula
+	initialization.formula <- as.formula(initialization.formula)
 
 	# create separate formulas for each initialization model
+	initialization.formula <- terms(initialization.formula, specials = specials)
 	initialization.formula1 <- drop.terms(terms(initialization.formula),
 				  survival::untangle.specials(terms(initialization.formula, c("terminal2")), "terminal2", 1:10)$terms,
 				  keep.response = T)
@@ -700,17 +736,6 @@ if(initialize){
 	}
 }
 
-############################################################
-# Compute Gap Times (If Applicable)
-
-if(gapTimes){
-	tt11 <- tt11 - tt10
-	tt10 <- 0 * tt10
-	tt1meta0 <- tt1meta0 - tt0meta0
-	tt0meta0 <- 0 * tt0meta0
-}
-
-############################################################
 # Fill parameter vector
 if(!jointGeneral){
 	b <- c(sqrt(init.hazard),
@@ -733,8 +758,21 @@ if(length(b)!=np) stop("Parameter vector not the correct length.")
 #debug:     file='../package_tests/multiv_model_progress.dat',append=TRUE)
 
 
-###################################################
-# Check Dimensions of all variables for debugging
+############################################################
+############################################################
+# (7) Compute Gap Times (If Applicable)
+
+if(gapTimes){
+	tt11 <- tt11 - tt10
+	tt10 <- 0 * tt10
+	tt1meta0 <- tt1meta0 - tt0meta0
+	tt0meta0 <- 0 * tt0meta0
+}
+
+
+############################################################
+############################################################
+# (8) Check Dimensions of all variables for debugging
 controls = c(maxit = maxit[1], # [1]
 	 initialize = initialize, # [2]
 	 typeof = typeof, # [3]
@@ -828,7 +866,7 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
 }
 
 ######################################################################################################
-# Send to Fortran for optimization
+# (9) Send to Fortran for optimization
     ans <- .Fortran(C_joint_multiv,
                 controls = as.integer(controls),
                 nobsEvent = as.integer(nobsEvent), #nobsEvent
@@ -909,7 +947,8 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
                 tolerance0 = as.double(tolerance)
     )
 ######################################################################################################
-# Format Model Tables
+######################################################################################################
+# (10) Format Model Summary Tables
  if(jointGeneral == F & hazard == "Weibull"){
  	f <- function(b){
  		c(b[1:6]^2,#exp(b[1:6])^2,
@@ -1005,7 +1044,9 @@ if(any(is.na(modelmatrix1))|any(is.na(modelmatrix2))|any(is.na(modelmatrix3))|an
  	H0 = paste(Parameter, " = ", f(rep(0, np)))
  )
 
- # Format Initialization Tables
+######################################################################################################
+######################################################################################################
+# (11) Format Initialization Tables
  ans$initialization$b <- start.b
 
  if(initialize){
