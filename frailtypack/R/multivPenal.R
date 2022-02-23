@@ -1,90 +1,75 @@
-#' Fit a multivariate frailty model for two types of recurrent events and a
-#' terminal event.
+#' Competing Joint Frailty Model: A single type of recurrent event and two
+#' types of terminal events.
 #'
 #' @description Fit a joint frailty model for a single recurrent event
-#' and two terminal events using penalized splines for the hazard
-#' function or a parametric weibull model.
+#' and two terminal events using a parametric weibull model.
 #'
 #' @aliases multivPenal transfo.table multivPenal for multivariate frailty
 #' model
 #'
 #' @usage
-#' multivPenal(formula, formula.Event2, formula.terminalEvent, formula.terminalEvent2,
-#' data, data.Event2, initialize = TRUE, recurrentAG = FALSE, n.knots, kappa, maxit = 350,
-#' hazard = "Weibull", nb.int, print.times = TRUE, GHpoints = 32, save.progress = F,
-#' init.hazard = c(1,0.5,1,1,1,1), init.Sigma = 0.5,
-#' init.Alpha1 = 0.1, init.Alpha2 = -0.1, init.B = c(0,0,0))
+#' multivPenal(
+#' formula,
+#' formula.terminalEvent,
+#' formula.terminalEvent2,
+#' data,
+#' initialize = TRUE,
+#' maxit = 350,
+#' gapTimes=FALSE,
+#' jointGeneral=FALSE
+#' hazard = "Weibull",
+#' GHpoints = 32,
+#' tolerance = rep(10^-3, 3),
+#' init.hazard = c(1,0.5,1,1,1,1),
+#' init.Sigma = 0.5,
+#' init.Alpha1 = 0.1,
+#' init.Alpha2 = -0.1,
+#' init.B = c(0,0,0))
 #'
 #' @param formula a formula object, with the response for the first recurrent
-#' event on the left of a \eqn{\sim} operator, and the terms on the right. The
-#' response must be in the format Surv(t0, t1, recurrentevent),
+#' event on the left of a \eqn{\sim} operator, and the terms on the right.
+#' The response must be in the format Surv(t0, t1, recurrentevent),
 #' where t0 is the start time for an at-risk period for the recurrent event,
 #' t1 is the end time for an at-risk period for the recurrent event, and
-#' recurrentevent is a numeric indicator for whether an event was observed (1)
-#' or was censored(2).
+#' recurrent event is a numeric indicator for whether an event was observed (1)
+#' or was censored (2).
+#' This formulation is used regardless of whether `gapTimes` is true or false.
+#' If gapTimes is true, the duration of the risk period will be calculated as
+#' t1 - t0.
 #'
-#' @param formula.Event2 a formula object, with the response for the second
-#' recurrent event on the left of a \eqn{\sim} operator, and the terms on the
-#' right.
+#' @param formula.terminalEvent, a formula object,
+#' empty on the left of a \eqn{\sim} operator,
+#' and the terms on the right. Leave the formula at
+#' the default value (NULL) for a model with no variables.
 #'
-#' @param formula.terminalEvent, a formula object, empty on the left of a \eqn{\sim} operator,
-#' and the terms on the right.
-#'
-#' @param formula.terminalEvent2, a formula object, empty on the left of a \eqn{\sim} operator,
-#' and the terms on the right.
+#' @param formula.terminalEvent2, a formula object,
+#' empty on the left of a \eqn{\sim} operator,
+#' and the terms on the right.Leave the formula at
+#' the default value (NULL) for a model with no variables.
 #'
 #' @param data a 'data.frame' with the variables used in 'formula',
-#' 'formula.Event2', 'formula.terminalEvent', and 'formula.terminalEvent2'.
+#' 'formula.terminalEvent', and 'formula.terminalEvent2'.
 #'
 #' @param initialize Logical value to internally initialize regression coefficients and
 #' baseline hazard functions parameters using simpler models from frailtypack.
-#' When the estimation is semi-parametric
-#' with splines, this initialization produces also values for smoothing
-#' parameters (by cross validation). When initialization is requested, the
-#' program first fit shared frailty models for recurrent
-#' events and Cox proportional hazards models for the terminal events.
-#' Default is TRUE.
+#' When initialization is requested, the
+#' program first fits two joint frailty models for the recurrent
+#' events and each terminal event.
 #' When FALSE, parameters are initialized via the arguments
 #' init.hazard, init.Sigma, init.Alpha1, init.Alpha2, init.B.
 #'
-#' @param recurrentAG Logical value. Is Andersen-Gill model fitted? If so
-#' indicates that recurrent event times with the counting process approach of
-#' Andersen and Gill is used. This formulation can be used for dealing with
-#' time-dependent covariates. The default is FALSE.
+#' @param gapTimes Should the hazard be formulated at time from the beginning of the
+#' risk period? If FALSE, time starts at t0 = 0.
 #'
 #' @param jointGeneral Logical. Should the model have separate (correlated)
 #' frailty random effects that connect each terminal event to the recurrent
 #' event? Default is FALSE.
 #'
-#' @param n.knots integer vector of length 3 giving
-#' the number of knots to use in each spline hazard function.
-#' First is for the recurrent of type 1, second is
-#' for the terminal event 1, and third is for the terminal event 2.
-#' Value required in the penalized likelihood estimation. It
-#' corresponds to the (n.knots+2) splines functions for the approximation of
-#' the hazard or the survival functions. Number of knots must be between 4 and
-#' 20. (See Note)
-#'
-#' @param kappa vector of length 3 (for the three outcomes) for positive
-#' smoothing parameters in the penalized likelihood estimation. First is for
-#' the recurrent of type 1, second is for the terminal event 1, and third is for the terminal event 2.
-#' The coefficient kappa of the
-#' integral of the squared second derivative of hazard function in the fit
-#' (penalized log likelihood). Initial values for the kappas can be obtained
-#' with the option "initialize=TRUE". We advise the user to identify several
-#' possible tuning parameters, note their defaults and look at the sensitivity
-#' of the results to varying them. Value required. (See Note)
-#'
 #' @param maxit maximum number of iterations for the Marquardt algorithm.
 #' Default is 350.
 #'
-#' @param hazard Type of hazard functions: "Splines" for semi-parametric hazard
-#' functions with the penalized likelihood estimation and "Weibull"
-#' for parametric Weibull function. Piecewise constant hazard functions are not
-#' available for this function.
-#'
-#' @param print.times a logical parameter to print iteration process. Default
-#' is TRUE.
+#' @param hazard Type of hazard functions: For now the only option is "Weibull"
+#' for parametric Weibull function.
 #'
 #' @param GHpoints Integer. Number of nodes for Gauss-Hermite integration
 #' to marginalize random effects/frailties. Default is 32.
@@ -92,11 +77,11 @@
 #' @param tolerance Numeric, length 3. Optimizer's tolerance for (1) successive change
 #' in parameter values, (2) log likelihood, and (3) score, respectively.
 #'
-#' @param save.progress Logical. Should the trajectory of parameter values from the optimizer be saved?
+#' @param init.hazard Numeric. Initialization values for hazard parameters.
+#' If a weibull model is used, the order is:
+#' shapeR, scaleR, shapeTerminal1, scaleTerminal1, shapeTerminal2, scaleTerminal2.
 #'
-#' @param init.hazard Numeric. = c(1,0.5,1,1,1,1),
-#'
-#' @param init.Sigma Numeric, Initialization value for the standard deviation of the
+#' @param init.Sigma Numeric,. Initialization value for the standard deviation of the
 #' normally-distributed random effects.
 #'
 #' @param init.Alpha1 Numeric. Initialization value for the parameter alpha that
@@ -106,118 +91,26 @@
 #' links the hazard function of the recurrent event to the second terminal event.
 #'
 #' @param init.B Numeric vector, same length and order as the covariate vectors
-#' for each the recurrent event, first terminal event, and second terminal event.
-#' Initialization values for the independent variable coefficients.
+#' for each the recurrent event, terminal1, and terminal2 (in that order).
 #'
 #' @details{
-#' \if{html}{ Right-censored data are allowed.
-#' Left-truncated data and stratified analysis are not possible.
-#' Multivariate joint frailty models are applicable in mainly two settings.
-#'
-#' The multivariate frailty model for two types of recurrent events with a
-#' terminal event is (in the calendar or time-to-event timescale):
-#'
-#' {\figure{multivmodel1.png}{options: width="100\%"}}
-#'
-#' where \eqn{r}\out{<sub>0</sub>}\out{<sup>l</sup>}(t), (l\out{&isin;}{1,2}) and \eqn{r}\out{<sub>0</sub>}(t) are
-#' respectively the recurrent and terminal event baseline hazard functions, and
-#' \eqn{\beta}\out{<sub>1</sub>},\eqn{\beta}\out{<sub>2</sub>},\eqn{\beta}\out{<sub>3</sub>} the regression coefficient vectors associated
-#' with \eqn{Z}\out{<sub>i</sub>}(t) the covariate vector. The covariates could be different
-#' for the different event hazard functions and may be time-dependent. We
-#' consider that death stops new occurrences of recurrent events of any type,
-#' hence given \eqn{t>D}, \eqn{dN}\out{<sup>R(l)*</sup>}(t), (l\out{&isin;}{1,2}) takes the value 0.
-#' Thus, the terminal and the two recurrent event processes are not independent
-#' or even conditional upon frailties and covariates. We consider the hazard
-#' functions of recurrent events among individuals still alive.  % The three
-#' components in the above multivariate frailty model are linked together by
-#' two Gaussian and correlated random effects \eqn{u}\out{<sub>i</sub>},\eqn{v}\out{<sub>i</sub>}: %
-#' (\eqn{u}\out{<sub>i</sub>},\eqn{v}\out{<sub>i</sub>})\out{<sup>T</sup>} \out{<span>&#126;</span>} \bold{\eqn{N}}(0,\eqn{\Sigma}\out{<sub>uv</sub>}), with
-#'
-#' {\figure{multivmodel2.png}{options: width="100\%"}}
-#'
-#' Dependencies between these three types of event are taken into account by
-#' two correlated random effects and parameters \eqn{\theta}\out{<sub>1</sub>},\eqn{\theta}\out{<sub>2</sub>} the
-#' variance of the random effects and \eqn{\alpha}\out{<sub>1</sub>},\eqn{\alpha}\out{<sub>2</sub>} the coefficients
-#' for these random effects into the terminal event part. If \eqn{\alpha}\out{<sub>1</sub>} and
-#' \eqn{\theta}\out{<sub>1</sub>} are both significantly different from 0, then the recurrent
-#' events of type 1 and death are significantly associated (the sign of the
-#' association is the sign of \eqn{\alpha}\out{<sub>1</sub>}). If \eqn{\alpha}\out{<sub>2</sub>} and
-#' \eqn{\theta}\out{<sub>2</sub>} are both significantly different from 0, then the recurrent
-#' events of type 2 and death are significantly associated (the sign of the
-#' association is the sign of \eqn{\alpha}\out{<sub>2</sub>}). If \eqn{\rho}, the correlation
-#' between the two random effects, is significantly different from 0, then the
-#' recurrent events of type 1 and the recurrent events of type 2 are
-#' significantly associated (the sign of the association is the sign of
-#' \eqn{\rho}).
+#' \if{html}{Right-censored data are allowed.
+#' Left-truncated data and stratified analysis are not possible.}
 #' }
 #'
-#' \if{latex}{Fit a multivariate frailty model for two types of recurrent events with a
-#' terminal event using a penalized likelihood estimation on the hazard
-#' function or a parametric estimation. Right-censored data are allowed.
-#' Left-truncated data and stratified analysis are not possible. Multivariate
-#' frailty models allow studying, with a joint model, three survival dependent
-#' processes for two types of recurrent events and a terminal event.
-#' Multivariate joint frailty models are applicable in mainly two settings.
-#' First, when focus is on the terminal event and we wish to account for the
-#' effect of previous endogenous recurrent event. Second, when focus is on a
-#' recurrent event and we wish to correct for informative censoring.
-#'
-#' The multivariate frailty model for two types of recurrent events with a
-#' terminal event is (in the calendar or time-to-event timescale):
-#'
-#' \deqn{\left\{ \begin{array}{lll} r_{i}^{(1)}(t|u_i,v_i) &=
-#' r_0^{(1)}(t)\exp({{\beta_1^{'}}}Z_{i}(t)+u_i) &\quad \mbox{(rec. of type
-#' 1)}\\ r_{i}^{(2)}(t|u_i,v_i) &=
-#' r_0^{(2)}(t)\exp({{\beta_2^{'}}}Z_{i}(t)+v_i) &\quad \mbox{(rec. of type
-#' 2)}\\ \lambda_i(t|u_i,v_i) &=
-#' \lambda_0(t)\exp({{\beta_3^{'}}}Z_{i}(t)+\alpha_1u_i+\alpha_2v_i) &\quad
-#' \mbox{(death)}\\ \end{array} \right. }
-#'
-#' where \eqn{r_0^{(l)}(t)}, \eqn{l\in{1,2}} and \eqn{\lambda_0(t)} are
-#' respectively the recurrent and terminal event baseline hazard functions, and
-#' \eqn{\beta_1,\beta_2,\beta_3} the regression coefficient vectors associated
-#' with \eqn{Z_{i}(t)} the covariate vector. The covariates could be different
-#' for the different event hazard functions and may be time-dependent. We
-#' consider that death stops new occurrences of recurrent events of any type,
-#' hence given \eqn{t>D}, \eqn{dN^{R(l)*}(t), l\in{1,2}} takes the value 0.
-#' Thus, the terminal and the two recurrent event processes are not independent
-#' or even conditional upon frailties and covariates. We consider the hazard
-#' functions of recurrent events among individuals still alive.  % The three
-#' components in the above multivariate frailty model are linked together by
-#' two Gaussian and correlated random effects \eqn{u_i,v_i}: %
-#'
-#' \eqn{(u_i,v_i)^{T}\sim\mathcal{N}\left({{0}},\Sigma_{uv}\right)}, with
-#' \deqn{\Sigma_{uv}=\left(\begin{array}{cc} \theta_1 &
-#' \rho\sqrt{\theta_1\theta_2} \\ \rho\sqrt{\theta_1\theta_2}&\theta_2
-#' \end{array}\right)}
-#'
-#' Dependencies between these three types of event are taken into account by
-#' two correlated random effects and parameters \eqn{\theta_1,\theta_2} the
-#' variance of the random effects and \eqn{\alpha_1,\alpha_2} the coefficients
-#' for these random effects into the terminal event part. If \eqn{\alpha_1} and
-#' \eqn{\theta_1} are both significantly different from 0, then the recurrent
-#' events of type 1 and death are significantly associated (the sign of the
-#' association is the sign of \eqn{\alpha_1}). If \eqn{\alpha_2} and
-#' \eqn{\theta_2} are both significantly different from 0, then the recurrent
-#' events of type 2 and death are significantly associated (the sign of the
-#' association is the sign of \eqn{\alpha_2}). If \eqn{\rho}, the correlation
-#' between the two random effects, is significantly different from 0, then the
-#' recurrent events of type 1 and the recurrent events of type 2 are
-#' significantly associated (the sign of the association is the sign of
-#' \eqn{\rho}).
-#' }
-#'
-#' @return Parameters estimates of a multivariate joint frailty model, more
-#' generally a 'multivPenal' object. Methods defined for 'multivPenal' objects
+#' @return Parameters estimates of a competing joint frailty model, more
+#' generally a 'competingPenal' object. Methods defined for 'competingPenal' objects
 #' are provided for print, plot and summary. The following components are
-#' included in a 'multivPenal' object for multivariate Joint frailty models.
+#' included in a 'competingPenal' object for multivariate Joint frailty models.
+#'
+#' \item{summary.table}{A table describing the estimate, standard error,
+#' confidence interval, and pvalues for each of the parameters in the model.}
 #'
 #' \item{b}{sequence of the corresponding estimation of the splines
 #' coefficients, the random effects variances, the coefficients of the
 #' frailties and the regression coefficients.}
 #'
-#' \item{call}{The code used for
-#' fitting the model.}
+#' \item{call}{The code used for fitting the model.}
 #'
 #' \item{n}{the number of observations used in the fit.}
 #'
@@ -225,70 +118,42 @@
 #'
 #' \item{n.events}{the number of recurrent events of type 1 observed in the fit.}
 #'
-#' \item{n.events2}{the number of the recurrent events of type 2 observed in
-#' the fit.}
+#' \item{n.terminal1}{the number of terminal1 events observed in the fit.}
 #'
-#' \item{n.deaths}{the number of deaths observed in the fit.}
+#' \item{n.terminal2}{the number of terminal2 events observed in the fit.}
 #'
-#' \item{loglikPenal}{the complete marginal penalized log-likelihood in the
-#' semi-parametric case.}
-#'
-#' \item{loglik}{the marginal log-likelihood in the
-#' parametric case.}
-#'
-#' \item{LCV}{the approximated likelihood cross-validation
-#' criterion in the semi parametric case (with H minus the converged Hessian
-#' matrix, and l(.) the full
-#' log-likelihood.\deqn{LCV=\frac{1}{n}(trace(H^{-1}_{pl}H) - l(.))})}
+#' \item{loglik}{the marginal log-likelihood in the parametric case.}
 #'
 #' \item{AIC}{the Akaike information Criterion for the parametric
 #' case.\deqn{AIC=\frac{1}{n}(np - l(.))}}
 #'
-#' \item{theta1}{variance of the
-#' frailty parameter for recurrences of type 1 \eqn{(\bold{Var}(u_i))}}
+#' \item{npar}{number of parameters.}
 #'
-#' \item{theta2}{variance of the frailty parameter for recurrences of type 2
-#' \eqn{(\bold{Var}(v_i))}}
-#'
-#' \item{alpha1}{the coefficient associated with the
-#' frailty parameter \eqn{u_i} in the terminal hazard function.}
-#'
-#' \item{alpha2}{the coefficient associated with the frailty parameter
-#' \eqn{v_i} in the terminal hazard function.}
-#'
-#' \item{rho}{the correlation
-#' coefficient between \eqn{u_i} and \eqn{v_i}}
-#'
-#' \item{npar}{number of
-#' parameters.}
-#'
-#' \item{coef}{the regression coefficients.}
-#'
-#' \item{nvar}{A vector
-#' with the number of covariates of each type of hazard function as
+#' \item{nvar}{A vector with the number of covariates of each type of hazard function as
 #' components.}
 #'
 #' \item{varH}{the variance matrix of all parameters before
-#' positivity constraint transformation (theta, the regression coefficients and
-#' the spline coefficients). Then, the delta method is needed to obtain the
-#' estimated variance parameters.}
+#' positivity constraint transformation (theta and
+#' the hazard coefficients).
+#' Then, the delta method is needed to obtain the estimated variance parameters.}
 #'
 #' \item{varHIH}{the robust estimation of the
-#' variance matrix of all parameters (theta, the regression coefficients and
-#' the spline coefficients).}
+#' variance matrix of all parameters (theta and
+#' the hazard coefficients).}
 #'
 #' \item{formula}{the formula part of the code used
 #' for the model for the recurrent event.}
 #'
-#' \item{formula.Event2}{the formula
-#' part of the code used for the model for the second recurrent event.}
-#'
 #' \item{formula.terminalEvent}{the formula part of the code used for the model
-#' for the terminal event.}
+#' for the terminal1 event.}
+#'
+#' \item{formula.terminalEvent2}{the formula part of the code used for the model
+#' for the terminal2 event.}
 #'
 #' \item{x1}{vector of times for hazard functions of
-#' the recurrent events of type 1 are estimated. By default
-#' seq(0,max(time),length=99), where time is the vector of survival times.}
+#' the recurrent events are estimated.
+#' By default seq(0,max(time),length=99),
+#' where time is the vector of survival times.}
 #'
 #' \item{lam1}{matrix of hazard estimates and confidence bands for recurrent
 #' events of type 1.}
@@ -299,225 +164,85 @@
 #' \item{surv1}{matrix of baseline survival
 #' estimates and confidence bands for recurrent events of type 1.}
 #'
-#' \item{x2}{vector of times for the recurrent event of type 2 (see x1 value).}
+#' \item{x3}{Vector of times for terminal1 (see x1 value).}
 #'
-#' \item{lam2}{the same value as lam1 for the recurrent event of type 2.}
+#' \item{lam3}{Matrix of hazard, CI for terminal1 evaluated at times x3.}
 #'
-#' \item{xSu2}{vector of times for the survival function of the recurrent event
-#' of type 2}
+#' \item{xSu3}{Vector of times for the survival function of terminal1.}
 #'
-#' \item{surv2}{the same value as surv1 for the recurrent event of
-#' type 2.}
+#' \item{surv3}{Vector of the survival function of terminal1 evaluated at xSu3.}
 #'
-#' \item{xEnd}{vector of times for the terminal event (see x1 value).}
+#' \item{x4}{Vector of times for terminal2 (see x1 value).}
 #'
-#' \item{lamEnd}{the same value as lam1 for the terminal event.}
+#' \item{lam4}{Matrix of hazard, CI for terminal1 evaluated at times x2.}
 #'
-#' \item{xSuEnd}{vector of times for the survival function of the terminal
-#' event}
+#' \item{xSu4}{Vector of times for the survival function of terminal2.}
 #'
-#' \item{survEnd}{the same value as surv1 for the terminal event.}
+#' \item{surv4}{Vector of the survival function of terminal1 evaluated at xSu2.}
 #'
 #' \item{median1}{The value of the median survival and its confidence bands for the recurrent event of type 1.}
 #'
-#' \item{median2}{The value of the median survival and its confidence bands for the recurrent event of type 2.}
+#' \item{median3}{The value of the median survival and its confidence bands for terminal1.}
 #'
-#' \item{medianEnd}{The value of the median survival and its confidence bands for the terminal event.}
-#'
-#' \item{type.of.Piecewise}{Type of Piecewise hazard functions (1:"percentile",
-#' 0:"equidistant").}
+#' \item{median3}{The value of the median survival and its confidence bands for the terminal1.}
 #'
 #' \item{n.iter}{number of iterations needed to converge.}
 #'
-#' \item{type.of.hazard}{Type of hazard functions (0:"Splines", "1:Piecewise",
-#' "2:Weibull").}
-#'
-#' \item{n.knots}{a vector with number of knots for estimating
-#' the baseline functions.}
-#'
-#' \item{kappa}{a vector with the smoothing parameters
-#' in the penalized likelihood estimation corresponding to each baseline
-#' function as components.}
-#'
-#' \item{n.knots.temp}{initial value for the number of knots.}
-#'
-#' \item{zi}{splines knots.}
-#'
-#' \item{time}{knots for Piecewise hazard
-#' function for the recurrent event of type 1.}
-#'
-#' \item{timedc}{knots for
-#' Piecewise hazard function for the terminal event.}
-#'
-#' \item{time2}{knots for
-#' Piecewise hazard function for the recurrent event of type 2.}
+#' \item{type.of.hazard}{Type of hazard functions (0:"Splines", "1:Piecewise", "2:Weibull").}
 #'
 #' \item{noVar}{indicator vector for recurrent, death and recurrent 2
 #' explanatory variables.}
 #'
-#' \item{nvarRec}{number of the recurrent of type 1
-#' explanatory variables.}
-#'
-#' \item{nvarEnd}{number of death explanatory
-#' variables.}
-#'
-#' \item{nvarRec2}{number of the recurrent of type 2 explanatory
-#' variables.}
-#'
-#' \item{nbintervR}{Number of intervals (between 1 and 20) for the
-#' the recurrent of type 1 parametric hazard functions ("Piecewise-per",
-#' "Piecewise-equi").}
-#'
-#' \item{nbintervDC}{Number of intervals (between 1 and 20)
-#' for the death parametric hazard functions ("Piecewise-per",
-#' "Piecewise-equi").}
-#'
-#' \item{nbintervR2}{Number of intervals (between 1 and 20)
-#' for the the recurrent of type 2 parametric hazard functions
-#' ("Piecewise-per", "Piecewise-equi").}
-#'
 #' \item{istop}{Vector of the convergence criteria.}
 #'
-#' \item{shape.weib}{shape parameters for the Weibull hazard
-#' function.}
-#'
-#' \item{scale.weib}{scale parameters for the Weibull hazard
-#' function.}
-#'
-#' \item{martingale.res}{martingale residuals for each cluster (recurrent of
-#' type 1).}
+#' \item{martingale.res}{martingale residuals for each cluster (recurrent).}
 #'
 #' \item{martingale2.res}{martingale residuals for each cluster
 #' (recurrent of type 2).}
 #'
-#' \item{martingaledeath.res}{martingale residuals for
+#' \item{martingale4.res}{martingale residuals for
 #' each cluster (death).}
 #'
 #' \item{frailty.pred}{empirical Bayes prediction of the
-#' first frailty term.}
-#'
-#' \item{frailty2.pred}{empirical Bayes prediction of the
-#' second frailty term.}
+#' frailty term(s).}
 #'
 #' \item{frailty.var}{variance of the empirical Bayes
-#' prediction of the first frailty term.}
-#'
-#' \item{frailty2.var}{variance of the
-#' empirical Bayes prediction of the second frailty term.}
+#' prediction of the frailty term(s).}
 #'
 #' \item{frailty.corr}{Correlation between the empirical Bayes prediction of
 #' the two frailty.}
 #'
-#' \item{linear.pred}{linear predictor: uses Beta'X + ui in
-#' the multivariate frailty models.}
+#' \item{linear.pred}{Predicted log relative-hazard of the recurrent event.}
 #'
-#' \item{linear2.pred}{linear predictor: uses
-#' Beta'X + vi in the multivariate frailty models.}
+#' \item{linear.pred3}{Predicted log relative-hazard of the terminal1 event.}
 #'
-#' \item{lineardeath.pred}{linear predictor for the terminal part form the
-#' multivariate frailty models: Beta'X + alpha1 ui + alpha2 vi}
+#' \item{linear.pred4}{Predicted log relative-hazard of the terminal1 event.}
 #'
-#' \item{global_chisq}{Recurrent event of type 1: a vector with the values of
-#' each multivariate Wald test.}
+#' @seealso
+#' \code{\link{terminal}},
+#' \code{\link{terminal2}},
 #'
-#' \item{dof_chisq}{Recurrent event of type 1: a
-#' vector with the degree of freedom for each multivariate Wald test.}
-#'
-#' \item{global_chisq.test}{Recurrent event of type 1: a binary variable equals
-#' to 0 when no multivariate Wald is given, 1 otherwise.}
-#'
-#' \item{p.global_chisq}{Recurrent event of type 1: a vector with the p-values
-#' for each global multivariate Wald test.}
-#'
-#' \item{names.factor}{Recurrent event
-#' of type 1: Names of the "as.factor" variables.}
-#'
-#' \item{global_chisq2}{Recurrent event of type 2: a vector with the values of
-#' each multivariate Wald test.}
-#'
-#' \item{dof_chisq2}{Recurrent event of type 2: a
-#' vector with the degree of freedom for each multivariate Wald test.}
-#'
-#' \item{global_chisq.test2}{Recurrent event of type 2: a binary variable
-#' equals to 0 when no multivariate Wald is given, 1 otherwise.}
-#'
-#' \item{p.global_chisq2}{Recurrent event of type 2: a vector with the p_values
-#' for each global multivariate Wald test.}
-#'
-#' \item{names.factor2}{Recurrent
-#' event of type 2: Names of the "as.factor" variables.}
-#'
-#' \item{global_chisq_d}{Terminal event: a vector with the values of each
-#' multivariate Wald test.}
-#'
-#' \item{dof_chisq_d}{Terminal event: a vector with
-#' the degree of freedom for each multivariate Wald test.}
-#'
-#' \item{global_chisq.test_d}{Terminal event: a binary variable equals to 0
-#' when no multivariate Wald is given, 1 otherwise.}
-#'
-#' \item{p.global_chisq_d}{Terminal event: a vector with the p-values for each
-#' global multivariate Wald test.}
-#'
-#' \item{names.factordc}{Terminal event: Names
-#' of the "as.factor" variables.}
-#'
-#' @note "kappa" (kappa[1], kappa[2] and kappa[3]) and "n.knots" (n.knots[1],
-#' n.knots[2] and n.knots[3]) are the arguments that the user has to change if
-#' the fitted model does not converge.  "n.knots" takes integer values between
-#' 4 and 20. But with n.knots=20, the model will take a long time to converge.
-#' So, usually, begin first with n.knots=7, and increase it step by step until
-#' it converges. "kappa" only takes positive values. So, choose a value for
-#' kappa (for instance 10000), and if it does not converge, multiply or divide
-#' this value by 10 or 5 until it converges.  Moreover, it may be useful to
-#' change the value of the initialize argument.
-#'
-#' @seealso \code{\link{terminal}},\code{\link{event2}},
-#' \code{\link{print.multivPenal}},\code{\link{summary.multivPenal}},\code{\link{plot.multivPenal}}
-#'
-#' @keywords models methods multiv
 #' @export
-#' @examples
-#'
-#'
-#' \dontrun{
-#'
-#' ###--- Multivariate Frailty model ---###
-#'
-#'
-#' }
 #'
 #'
 "multivPenal" <-
   function(formula,
-           formula.Event2,
-           formula.terminalEvent,
-           formula.terminalEvent2,
+           formula.terminalEvent = NULL,
+           formula.terminalEvent2 = NULL,
            data,
-           data.Event2,
-           initialize=TRUE,
-           gapTimes=FALSE,
-           jointGeneral=FALSE,
-           n.knots, kappa, maxit=350,
-           hazard="Weibull",
-           nb.int,
-           print.times=TRUE,
+           initialize = TRUE,
+           gapTimes = FALSE,
+           jointGeneral = FALSE,
+  		   maxit = 350,
+           hazard = "Weibull",
            GHpoints = 32,
            tolerance = rep(10^-3, 3),
-           save.progress = F,
            init.hazard = NULL,
            init.Sigma = 0.5,
            init.Alpha1 = 0.1,
            init.Alpha2 = -0.1,
            init.B = NULL)
 {
-if(save.progress){
-    if(file.exists("multiv_model_progress.dat")) file.remove("multiv_model_progress.dat")
-    if(file.exists("multiv_model_parameters.dat")) file.remove("multiv_model_parameters.dat")
-    if(file.exists("multiv_model_individual_likelihoods.dat")) file.remove("multiv_model_individual_likelihoods.dat")
-}
-
-
 if (class(formula) != "formula")
   stop("The argument formula must be a formula")
 
@@ -553,40 +278,41 @@ tt11 <- Y1[, 2]
 #      stop(paste("Cox model doesn't support \"", type, "\" survival data", sep = ""))
 #}
 
-############################ Verify recurrent event 2
-if (!missing(formula.Event2)) {
-  Y2 <- get_all_vars(update(formula.Event2, "~1"), data.Event2)
-
-  if (ncol(Y2) != 3) {
-  	stop(
-  		"Survival object outcome must be specified using \n
-  		time when at risk period starts and stops, such as: \n
-  		Surv(time.start, time.stop, event.indicator).
-  		This is true for both calendar time and gap time
-  		formulations."
-  	)
-  }
-  NN <- colnames(Y2)
-  EVENT2 <- NN[3]
-  TSTART2 <- NN[1]
-  TSTOP2 <- NN[2]
-
-  event2 <- Y2[, 3]
-  tt0meta0 <- Y2[, 1]
-  tt1meta0 <- Y2[, 2]
-
-  if (!all(event2 %in% c(1, 0))) {
-  	stop(
-  		"event2 must contain a variable coded 0-1 and a non-factor variable"
-  	)
-  }
-  event2.ind <- 1
-} else{
-  event2.ind <- 0
-  event2 <- 0
-  tt0meta0 <- 0
-  tt1meta0 <- 0
-}
+############################ Verify recurrent event 2 (Not yet implemented)
+event2.ind <- 0
+# if (!missing(formula.Event2)) {
+#   Y2 <- get_all_vars(update(formula.Event2, "~1"), data.Event2)
+#
+#   if (ncol(Y2) != 3) {
+#   	stop(
+#   		"Survival object outcome must be specified using \n
+#   		time when at risk period starts and stops, such as: \n
+#   		Surv(time.start, time.stop, event.indicator).
+#   		This is true for both calendar time and gap time
+#   		formulations."
+#   	)
+#   }
+#   NN <- colnames(Y2)
+#   EVENT2 <- NN[3]
+#   TSTART2 <- NN[1]
+#   TSTOP2 <- NN[2]
+#
+#   event2 <- Y2[, 3]
+#   tt0meta0 <- Y2[, 1]
+#   tt1meta0 <- Y2[, 2]
+#
+#   if (!all(event2 %in% c(1, 0))) {
+#   	stop(
+#   		"event2 must contain a variable coded 0-1 and a non-factor variable"
+#   	)
+#   }
+#   event2.ind <- 1
+# } else{
+#   event2.ind <- 0
+#   event2 <- 0
+#   tt0meta0 <- 0
+#   tt1meta0 <- 0
+# }
 
 ############################ Verify Terminal Event 1
 TT <-
@@ -645,84 +371,101 @@ if (event2.ind == 1){
 ##########################################################################
 # Hazard specification
 
-haztemp <- hazard
-if (!hazard %in% c("Weibull", "Splines")) {
-  stop("Only 'Weibull' or 'Splines' hazard can be specified in hazard argument.")
+
+if (hazard != "Weibull") {
+  stop("Only 'Weibull' has been implemented in competing joint model.")
 }
+
+haztemp <- hazard
+#if (!hazard %in% c("Weibull", "Splines")) {
+#  stop("Only 'Weibull' or 'Splines' hazard can be specified in hazard argument.")
+#}
 
 # typeof is the numerical indicator for hazard
 typeof <- switch(hazard,
   	     "Splines" = 0,
   	     "Weibull" = 2)
-size <- c(100, 100, 100, 100)
 
-
+# Specify whether spline points are regularly spaced or at percentiles
 if(typeof == 0) {
   	equidistant <- 1
-}else if(typeof == 2) {
+}else if(typeof == 2){
   	### Weibull
   	equidistant <- 1
 }
 
-#### Configure Splines Hazard (knots, pentalty)
-if (typeof == 0) {
-  crossVal <- 1 # always do cross validation for splines
-  if (missing(kappa))
-  	stop("smoothing parameter (kappa1) is required")
-  if (missing(n.knots))
-  	stop("number of knots are required")
-  if (class(kappa) != "numeric")
-  	stop("The argument kappa must be a numeric")
-  if (class(n.knots) != "integer"){
-  	warning("Converting n.knots to integers")
-  	n.knots <- as.integer(n.knots)
-  }
-  if (length(n.knots) != 1) {
-  	stop("length of knots must be 1.")
-  }
-  if (length(kappa) != 2 + event2.ind + terminal2.ind) {
-  	stop(
-  		"length of kappa must be equal to the number of formulas
-  		for different event types (3 or 4) in the order
-  		recurrent1, recurrent2, terminal1, terminal2."
-  	)
-  }
-  if (event2.ind == 1 & terminal2.ind == 0) {
-  	kappa = c(kappa0, 0)
-  }
-  if (event2.ind == 0 & terminal2.ind == 1) {
-  	kappa = c(kappa[1:2], 0, kappa[3])
-  }
-  n.knots[n.knots < 4 & n.knots != 0] <- 4
-  n.knots[n.knots > 20] <- 20
-}else if(typeof == 2){
-  # if the hazard is weibull
-  if (!(missing(n.knots)) || !(missing(kappa))) {
-  	warning("When parametric hazard is not 'Splines'
-  		'kappa' and 'n.knots' arguments are ignored.")
-  }
-  n.knots <- 0
-  kappa <- rep(0, 4)
-  crossVal <- 0
-}
+#### Configure Splines Hazard (knots, pentalty), Not yet implemented
+# if (typeof == 0) {
+#   crossVal <- 1 # always do cross validation for splines
+#   if (missing(kappa))
+#   	stop("smoothing parameter (kappa1) is required")
+#   if (missing(n.knots))
+#   	stop("number of knots are required")
+#   if (class(kappa) != "numeric")
+#   	stop("The argument kappa must be a numeric")
+#   if (class(n.knots) != "integer"){
+#   	warning("Converting n.knots to integers")
+#   	n.knots <- as.integer(n.knots)
+#   }
+#   if (length(n.knots) != 1) {
+#   	stop("length of knots must be 1.")
+#   }
+#   if (length(kappa) != 2 + event2.ind + terminal2.ind) {
+#   	stop(
+#   		"length of kappa must be equal to the number of formulas
+#   		for different event types (3 or 4) in the order
+#   		recurrent1, recurrent2, terminal1, terminal2."
+#   	)
+#   }
+#   if (event2.ind == 1 & terminal2.ind == 0) {
+#   	kappa = c(kappa0, 0)
+#   }
+#   if (event2.ind == 0 & terminal2.ind == 1) {
+#   	kappa = c(kappa[1:2], 0, kappa[3])
+#   }
+#   n.knots[n.knots < 4 & n.knots != 0] <- 4
+#   n.knots[n.knots > 20] <- 20
+# }else if(typeof == 2){
+#   # if the hazard is weibull
+#   if (!(missing(n.knots)) || !(missing(kappa))) {
+#   	warning("When parametric hazard is not 'Splines'
+#   		'kappa' and 'n.knots' arguments are ignored.")
+#   }
+#   n.knots <- 0
+#   kappa <- rep(0, 4)
+#   crossVal <- 0
+# }
 
-########################### End Hazard Configuration
-
-flush.console()
-if (print.times) {
-  ptm <- proc.time()
-  #cat("\n")
-  #cat("The program is computing ... \n")
-}
-
+# End Hazard Configuration
 #########################################################################
 # Configure Model Matrices
 
-noVarEvent = c(0,0,0,0) # need to fix this
+# noVarEvent indicates whether there are no explanatory variables for the
+# recurrent1, terminal1, recurrent2, and terminal2 events (in that order)
+noVarEvent = c(0,0,1,0)
 
-# Recurrent1
+# delete specials from the formula to get just covariates
+# on right side.
 specials = c("strata", "cluster", "terminal", "event2", "terminal2")
 Terms = terms(formula, specials = specials)
+
+# Check if all terms on right side of Recurrent event formula are specials
+if(length(unlist(attr(Terms, "specials"))) == (length(unlist(attr(Terms, "variables")))-2)){
+	noVarEvent[1] <- 1
+}
+
+# Check for terminal1 formula
+if(is.null(formula.terminalEvent)){
+	noVarEvent[2] <- 1
+}
+
+# Check for terminal2 formula
+if(is.null(formula.terminalEvent2)){
+	noVarEvent[4] <- 1
+}
+
+# Recurrent Event 1 Model Matrix
+if(noVarEvent[1] == 0){
 modelmatrix1 =
   model.matrix(update(
   	drop.terms(
@@ -732,7 +475,10 @@ modelmatrix1 =
   	),
   	~ . - 1
   ),
-  data) # need to delete specials from the formula
+  data)
+}else{
+	  modelmatrix1 = matrix(0)
+}
 
 # need to get densely-ranked ids
 group1 <- as.numeric(factor(data[[CLUSTER]]))
@@ -740,7 +486,7 @@ group1 <- as.numeric(factor(data[[CLUSTER]]))
 # Compute Event Counts
 # nevents1 <- tapply(event1, group1, sum)
 
-# Recurrent 2
+# Recurrent Event 2 Model Matrix
 if (event2.ind == 1) {
   group2 <- as.numeric(factor(data.Event2[[CLUSTER]]))
   # Compute Event Counts
@@ -769,7 +515,7 @@ if (event2.ind == 1) {
   group2 = 0
 }
 
-# Terminal 1
+# Terminal Event 1 Model Matrix
 data.terminal <- do.call(what = "rbind",
   	 lapply(split(x = data, f = data[[CLUSTER]]),
   	        function(df) {
@@ -779,16 +525,22 @@ groupdc <- as.numeric(factor(data.terminal[[CLUSTER]]))
 tt1dc <- data.terminal[[TSTOP]]
 terminal1 <- data.terminal[[TERMINAL1]]
 
+if(noVarEvent[2]==0){
 modelmatrix2 = model.matrix(update(formula.terminalEvent, ~ . - 1), data.terminal)
+}
 
-# Terminal 2
-if(terminal2.ind == 1) {
-  terminal2 <- data.terminal[[TERMINAL2]]
-  modelmatrix4 = model.matrix(update(formula.terminalEvent2, ~ . - 1),
+# Terminal 2 Model Matrix
+if((terminal2.ind == 1)) {
+	if(noVarEvent[4] == 0){
+		  modelmatrix4 = model.matrix(update(formula.terminalEvent2, ~ . - 1),
   		    data.terminal)
+	}else{
+		  modelmatrix4 = matrix(0)
+	}
+    terminal2 <- data.terminal[[TERMINAL2]]
 } else{
-  terminal2 <- data.terminal[[TERMINAL1]]*0
-  modelmatrix4 = matrix(0)
+    terminal2 <- data.terminal[[TERMINAL1]]*0
+    modelmatrix4 = matrix(0)
 }
 
 #########################################################################
@@ -799,6 +551,7 @@ nvar = ncol(modelmatrix1) +
   ncol(modelmatrix2)  +
   ncol(modelmatrix3) * event2.ind+
   ncol(modelmatrix4) * terminal2.ind
+nvar = nvar * (1-noVarEvent) # remove for empty model matricies
 
 nbvar = c(
 	ncol(modelmatrix1),
@@ -856,22 +609,22 @@ if(initialize){
 	init.B <- init.B*0
 
 	# recreate time variable in original data set in case of gap times, create new formula
-	# if(gapTimes){
-	# 	#data$gapTimes <- tt11
-	# 	initialization.formula <-
-	# 		paste("Surv(gapTimes, ", EVENT1, ")",
-	# 		      paste(gsub("Surv(.*)","", as.character(formula)), collapse = ""),
-	# 		      collapse = "")
-	#
-	# 	data$gapTimes <- tt11
-	# 	initialization.formula <-
-	# 		paste("Surv(gapTimes, ", EVENT1, ")",
-	# 		      paste(gsub("Surv(.*)","", as.character(formula)), collapse = ""),
-	# 		      collapse = "")
-	# }else{
-	# 	initialization.formula <- formula
-	# }
-	initialization.formula <- formula
+	if(gapTimes){
+		#data$gapTimes <- tt11
+		initialization.formula <-
+			paste("Surv(gapTimes, ", EVENT1, ")",
+			      paste(gsub("Surv(.*)","", as.character(formula)), collapse = ""),
+			      collapse = "")
+
+		data$gapTimes <- tt11
+		initialization.formula <-
+			paste("Surv(gapTimes, ", EVENT1, ")",
+			      paste(gsub("Surv(.*)","", as.character(formula)), collapse = ""),
+			      collapse = "")
+	}else{
+		initialization.formula <- formula
+	}
+	#initialization.formula <- formula
 
 	# create separate formulas for each initialization model
 	initialization.formula1 <- drop.terms(terms(initialization.formula),

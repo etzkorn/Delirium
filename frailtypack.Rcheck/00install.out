@@ -1,0 +1,1654 @@
+* installing *source* package ‘frailtypack’ ...
+** using staged installation
+** libs
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  Adonnees.f90 -o Adonnees.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  AparamMultive.f90 -o AparamMultive.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  Aparameters.f90 -o Aparameters.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  autres_fonctions.f90 -o autres_fonctions.o
+autres_fonctions.f90:1862:10:
+
+         k=k+n_i(i)
+          1
+Warning: Possible change of value in conversion from REAL(8) to INTEGER(4) at (1) [-Wconversion]
+autres_fonctions.f90:619:9:
+
+       n1=k+n_i(i)-1
+         1
+Warning: Possible change of value in conversion from REAL(8) to INTEGER(4) at (1) [-Wconversion]
+autres_fonctions.f90:630:8:
+
+       k=k+n_i(i)
+        1
+Warning: Possible change of value in conversion from REAL(8) to INTEGER(4) at (1) [-Wconversion]
+autres_fonctions.f90:2088:95:
+
+ subroutine Generation_surrogate_copula(don_simul,don_simulS1,n_obs,n_col,lognormal,affiche_stat,vrai_theta,&
+                                                                                               1
+Warning: Unused dummy argument ‘affiche_stat’ at (1) [-Wunused-dummy-argument]
+autres_fonctions.f90:2137:77:
+
+       double precision :: ui,temps1,temps1_S,gapx,gapdc,moy_idnum,cens,cbeta2,&
+                                                                             1
+Warning: Unused variable ‘cbeta2’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:2138:44:
+
+       auxbeta1,auxbeta2,uniran,moyui, cbeta4
+                                            1
+Warning: Unused variable ‘cbeta4’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:2089:55:
+
+             ng,ver,truealpha,propC,cens_A,gamma1,gamma2,theta2,lambda_S,nu_S,lambda_T,nu_T,betas,&
+                                                       1
+Warning: Unused dummy argument ‘gamma2’ at (1) [-Wunused-dummy-argument]
+autres_fonctions.f90:2133:56:
+
+       integer :: nb_recur,nb_dc,nb_cens,delta,deltadc,jj,ig,nrecurr,nobs,max_recu, nobs_save, nobs_temp
+                                                        1
+Warning: Unused variable ‘jj’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:2137:65:
+
+       double precision :: ui,temps1,temps1_S,gapx,gapdc,moy_idnum,cens,cbeta2,&
+                                                                 1
+Warning: Unused variable ‘moy_idnum’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:2125:20:
+
+       integer  j,k,n,ii,iii,iii2,i,nbou
+                    1
+Warning: Unused variable ‘n’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:2133:92:
+
+       integer :: nb_recur,nb_dc,nb_cens,delta,deltadc,jj,ig,nrecurr,nobs,max_recu, nobs_save, nobs_temp
+                                                                                            1
+Warning: Unused variable ‘nobs_save’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:2133:103:
+
+       integer :: nb_recur,nb_dc,nb_cens,delta,deltadc,jj,ig,nrecurr,nobs,max_recu, nobs_save, nobs_temp
+                                                                                                       1
+Warning: Unused variable ‘nobs_temp’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:2129:34:
+
+       character*18 nomvar(nvarmax),nomvar2(nvarmax)
+                                  1
+Warning: Unused variable ‘nomvar’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:2129:51:
+
+       character*18 nomvar(nvarmax),nomvar2(nvarmax)
+                                                   1
+Warning: Unused variable ‘nomvar2’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:2090:49:
+
+             betat,n_essai,rsqrt,sigma_s,sigma_t,p,prop_i,gamma,alpha,frailt_base,thetacopule,filtre, filtre2,&
+                                                 1
+Warning: Unused dummy argument ‘p’ at (1) [-Wunused-dummy-argument]
+autres_fonctions.f90:2089:28:
+
+             ng,ver,truealpha,propC,cens_A,gamma1,gamma2,theta2,lambda_S,nu_S,lambda_T,nu_T,betas,&
+                            1
+Warning: Unused dummy argument ‘truealpha’ at (1) [-Wunused-dummy-argument]
+autres_fonctions.f90:2137:28:
+
+       double precision :: ui,temps1,temps1_S,gapx,gapdc,moy_idnum,cens,cbeta2,&
+                            1
+Warning: Unused variable ‘ui’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:2142:48:
+
+       double precision, dimension(ngmax):: vecui
+                                                1
+Warning: Unused variable ‘vecui’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:2152:27:
+
+       double precision::x22,sigma_st,u_i,tempon
+                           1
+Warning: Unused variable ‘x22’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:1700:88:
+
+ subroutine Generation_surrogate(don_simul,don_simulS1,n_obs,n_col,lognormal,affiche_stat,vrai_theta,&
+                                                                                        1
+Warning: Unused dummy argument ‘affiche_stat’ at (1) [-Wunused-dummy-argument]
+autres_fonctions.f90:1741:90:
+
+       double precision :: ui,temps1,temps1_S,gapx,gapdc,moy_idnum,x,xdc,cens,cbeta1,cbeta2,cbeta3,&
+                                                                                          1
+Warning: Unused variable ‘cbeta2’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:1701:55:
+
+             ng,ver,truealpha,propC,cens_A,gamma1,gamma2,theta2,lambda_S,nu_S,lambda_T,nu_T,betas,&
+                                                       1
+Warning: Unused dummy argument ‘gamma2’ at (1) [-Wunused-dummy-argument]
+autres_fonctions.f90:1731:20:
+
+       integer  j,k,n,ii,iii,iii2,i,nbou
+                    1
+Warning: Unused variable ‘n’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:1747:25:
+
+       integer :: nmax,nva,nva1,nva2, ibou
+                         1
+Warning: Unused variable ‘nva’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:1702:49:
+
+             betat,n_essai,rsqrt,sigma_s,sigma_t,p,prop_i,gamma,alpha,frailt_base, pfs)
+                                                 1
+Warning: Unused dummy argument ‘p’ at (1) [-Wunused-dummy-argument]
+autres_fonctions.f90:1018:102:
+
+             ng,ver,truealpha,propC,cens_A,gamma1,gamma2,theta2,lambda_S,nu_S,lambda_T,nu_T,betas,betat)
+                                                                                                      1
+Warning: Unused dummy argument ‘betat’ at (1) [-Wunused-dummy-argument]
+autres_fonctions.f90:1018:55:
+
+             ng,ver,truealpha,propC,cens_A,gamma1,gamma2,theta2,lambda_S,nu_S,lambda_T,nu_T,betas,betat)
+                                                       1
+Warning: Unused dummy argument ‘gamma2’ at (1) [-Wunused-dummy-argument]
+autres_fonctions.f90:1110:24:
+
+       real :: piece,rien,demi
+                        1
+Warning: Unused variable ‘rien’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:983:12:
+
+         use var_surrogate, only:param_weibull
+            1
+Warning: Unused module variable ‘param_weibull’ which has been explicitly imported at (1) [-Wunused-variable]
+autres_fonctions.f90:987:19:
+
+         real ::ran2
+                   1
+Warning: Unused variable ‘ran2’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:985:72:
+
+         double precision ::a,b,at,bt,Sij,Tij,u,ut,v,betau,betaut,vt,utij,vtij,theta,wij
+                                                                        1
+Warning: Unused variable ‘utij’ declared at (1) [-Wunused-variable]
+autres_fonctions.f90:550:76:
+
+    SUBROUTINE simulation(donnee,donneeS,ind_temp,n_col,theta,ksi,betas,alpha,betat,p,prop_i,lambdas,nus,&
+                                                                            1
+Warning: Unused dummy argument ‘alpha’ at (1) [-Wunused-dummy-argument]
+autres_fonctions.f90:552:30:
+
+                          rsqrt,sigma_s,sigma_t,weib,frailty_cor,affiche_stat)
+                              1
+Warning: Unused dummy argument ‘rsqrt’ at (1) [-Wunused-dummy-argument]
+autres_fonctions.f90:552:38:
+
+                          rsqrt,sigma_s,sigma_t,weib,frailty_cor,affiche_stat)
+                                      1
+Warning: Unused dummy argument ‘sigma_s’ at (1) [-Wunused-dummy-argument]
+autres_fonctions.f90:552:46:
+
+                          rsqrt,sigma_s,sigma_t,weib,frailty_cor,affiche_stat)
+                                              1
+Warning: Unused dummy argument ‘sigma_t’ at (1) [-Wunused-dummy-argument]
+autres_fonctions.f90:40:0:
+
+     double precision function tau_kendall(sigma_w,sigma_u,sigma_v,z_11,z_21,method_int,N_MC,alpha,zeta,model_complet)
+ 
+Warning: ‘__result_tau_kendall’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  aaOptim_New_scl2.f90 -o aaOptim_New_scl2.o
+aaOptim_New_scl2.f90:126:8:
+
+     use residusM,only:indg
+        1
+Warning: Unused module variable ‘indg’ which has been explicitly imported at (1) [-Wunused-variable]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  aaOptim_New_scl.f90 -o aaOptim_New_scl.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  Integrant_scl.f90 -o Integrant_scl.o
+Integrant_scl.f90:871:89:
+
+     double precision function Integrale_Individuel_MC_cor(vsi,vti,ui,uti,j,nsimu,ndim,mu1,frailij)
+                                                                                         1
+Warning: Unused dummy argument ‘mu1’ at (1) [-Wunused-dummy-argument]
+Integrant_scl.f90:642:61:
+
+     double precision,dimension(ndim,ndim)::invBi_chol_Essai_k ! pour recuperer les matrice B_k dans le vecteur des matrices B des essais K
+                                                             1
+Warning: Unused variable ‘invbi_chol_essai_k’ declared at (1) [-Wunused-variable]
+Integrant_scl.f90:640:56:
+
+     double precision::ss1,auxfunca,ss,wsij,wtij,test,rho
+                                                        1
+Warning: Unused variable ‘rho’ declared at (1) [-Wunused-variable]
+Integrant_scl.f90:640:52:
+
+     double precision::ss1,auxfunca,ss,wsij,wtij,test,rho
+                                                    1
+Warning: Unused variable ‘test’ declared at (1) [-Wunused-variable]
+Integrant_scl.f90:625:9:
+
+      use var_surrogate, only:posind_i,const_res5,const_res4,&
+         1
+Warning: Unused module variable ‘varcov’ which has been explicitly imported at (1) [-Wunused-variable]
+Integrant_scl.f90:19:8:
+
+     use var_surrogate, only: posind_i, alpha_ui, const_res4, const_res5, res2_dcs_sujet,res2s_sujet, &
+        1
+Warning: Unused module variable ‘control_affichage’ which has been explicitly imported at (1) [-Wunused-variable]
+Integrant_scl.f90:12:57:
+
+  double precision function Integrant_Copula(vsi,vti,ui,ig,nsujet_trial)
+                                                         1
+Warning: Unused dummy argument ‘ig’ at (1) [-Wunused-dummy-argument]
+Integrant_scl.f90:27:16:
+
+     integer::j,n
+                1
+Warning: Unused variable ‘n’ declared at (1) [-Wunused-variable]
+Integrant_scl.f90:871:0:
+
+     double precision function Integrale_Individuel_MC_cor(vsi,vti,ui,uti,j,nsimu,ndim,mu1,frailij)
+ 
+Warning: ‘__result_integrale_individuel’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+Integrant_scl.f90:604:0:
+
+         Integrale_Individuel=Integrale_Individuel*2.d0**(1.d0/2.d0)*invBi_cholDet(posind_i-1+j)  !2^(q/2), même determinant pour tous les individus
+ 
+Warning: ‘__result_integrale_individuel’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+Integrant_scl.f90:12:0:
+
+  double precision function Integrant_Copula(vsi,vti,ui,ig,nsujet_trial)
+ 
+Warning: ‘__result_integrant_copula’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpa_laplace.f90 -o funcpa_laplace.o
+funcpa_laplace.f90:362:72:
+
+     double precision function funcpaLaplace_copula(b,np,id,thi,jd,thj,k0)
+                                                                        1
+Warning: Unused dummy argument ‘k0’ at (1) [-Wunused-dummy-argument]
+funcpa_laplace.f90:245:68:
+
+     double precision function funcpaXi_chapeau(b,np,id,thi,jd,thj,k0)
+                                                                    1
+Warning: Unused dummy argument ‘k0’ at (1) [-Wunused-dummy-argument]
+funcpa_laplace.f90:7:70:
+
+     double precision function funcpaw_ij_chapeau(b,np,id,thi,jd,thj,k0,individu_j)
+                                                                      1
+Warning: Unused dummy argument ‘k0’ at (1) [-Wunused-dummy-argument]
+funcpa_laplace.f90:9:12:
+
+         use var_surrogate, only:vs_i,vt_i,u_i,theta2,const_res5,const_res4,&
+            1
+Warning: Unused module variable ‘res2_dcs_sujet’ which has been explicitly imported at (1) [-Wunused-variable]
+funcpa_laplace.f90:9:12:
+
+         use var_surrogate, only:vs_i,vt_i,u_i,theta2,const_res5,const_res4,&
+            1
+Warning: Unused module variable ‘res2s_sujet’ which has been explicitly imported at (1) [-Wunused-variable]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpa_adaptative.f90 -o funcpa_adaptative.o
+funcpa_adaptative.f90:271:76:
+
+     double precision function funcpafrailtyPred_copula(b,np,id,thi,jd,thj,k0)
+                                                                            1
+Warning: Unused dummy argument ‘k0’ at (1) [-Wunused-dummy-argument]
+funcpa_adaptative.f90:93:44:
+
+         double precision ::I1,c1,c2,integral
+                                            1
+Warning: Unused variable ‘integral’ declared at (1) [-Wunused-variable]
+funcpa_adaptative.f90:7:73:
+
+     double precision function funcpafrailtyPred_ind(b,np,id,thi,jd,thj,k0,individu_j)
+                                                                         1
+Warning: Unused dummy argument ‘k0’ at (1) [-Wunused-dummy-argument]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  Integrale_mult_scl.f90 -o Integrale_mult_scl.o
+Integrale_mult_scl.f90:3345:7:
+
+     101 continue
+       1
+Warning: Label 101 at (1) defined but not used [-Wunused-label]
+Integrale_mult_scl.f90:3213:20:
+
+                 1000 continue
+                    1
+Warning: Label 1000 at (1) defined but not used [-Wunused-label]
+Integrale_mult_scl.f90:3230:7:
+
+     101 continue
+       1
+Warning: Label 101 at (1) defined but not used [-Wunused-label]
+Integrale_mult_scl.f90:2995:20:
+
+                 1000 continue
+                    1
+Warning: Label 1000 at (1) defined but not used [-Wunused-label]
+Integrale_mult_scl.f90:3012:7:
+
+     101 continue
+       1
+Warning: Label 101 at (1) defined but not used [-Wunused-label]
+Integrale_mult_scl.f90:2779:20:
+
+                 1000 continue
+                    1
+Warning: Label 1000 at (1) defined but not used [-Wunused-label]
+Integrale_mult_scl.f90:2796:7:
+
+     101 continue
+       1
+Warning: Label 101 at (1) defined but not used [-Wunused-label]
+Integrale_mult_scl.f90:2629:7:
+
+     110 continue
+       1
+Warning: Label 110 at (1) defined but not used [-Wunused-label]
+Integrale_mult_scl.f90:2406:20:
+
+                 1001 continue
+                    1
+Warning: Label 1001 at (1) defined but not used [-Wunused-label]
+Integrale_mult_scl.f90:2477:7:
+
+     100 continue
+       1
+Warning: Label 100 at (1) defined but not used [-Wunused-label]
+Integrale_mult_scl.f90:13:57:
+
+     double precision function Cont_Laplace_Essai(determin)
+                                                         1
+Warning: Unused dummy argument ‘determin’ at (1) [-Wunused-dummy-argument]
+Integrale_mult_scl.f90:1443:80:
+
+  double precision function MC_MultInd_Essai(func,func2,ndim,nsujet_trial,i,mat_A)
+                                                                                1
+Warning: Unused dummy argument ‘mat_a’ at (1) [-Wunused-dummy-argument]
+Integrale_mult_scl.f90:984:77:
+
+  double precision function MC_Multiple_surr(func,vsi,vti,ui,nsimu,mu1,vc1,n,i)
+                                                                             1
+Warning: Unused dummy argument ‘i’ at (1) [-Wunused-dummy-argument]
+Integrale_mult_scl.f90:418:64:
+
+     subroutine monteCarlosMult(funcMC,mu,vc,nsim,vcdiag,posind_i,result)
+                                                                1
+Warning: Unused dummy argument ‘posind_i’ at (1) [-Wunused-dummy-argument]
+Integrale_mult_scl.f90:431:45:
+
+     integer :: jj,j,k,ier,l,maxmes,stemp,tid1 !maxmes= nombre de dimension ou encore dimension de X
+                                             1
+Warning: Unused variable ‘tid1’ declared at (1) [-Wunused-variable]
+Integrale_mult_scl.f90:275:54:
+
+     integer ::ii,jj,l,m,maxmes,nsimu,init_i,max_i,code,erreur,rang
+                                                      1
+Warning: Unused variable ‘code’ declared at (1) [-Wunused-variable]
+Integrale_mult_scl.f90:266:8:
+
+     use var_surrogate, only: Vect_sim_MC,a_deja_simul,nsim,chol,frailt_base,&
+        1
+Warning: Unused module variable ‘control_affichage’ which has been explicitly imported at (1) [-Wunused-variable]
+Integrale_mult_scl.f90:275:61:
+
+     integer ::ii,jj,l,m,maxmes,nsimu,init_i,max_i,code,erreur,rang
+                                                             1
+Warning: Unused variable ‘erreur’ declared at (1) [-Wunused-variable]
+Integrale_mult_scl.f90:275:19:
+
+     integer ::ii,jj,l,m,maxmes,nsimu,init_i,max_i,code,erreur,rang
+                   1
+Warning: Unused variable ‘jj’ declared at (1) [-Wunused-variable]
+Integrale_mult_scl.f90:3025:8:
+
+     use var_surrogate, only: adaptative,xx1,ww1,posind_i,invBi_chol_Essai,ui_chap_Essai,&
+        1
+Warning: Unused module variable ‘frailt_base’ which has been explicitly imported at (1) [-Wunused-variable]
+Integrale_mult_scl.f90:3025:8:
+
+     use var_surrogate, only: adaptative,xx1,ww1,posind_i,invBi_chol_Essai,ui_chap_Essai,&
+        1
+Warning: Unused module variable ‘posind_i’ which has been explicitly imported at (1) [-Wunused-variable]
+Integrale_mult_scl.f90:2809:8:
+
+     use var_surrogate, only: adaptative,xx1,ww1,posind_i,invBi_chol_Essai,ui_chap_Essai,&
+        1
+Warning: Unused module variable ‘frailt_base’ which has been explicitly imported at (1) [-Wunused-variable]
+Integrale_mult_scl.f90:2809:8:
+
+     use var_surrogate, only: adaptative,xx1,ww1,posind_i,invBi_chol_Essai,ui_chap_Essai,&
+        1
+Warning: Unused module variable ‘posind_i’ which has been explicitly imported at (1) [-Wunused-variable]
+Integrale_mult_scl.f90:2652:48:
+
+     integer ::ii,jj,npg,kk,cpt,init_i,max_i,code,erreur,rang
+                                                1
+Warning: Unused variable ‘code’ declared at (1) [-Wunused-variable]
+Integrale_mult_scl.f90:2652:55:
+
+     integer ::ii,jj,npg,kk,cpt,init_i,max_i,code,erreur,rang
+                                                       1
+Warning: Unused variable ‘erreur’ declared at (1) [-Wunused-variable]
+Integrale_mult_scl.f90:2482:79:
+
+   double precision function gauss_HermMultA_surr_MC(func,vsi,vti,ui,npoint1,n,i)
+                                                                               1
+Warning: Unused dummy argument ‘i’ at (1) [-Wunused-dummy-argument]
+Integrale_mult_scl.f90:2482:75:
+
+   double precision function gauss_HermMultA_surr_MC(func,vsi,vti,ui,npoint1,n,i)
+                                                                           1
+Warning: Unused dummy argument ‘npoint1’ at (1) [-Wunused-dummy-argument]
+Integrale_mult_scl.f90:2323:75:
+
+  double precision function gauss_HermMultA_surr(func,vsi,vti,ui,npoint1,n,i)
+                                                                           1
+Warning: Unused dummy argument ‘i’ at (1) [-Wunused-dummy-argument]
+Integrale_mult_scl.f90:2504:0:
+
+    double precision ::herm,I1,c1,c2
+ 
+Warning: ‘herm’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  Pour_Adaptative.f90 -o Pour_Adaptative.o
+Pour_Adaptative.f90:6:78:
+
+     double precision function funcpa_estimatin_fragilite(b,np,id,thi,jd,thj,k0)
+                                                                              1
+Warning: Unused dummy argument ‘k0’ at (1) [-Wunused-dummy-argument]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  aGhermite.f90 -o aGhermite.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  aaOptim.f90 -o aaOptim.o
+aaOptim.f90:1412:11:
+
+     end do
+           1
+Warning: Nonconforming tab character at (1) [-Wtabs]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  aaOptim_SCL_0.f90 -o aaOptim_SCL_0.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  aaOptimres.f90 -o aaOptimres.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  aaUseFunction.f90 -o aaUseFunction.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  aaUseFunctionG.f90 -o aaUseFunctionG.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  aamarq98o.f90 -o aamarq98o.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  additive.f90 -o additive.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  afuncpasres.f90 -o afuncpasres.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  ahrmsym.f90 -o ahrmsym.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  aresidusMartingale.f90 -o aresidusMartingale.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  distance.f90 -o distance.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  epoce.f90 -o epoce.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  epoce_log.f90 -o epoce_log.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  epoce_long.f90 -o epoce_long.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  epoce_long_nl.f90 -o epoce_long_nl.o
+epoce_long_nl.f90:1107:0:
+
+                   **(dexp(dot_product(etayr,Xea22(1:netar))))
+ 
+Warning: ‘sut0[0]’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+epoce_long_nl.f90:1107:0: Warning: ‘sut1[0]’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+epoce_long_nl.f90:1187:0:
+
+                     lamdc = 4.d0*the2(nn-2-1)/(zi(nn-2)-zi(nn-2-1))
+ 
+Warning: ‘nn’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  frailtypack.f90 -o frailtypack.o
+frailtypack.f90:2618:8:
+
+     use comon,only:typeof
+        1
+Warning: Unused module variable ‘typeof’ which has been explicitly imported at (1) [-Wunused-variable]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaG_tps.f90 -o funcpaG_tps.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaGcpm.f90 -o funcpaGcpm.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaGcpm_intcens.f90 -o funcpaGcpm_intcens.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaGcpm_log.f90 -o funcpaGcpm_log.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaGsplines.f90 -o funcpaGsplines.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaGsplines_intcens.f90 -o funcpaGsplines_intcens.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaGsplines_log.f90 -o funcpaGsplines_log.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaGweib.f90 -o funcpaGweib.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaGweib_intcens.f90 -o funcpaGweib_intcens.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaGweib_log.f90 -o funcpaGweib_log.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaMultivCpm.f90 -o funcpaMultivCpm.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaMultivSplines.f90 -o funcpaMultivSplines.o
+funcpaMultivSplines.f90:122:11:
+
+     end if
+           1
+Warning: Nonconforming tab character at (1) [-Wtabs]
+funcpaMultivSplines.f90:432:69:
+
+                 write(1,*) "funcpaMultivSplines.f90:: nzdc = ", nzdc
+                                                                     1
+Warning: Nonconforming tab character at (1) [-Wtabs]
+funcpaMultivSplines.f90:59:25:
+
+     double precision::int
+                         1
+Warning: Unused variable ‘int’ declared at (1) [-Wunused-variable]
+funcpaMultivSplines.f90:31:33:
+
+     double precision::pe1,pe2,pe3,pe4,inv,inv2,som1,som2,som3,som4,&
+                                 1
+Warning: Unused variable ‘pe3’ declared at (1) [-Wunused-variable]
+funcpaMultivSplines.f90:31:61:
+
+     double precision::pe1,pe2,pe3,pe4,inv,inv2,som1,som2,som3,som4,&
+                                                             1
+Warning: Unused variable ‘som3’ declared at (1) [-Wunused-variable]
+funcpaMultivSplines.f90:32:21:
+
+     res,vet,vet2,vet3,vet4,h1,pi,frail,frail2,weight,weight2,ss
+                     1
+Warning: Unused variable ‘vet3’ declared at (1) [-Wunused-variable]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaMultivWeib.f90 -o funcpaMultivWeib.o
+funcpaMultivWeib.f90:28:43:
+
+     integer,dimension(ngmax)::cpt, deltaRes!, cptmeta
+                                           1
+Warning: Unused variable ‘deltares’ declared at (1) [-Wunused-variable]
+funcpaMultivWeib.f90:42:15:
+
+     INTEGER::ii,jj,npg ! delete npg?
+               1
+Warning: Unused variable ‘ii’ declared at (1) [-Wunused-variable]
+funcpaMultivWeib.f90:38:25:
+
+     double precision::int
+                         1
+Warning: Unused variable ‘int’ declared at (1) [-Wunused-variable]
+funcpaMultivWeib.f90:37:30:
+
+     ,res3dc,res2dc2,integrale1,integrale2,integrale3!,res2meta
+                              1
+Warning: Unused variable ‘integrale1’ declared at (1) [-Wunused-variable]
+funcpaMultivWeib.f90:37:41:
+
+     ,res3dc,res2dc2,integrale1,integrale2,integrale3!,res2meta
+                                         1
+Warning: Unused variable ‘integrale2’ declared at (1) [-Wunused-variable]
+funcpaMultivWeib.f90:42:18:
+
+     INTEGER::ii,jj,npg ! delete npg?
+                  1
+Warning: Unused variable ‘jj’ declared at (1) [-Wunused-variable]
+funcpaMultivWeib.f90:42:22:
+
+     INTEGER::ii,jj,npg ! delete npg?
+                      1
+Warning: Unused variable ‘npg’ declared at (1) [-Wunused-variable]
+funcpaMultivWeib.f90:41:28:
+
+     double precision::ss,ss1
+                            1
+Warning: Unused variable ‘ss1’ declared at (1) [-Wunused-variable]
+funcpaMultivWeib.f90:30:39:
+
+     double precision::res,vet,vet2,vet3,vet4,frail,frail2,weight,weight2
+                                       1
+Warning: Unused variable ‘vet3’ declared at (1) [-Wunused-variable]
+funcpaMultivWeib.f90:9:0:
+
+     double precision function funcpaMultivWeib(b,np,id,thi,jd,thj,k0)
+ 
+Warning: ‘__result_funcpamultivweib’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaacpm.f90 -o funcpaacpm.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaasplines.f90 -o funcpaasplines.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaaweib.f90 -o funcpaaweib.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpaj_tps.f90 -o funcpaj_tps.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajcpm.f90 -o funcpajcpm.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajcpm_log.f90 -o funcpajcpm_log.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajgeneral.f90 -o funcpajgeneral.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajlongisplines.f90 -o funcpajlongisplines.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajlongisplines_nl.f90 -o funcpajlongisplines_nl.o
+funcpajlongisplines_nl.f90:947:11:
+
+         123     continue
+           1
+Warning: Label 123 at (1) defined but not used [-Wunused-label]
+funcpajlongisplines_nl.f90:600:56:
+
+         double precision function funcsplines_nl(b,np,id,thi,jd,thj,k0)
+                                                        1
+Warning: Unused dummy argument ‘id’ at (1) [-Wunused-dummy-argument]
+funcpajlongisplines_nl.f90:600:63:
+
+         double precision function funcsplines_nl(b,np,id,thi,jd,thj,k0)
+                                                               1
+Warning: Unused dummy argument ‘jd’ at (1) [-Wunused-dummy-argument]
+funcpajlongisplines_nl.f90:600:70:
+
+         double precision function funcsplines_nl(b,np,id,thi,jd,thj,k0)
+                                                                      1
+Warning: Unused dummy argument ‘k0’ at (1) [-Wunused-dummy-argument]
+funcpajlongisplines_nl.f90:600:60:
+
+         double precision function funcsplines_nl(b,np,id,thi,jd,thj,k0)
+                                                            1
+Warning: Unused dummy argument ‘thi’ at (1) [-Wunused-dummy-argument]
+funcpajlongisplines_nl.f90:600:67:
+
+         double precision function funcsplines_nl(b,np,id,thi,jd,thj,k0)
+                                                                   1
+Warning: Unused dummy argument ‘thj’ at (1) [-Wunused-dummy-argument]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajlongiweib.f90 -o funcpajlongiweib.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajlongiweib_nl.f90 -o funcpajlongiweib_nl.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajsplines.f90 -o funcpajsplines.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajsplinesIndiv.f90 -o funcpajsplinesIndiv.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajsplines_copule_surrogate_scl_2.f90 -o funcpajsplines_copule_surrogate_scl_2.o
+funcpajsplines_copule_surrogate_scl_2.f90:52:35:
+
+     double precision::int,gammaJ,c3,c4,pourgam
+                                   1
+Warning: Unused variable ‘c3’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:52:38:
+
+     double precision::int,gammaJ,c3,c4,pourgam
+                                      1
+Warning: Unused variable ‘c4’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:36:84:
+
+     integer::n,i,j,k,vj,ig,choix,l,vcdiag,nsujet_trial,dimint,dimint_Ind,erreur,code,compteur,init_i,max_i
+                                                                                    1
+Warning: Unused variable ‘code’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:58:93:
+
+     integer::ier,istop,ss,sss,ni,model_save,nparamfrail_save,maxiter_save,nmax_2,nb_pro2,comm,rang2,&
+                                                                                             1
+Warning: Unused variable ‘comm’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:36:93:
+
+     integer::n,i,j,k,vj,ig,choix,l,vcdiag,nsujet_trial,dimint,dimint_Ind,erreur,code,compteur,init_i,max_i
+                                                                                             1
+Warning: Unused variable ‘compteur’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:59:75:
+
+              np_2,indice_B_essai,indice_ind_util_essai,non_conv,control_est,rang,n_par_pro
+                                                                           1
+Warning: Unused variable ‘control_est’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:36:79:
+
+     integer::n,i,j,k,vj,ig,choix,l,vcdiag,nsujet_trial,dimint,dimint_Ind,erreur,code,compteur,init_i,max_i
+                                                                               1
+Warning: Unused variable ‘erreur’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:62:67:
+
+     double precision::ca,cb,dd,som_cont,usim,x22,SX, jacobien, f_vi
+                                                                   1
+Warning: Unused variable ‘f_vi’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:51:52:
+
+     double precision,dimension(:),allocatable::frail
+                                                    1
+Warning: Unused variable ‘frail’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:60:33:
+
+     integer::frail_essai_deja_est,lm ! variable qui dit si pour un essai donne l'on a deja estimes les vsi et vti (1) ou non (0)
+                                 1
+Warning: Unused variable ‘frail_essai_deja_est’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:52:32:
+
+     double precision::int,gammaJ,c3,c4,pourgam
+                                1
+Warning: Unused variable ‘gammaj’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:38:67:
+
+     double precision::pe1,pe2,som,inv,som1,som2,res,vet,vet2,h1,inc,varS1,varT1,covST1,som_cont_0, v_si, v_ti, ui
+                                                                   1
+Warning: Unused variable ‘inc’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:59:54:
+
+              np_2,indice_B_essai,indice_ind_util_essai,non_conv,control_est,rang,n_par_pro
+                                                      1
+Warning: Unused variable ‘indice_ind_util_essai’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:36:100:
+
+     integer::n,i,j,k,vj,ig,choix,l,vcdiag,nsujet_trial,dimint,dimint_Ind,erreur,code,compteur,init_i,max_i
+                                                                                                    1
+Warning: Unused variable ‘init_i’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:52:25:
+
+     double precision::int,gammaJ,c3,c4,pourgam
+                         1
+Warning: Unused variable ‘int’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:60:36:
+
+     integer::frail_essai_deja_est,lm ! variable qui dit si pour un essai donne l'on a deja estimes les vsi et vti (1) ou non (0)
+                                    1
+Warning: Unused variable ‘lm’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:72:51:
+
+     double precision, dimension(:,:),allocatable::m
+                                                   1
+Warning: Unused variable ‘m’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:71:52:
+
+     double precision, dimension(:,:),allocatable::m1,m3
+                                                    1
+Warning: Unused variable ‘m1’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:71:55:
+
+     double precision, dimension(:,:),allocatable::m1,m3
+                                                       1
+Warning: Unused variable ‘m3’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:36:106:
+
+     integer::n,i,j,k,vj,ig,choix,l,vcdiag,nsujet_trial,dimint,dimint_Ind,erreur,code,compteur,init_i,max_i
+                                                                                                          1
+Warning: Unused variable ‘max_i’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:59:90:
+
+              np_2,indice_B_essai,indice_ind_util_essai,non_conv,control_est,rang,n_par_pro
+                                                                                          1
+Warning: Unused variable ‘n_par_pro’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:58:88:
+
+     integer::ier,istop,ss,sss,ni,model_save,nparamfrail_save,maxiter_save,nmax_2,nb_pro2,comm,rang2,&
+                                                                                        1
+Warning: Unused variable ‘nb_pro2’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:52:46:
+
+     double precision::int,gammaJ,c3,c4,pourgam
+                                              1
+Warning: Unused variable ‘pourgam’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:58:99:
+
+     integer::ier,istop,ss,sss,ni,model_save,nparamfrail_save,maxiter_save,nmax_2,nb_pro2,comm,rang2,&
+                                                                                                   1
+Warning: Unused variable ‘rang2’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:38:33:
+
+     double precision::pe1,pe2,som,inv,som1,som2,res,vet,vet2,h1,inc,varS1,varT1,covST1,som_cont_0, v_si, v_ti, ui
+                                 1
+Warning: Unused variable ‘som’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:62:39:
+
+     double precision::ca,cb,dd,som_cont,usim,x22,SX, jacobien, f_vi
+                                       1
+Warning: Unused variable ‘som_cont’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:38:97:
+
+     double precision::pe1,pe2,som,inv,som1,som2,res,vet,vet2,h1,inc,varS1,varT1,covST1,som_cont_0, v_si, v_ti, ui
+                                                                                                 1
+Warning: Unused variable ‘som_cont_0’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:62:51:
+
+     double precision::ca,cb,dd,som_cont,usim,x22,SX, jacobien, f_vi
+                                                   1
+Warning: Unused variable ‘sx’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:62:44:
+
+     double precision::ca,cb,dd,som_cont,usim,x22,SX, jacobien, f_vi
+                                            1
+Warning: Unused variable ‘usim’ declared at (1) [-Wunused-variable]
+funcpajsplines_copule_surrogate_scl_2.f90:62:48:
+
+     double precision::ca,cb,dd,som_cont,usim,x22,SX, jacobien, f_vi
+                                                1
+Warning: Unused variable ‘x22’ declared at (1) [-Wunused-variable]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajsplines_fam.f90 -o funcpajsplines_fam.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajsplines_intcens.f90 -o funcpajsplines_intcens.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajsplines_log.f90 -o funcpajsplines_log.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajsplines_logIndiv.f90 -o funcpajsplines_logIndiv.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajsplines_surrogate_scl_1.f90 -o funcpajsplines_surrogate_scl_1.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajsplines_surrogate_scl_2.f90 -o funcpajsplines_surrogate_scl_2.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajweib.f90 -o funcpajweib.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajweib_fam.f90 -o funcpajweib_fam.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajweib_intcens.f90 -o funcpajweib_intcens.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpajweib_log.f90 -o funcpajweib_log.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpalongi_uni.f90 -o funcpalongi_uni.o
+funcpalongi_uni.f90:5:71:
+
+         double precision function funcpalongi_uni(b,np,id,thi,jd,thj,k0)
+                                                                       1
+Warning: Unused dummy argument ‘k0’ at (1) [-Wunused-dummy-argument]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpancpm.f90 -o funcpancpm.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpansplines.f90 -o funcpansplines.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpanweib.f90 -o funcpanweib.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpas_tps.f90 -o funcpas_tps.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpascpm.f90 -o funcpascpm.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpascpm_intcens.f90 -o funcpascpm_intcens.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpascpm_log.f90 -o funcpascpm_log.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpassplines.f90 -o funcpassplines.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpassplines_intcens.f90 -o funcpassplines_intcens.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpassplines_log.f90 -o funcpassplines_log.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpasweib.f90 -o funcpasweib.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpasweib_intcens.f90 -o funcpasweib_intcens.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  funcpasweib_log.f90 -o funcpasweib_log.o
+clang -mmacosx-version-min=10.13 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG   -I/usr/local/include   -fPIC  -Wall -g -O2  -c init.c -o init.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  joint.f90 -o joint.o
+joint.f90:2975:8:
+
+     use comon,only:typeof,typeJoint!auxig
+        1
+Warning: Unused module variable ‘typeof’ which has been explicitly imported at (1) [-Wunused-variable]
+joint.f90:3037:8:
+
+     use comon,only:auxig,typeof,fam,nfam,ng!,auxif,typeJoint
+        1
+Warning: Unused module variable ‘typeof’ which has been explicitly imported at (1) [-Wunused-variable]
+joint.f90:3101:8:
+
+     use comon,only:typeof!,auxig
+        1
+Warning: Unused module variable ‘typeof’ which has been explicitly imported at (1) [-Wunused-variable]
+joint.f90:3216:8:
+
+     use comon,only:typeof!,auxig
+        1
+Warning: Unused module variable ‘typeof’ which has been explicitly imported at (1) [-Wunused-variable]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  jointSurrogate.f90 -o jointSurrogate.o
+jointSurrogate.f90:1118:21:
+
+         pourtrial(i)=don_simul(i,trialref1) !indice de l'essai
+                     1
+Warning: Possible change of value in conversion from REAL(8) to INTEGER(4) at (1) [-Wconversion]
+jointSurrogate.f90:1119:18:
+
+         groupe(i)=don_simul(i,Patienref1) ! numero de l'individu
+                  1
+Warning: Possible change of value in conversion from REAL(8) to INTEGER(4) at (1) [-Wconversion]
+jointSurrogate.f90:1181:21:
+
+         pourtrial(i)=don_simulS(i,trialref1) !indice de l'essai
+                     1
+Warning: Possible change of value in conversion from REAL(8) to INTEGER(4) at (1) [-Wconversion]
+jointSurrogate.f90:1182:18:
+
+         groupe(i)=don_simulS(i,Patienref1) ! numero de l'individu
+                  1
+Warning: Possible change of value in conversion from REAL(8) to INTEGER(4) at (1) [-Wconversion]
+jointSurrogate.f90:183:35:
+
+     integer::nb_processus,rang,code,n_sim_total,suplement,erreur,comm,init_i,max_i,debut_exe,indice_sim_proc,sofeu, &
+                                   1
+Warning: Unused variable ‘code’ declared at (1) [-Wunused-variable]
+jointSurrogate.f90:183:69:
+
+     integer::nb_processus,rang,code,n_sim_total,suplement,erreur,comm,init_i,max_i,debut_exe,indice_sim_proc,sofeu, &
+                                                                     1
+Warning: Unused variable ‘comm’ declared at (1) [-Wunused-variable]
+jointSurrogate.f90:183:64:
+
+     integer::nb_processus,rang,code,n_sim_total,suplement,erreur,comm,init_i,max_i,debut_exe,indice_sim_proc,sofeu, &
+                                                                1
+Warning: Unused variable ‘erreur’ declared at (1) [-Wunused-variable]
+jointSurrogate.f90:184:33:
+
+             rang_proc,init_i_proc,max_i_proc, code_print ! je redefini ces indices car les precedentes sont utilisees autrement: cas OpenMP
+                                 1
+Warning: Unused variable ‘init_i_proc’ declared at (1) [-Wunused-variable]
+jointSurrogate.f90:184:44:
+
+             rang_proc,init_i_proc,max_i_proc, code_print ! je redefini ces indices car les precedentes sont utilisees autrement: cas OpenMP
+                                            1
+Warning: Unused variable ‘max_i_proc’ declared at (1) [-Wunused-variable]
+jointSurrogate.f90:164:65:
+
+                         CP_R2_boot,CP_ktau_boot,moy_R2_boots_test,se_sigmas_est_0,taux_couverture_thetast_0,se_kendal_10,&
+                                                                 1
+Warning: Unused variable ‘moy_r2_boots_test’ declared at (1) [-Wunused-variable]
+jointSurrogate.f90:165:88:
+
+                         bi_R2_trial,bs_R2_trial,thetacopule, thetacopula_init, printnbre, moy_param_cop, moy_se_param_cop,&
+                                                                                        1
+Warning: Unused variable ‘printnbre’ declared at (1) [-Wunused-variable]
+jointSurrogate.f90:7:107:
+
+                           vrai_val_init,param_init,revision_echelle,random_generator0,sujet_equi,prop_trait,paramSimul,&
+                                                                                                           1
+Warning: Unused dummy argument ‘prop_trait’ at (1) [-Wunused-dummy-argument]
+jointSurrogate.f90:183:114:
+
+     integer::nb_processus,rang,code,n_sim_total,suplement,erreur,comm,init_i,max_i,debut_exe,indice_sim_proc,sofeu, &
+                                                                                                                  1
+Warning: Unused variable ‘sofeu’ declared at (1) [-Wunused-variable]
+jointSurrogate.f90:7:96:
+
+                           vrai_val_init,param_init,revision_echelle,random_generator0,sujet_equi,prop_trait,paramSimul,&
+                                                                                                1
+Warning: Unused dummy argument ‘sujet_equi’ at (1) [-Wunused-dummy-argument]
+jointSurrogate.f90:185:37:
+
+     double precision,dimension(10)::t
+                                     1
+Warning: Unused variable ‘t’ declared at (1) [-Wunused-variable]
+jointSurrogate.f90:104:121:
+
+     double precision,dimension(:),allocatable::linearpred,vect_kendall_tau,t_chap_kendall,t_chap_R2,vect_kendall_tau_temp,vect_R2
+                                                                                                                         1
+Warning: Unused variable ‘vect_kendall_tau_temp’ declared at (1) [-Wunused-variable]
+jointSurrogate.f90:168:0:
+
+     double precision, dimension(:,:),allocatable::don_simul,don_simulS, don_simultamp,don_simulStamp,don_simulS1,&
+ 
+Warning: ‘don_simulstamp.offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:168:0: Warning: ‘don_simulstamp.dim[0].ubound’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:168:0: Warning: ‘don_simulstamp.dim[1].stride’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:1002:0:
+
+                     don_simulS1(:,6:size(don_simulS1,2)) = don_simulStamp(:,5:(size(don_simulStamp,2)-1)) ! -1 car la derniere colonne n'est pas rempli
+ 
+Warning: ‘don_simulstamp.dim[1].ubound’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:168:0:
+
+     double precision, dimension(:,:),allocatable::don_simul,don_simulS, don_simultamp,don_simulStamp,don_simulS1,&
+ 
+Warning: ‘don_simultamp.offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:168:0: Warning: ‘don_simultamp.dim[0].ubound’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:168:0: Warning: ‘don_simultamp.dim[1].stride’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:999:0:
+
+                     don_simul(:,6:size(don_simul,2)) = don_simultamp(:,5:(size(don_simultamp,2)-1)) ! -1 car la derniere colonne n'est pas rempli
+ 
+Warning: ‘don_simultamp.dim[1].ubound’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:1881:0:
+
+                     k0=k01_save
+ 
+Warning: ‘MEM[(c_char * {ref-all})&k01_save]’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:1734:0:
+
+                                 k0=k0_save
+ 
+Warning: ‘MEM[(c_char * {ref-all})&k0_save]’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:2559:0:
+
+             parametre_estimes(s_i-nbre_rejet,13)= covST_es !siqma_st
+ 
+Warning: ‘covst_es’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:170:0:
+
+                         parametre_estimes_MPI_T,result_bootstrap
+ 
+Warning: ‘parametre_estimes_mpi_t.dim[1].ubound’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:170:0: Warning: ‘parametre_estimes_mpi_t.dim[1].stride’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:170:0: Warning: ‘parametre_estimes_mpi_t.dim[0].ubound’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:170:0: Warning: ‘parametre_estimes_mpi_t.offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:169:0:
+
+                         parametre_empirique, parametre_estimes,parametre_empirique_NC,parametre_estimes_MPI,&
+ 
+Warning: ‘parametre_estimes_mpi.dim[1].ubound’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:169:0: Warning: ‘parametre_estimes_mpi.dim[1].stride’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:169:0: Warning: ‘parametre_estimes_mpi.dim[0].ubound’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:169:0: Warning: ‘parametre_estimes_mpi.offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:2532:0:
+
+             parametre_estimes(s_i-nbre_rejet,1)=(b(rangparam2)**2.d0) !theta
+ 
+Warning: ‘parametre_estimes.dim[1].stride’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:169:0:
+
+                         parametre_empirique, parametre_estimes,parametre_empirique_NC,parametre_estimes_MPI,&
+ 
+Warning: ‘parametre_estimes.dim[0].ubound’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+jointSurrogate.f90:2977:0:
+
+             param_estimes(s_i,:) = parametre_estimes(s_i-nbre_rejet,:)
+ 
+Warning: ‘parametre_estimes.offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  joint_longi.f90 -o joint_longi.o
+joint_longi.f90:3948:12:
+
+         use comon,only:alpha,res1,res3,aux1,nig,cdc,sigmae,nmesy,&
+            1
+Warning: Unused module variable ‘nmesy’ which has been explicitly imported at (1) [-Wunused-variable]
+joint_longi.f90:3668:12:
+
+         use comon,only:alpha,res1,res3,aux1,nig,cdc,sigmae,nmesy,&
+            1
+Warning: Unused module variable ‘nmesy’ which has been explicitly imported at (1) [-Wunused-variable]
+joint_longi.f90:3391:12:
+
+         use comon,only:alpha,res1,res3,aux1,nig,cdc,sigmae,nmesy,&
+            1
+Warning: Unused module variable ‘nmesy’ which has been explicitly imported at (1) [-Wunused-variable]
+joint_longi.f90:3099:12:
+
+         use comon,only:aux1,cdc,sigmae,nmesy,&
+            1
+Warning: Unused module variable ‘nmesy’ which has been explicitly imported at (1) [-Wunused-variable]
+joint_longi.f90:2446:12:
+
+         use comon,only:aux1,cdc,sigmae,nmesy,nb1,&
+            1
+Warning: Unused module variable ‘nmesy’ which has been explicitly imported at (1) [-Wunused-variable]
+joint_longi.f90:2609:12:
+
+         use comon,only:aux1,cdc,sigmae,nmesy,&
+            1
+Warning: Unused module variable ‘nmesy’ which has been explicitly imported at (1) [-Wunused-variable]
+joint_longi.f90:2810:12:
+
+         use comon,only:aux1,cdc,sigmae,nmesy,&
+            1
+Warning: Unused module variable ‘nmesy’ which has been explicitly imported at (1) [-Wunused-variable]
+joint_longi.f90:2827:0:
+
+         double precision,external::survdcCM
+ 
+Warning: ‘__result_survdccm’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi.f90:4721:0:
+
+             survdcCM =bbb*vet2*dexp(etaydc(1)*Bcurrentvalue(1)+etaydc(2)*cmY(1))!+cdc(i)*etaydc1*current_meanG(1)
+ 
+Warning: ‘cmy[0]’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi.f90:4721:0: Warning: ‘bcurrentvalue$’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi.f90:5335:0:
+
+                         + cdc(i)*(etaydc(1)*Bcurrentvalue(1)+etaydc(2)*cmY(1))
+ 
+Warning: ‘cmy[0]’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi.f90:5271:0:
+
+ yscalar = yscalar + (dlog(ycurrent(k))-(mu1G(k,1)-dlog(Bcurrentvalue(1))-(sigmae/2)))**2
+ 
+Warning: ‘bcurrentvalue[0]’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  joint_longi_nl.f90 -o joint_longi_nl.o
+joint_longi_nl.f90:1845:0:
+
+             if(methodGH.eq.1) ss = ss*invBi_cholDet(i) *2.d0**(nea/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi_nl.f90:1989:0:
+
+             if(methodGH.eq.1) ss = ss*invBi_cholDet(i) *2.d0**(nea/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi_nl.f90:2131:0:
+
+                 if(methodGH.eq.1) ss = ss*invBi_cholDet(i) *2.d0**(nea/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi_nl.f90:2273:0:
+
+             if(methodGH.eq.1) ss = ss*invBi_cholDet(i) *2.d0**(nea/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi_nl.f90:2417:0:
+
+             if(methodGH.eq.1) ss = ss*invBi_cholDet(i) *2.d0**(nea/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi_nl.f90:2559:0:
+
+             if(methodGH.eq.1) ss = ss*invBi_cholDet(i) *2.d0**(nea/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi_nl.f90:2701:0:
+
+             if(methodGH.eq.1) ss = ss*invBi_cholDet(i) *2.d0**(nea/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi_nl.f90:2844:0:
+
+             if(methodGH.eq.1) ss = ss*invBi_cholDet(i) *2.d0**(nea/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi_nl.f90:2987:0:
+
+             if(methodGH.eq.1) ss = ss*invBi_cholDet(i) *2.d0**(nea/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi_nl.f90:3130:0:
+
+             if(methodGH.eq.1) ss = ss*invBi_cholDet(i) *2.d0**(nea/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi_nl.f90:3273:0:
+
+             if(methodGH.eq.1) ss = ss*invBi_cholDet(i) *2.d0**(nea/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi_nl.f90:3416:0:
+
+             if(methodGH.eq.1) ss = ss*invBi_cholDet(i) *2.d0**(nea/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi_nl.f90:3559:0:
+
+             if(methodGH.eq.1) ss = ss*invBi_cholDet(i) *2.d0**(nea/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi_nl.f90:3702:0:
+
+             if(methodGH.eq.1) ss = ss*invBi_cholDet(i) *2.d0**(nea/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+joint_longi_nl.f90:3845:0:
+
+             if(methodGH.eq.1) ss = ss*invBi_cholDet(i) *2.d0**(nea/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  joint_surrogate.f90 -o joint_surrogate.o
+joint_surrogate.f90:1215:17:
+
+         nb_ree = nb0 + (nb0*(nb0-1))/2.d0 ! les variances + covariances estimes de la cholesky
+                 1
+Warning: Possible change of value in conversion from REAL(8) to INTEGER(4) at (1) [-Wconversion]
+joint_surrogate.f90:70:37:
+
+     integer::groupe,ij,kk,j,k,nz,n,ii,iii,iii2,cptstr1,cptstr2   & !code
+                                     1
+Warning: Unused variable ‘ii’ declared at (1) [-Wunused-variable]
+joint_surrogate.f90:8:69:
+
+     subroutine joint_surrogate(nsujet0,ng0,ntrials0,lignedc0,nz0,nst0,k0,tt00,tt10,ic0,groupe0,trials,pourtrial0,nigs0,&
+                                                                     1
+Warning: Unused dummy argument ‘nst0’ at (1) [-Wunused-dummy-argument]
+joint_surrogate.f90:14:49:
+
+                                indice_covST0,paGH,param_weibull0)
+                                                 1
+Warning: Unused dummy argument ‘pagh’ at (1) [-Wunused-dummy-argument]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  jointsurrokendall.f90 -o jointsurrokendall.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  longi_uni_nl.f90 -o longi_uni_nl.o
+longi_uni_nl.f90:461:0:
+
+         counts(2) = cpt
+ 
+Warning: ‘cpt’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:462:0:
+
+         counts(3) = cpt_dc
+ 
+Warning: ‘cpt_dc’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:611:0:
+
+     if(methodGH.eq.1) ss = ss*invBi_cholDet(i)*2.d0**(nb1/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:732:0:
+
+     if(methodGH.eq.1) ss = ss*invBi_cholDet(i)*2.d0**(nb1/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:855:0:
+
+     if(methodGH.eq.1) ss = ss*invBi_cholDet(i)*2.d0**(nb1/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:979:0:
+
+     if(methodGH.eq.1) ss = ss*invBi_cholDet(i)*2.d0**(nb1/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:1101:0:
+
+     if(methodGH.eq.1) ss = ss*invBi_cholDet(i)*2.d0**(nb1/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:1223:0:
+
+     if(methodGH.eq.1) ss = ss*invBi_cholDet(i)*2.d0**(nb1/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:1345:0:
+
+     if(methodGH.eq.1) ss = ss*invBi_cholDet(i)*2.d0**(nb1/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:1468:0:
+
+     if(methodGH.eq.1) ss = ss*invBi_cholDet(i)*2.d0**(nb1/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:1591:0:
+
+     if(methodGH.eq.1) ss = ss*invBi_cholDet(i)*2.d0**(nb1/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:1715:0:
+
+     if(methodGH.eq.1) ss = ss*invBi_cholDet(i)*2.d0**(nb1/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:1838:0:
+
+     if(methodGH.eq.1) ss = ss*invBi_cholDet(i)*2.d0**(nb1/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:1960:0:
+
+     if(methodGH.eq.1) ss = ss*invBi_cholDet(i)*2.d0**(nb1/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:2083:0:
+
+     if(methodGH.eq.1) ss = ss*invBi_cholDet(i)*2.d0**(nb1/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:2206:0:
+
+     if(methodGH.eq.1) ss = ss*invBi_cholDet(i)*2.d0**(nb1/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+longi_uni_nl.f90:2329:0:
+
+     if(methodGH.eq.1) ss = ss*invBi_cholDet(i)*2.d0**(nb1/2.d0)
+ 
+Warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  multiveJoint.f90 -o multiveJoint.o
+multiveJoint.f90:1305:45:
+
+         call vecspli(ndate,ndatedc,ndatemeta)
+                                             1
+Warning: More actual than formal arguments in procedure call at (1)
+multiveJoint.f90:213:54:
+
+     double precision,dimension(0:100,1)::BetaTpsMatMul
+                                                      1
+Warning: Unused variable ‘betatpsmatmul’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:186:52:
+
+     double precision,dimension(1,nbvar(1))::coefBeta
+                                                    1
+Warning: Unused variable ‘coefbeta’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:187:54:
+
+     double precision,dimension(1,nbvar(2))::coefBetadc
+                                                      1
+Warning: Unused variable ‘coefbetadc’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:188:53:
+
+     double precision,dimension(1,nbvar(3))::coefBetaM
+                                                     1
+Warning: Unused variable ‘coefbetam’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:50:15:
+
+     ni,cptEvent,ResMartingaleEvent,frailtyEstimates, &
+               1
+Warning: Dummy argument ‘cptevent’ at (1) was declared INTENT(OUT) but was not set [-Wunused-dummy-argument]
+multiveJoint.f90:197:17:
+
+     integer::cpts
+                 1
+Warning: Unused variable ‘cpts’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:195:26:
+
+     double precision::ddls
+                          1
+Warning: Unused variable ‘ddls’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:179:21:
+
+     integer::indd,ent,entdc,entmeta,typeof0,nzsha
+                     1
+Warning: Unused variable ‘ent’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:179:27:
+
+     integer::indd,ent,entdc,entmeta,typeof0,nzsha
+                           1
+Warning: Unused variable ‘entdc’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:179:35:
+
+     integer::indd,ent,entdc,entmeta,typeof0,nzsha
+                                   1
+Warning: Unused variable ‘entmeta’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:214:38:
+
+     double precision,dimension(3)::EPS
+                                      1
+Warning: Unused variable ‘eps’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:212:51:
+
+     integer,dimension(:),allocatable::filtretps0Mul
+                                                   1
+Warning: Unused variable ‘filtretps0mul’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:50:51:
+
+     ni,cptEvent,ResMartingaleEvent,frailtyEstimates, &
+                                                   1
+Warning: Unused dummy argument ‘frailtyestimates’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:209:73:
+
+     double precision,dimension(nobsEvent(2))::Resmartingales,frailtypreds,frailtysds,frailtyvars
+                                                                         1
+Warning: Unused variable ‘frailtypreds’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:209:84:
+
+     double precision,dimension(nobsEvent(2))::Resmartingales,frailtypreds,frailtysds,frailtyvars
+                                                                                    1
+Warning: Unused variable ‘frailtysds’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:209:96:
+
+     double precision,dimension(nobsEvent(2))::Resmartingales,frailtypreds,frailtysds,frailtyvars
+                                                                                                1
+Warning: Unused variable ‘frailtyvars’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:198:56:
+
+     double precision,dimension(:,:),allocatable::H_hess0,HIH0
+                                                        1
+Warning: Unused variable ‘h_hess0’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:198:61:
+
+     double precision,dimension(:,:),allocatable::H_hess0,HIH0
+                                                             1
+Warning: Unused variable ‘hih0’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:179:17:
+
+     integer::indd,ent,entdc,entmeta,typeof0,nzsha
+                 1
+Warning: Unused variable ‘indd’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:199:65:
+
+     double precision,dimension(2)::LCVs,shapeweibs,scaleweibs,k0s
+                                                                 1
+Warning: Unused variable ‘k0s’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:180:33:
+
+     double precision::temp,kappa1
+                                 1
+Warning: Unused variable ‘kappa1’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:49:11:
+
+     lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out,x4Out,lam4Out,xSu4,su4Out, &
+           1
+Warning: Unused dummy argument ‘lam2out’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:49:37:
+
+     lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out,x4Out,lam4Out,xSu4,su4Out, &
+                                     1
+Warning: Unused dummy argument ‘lam3out’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:49:63:
+
+     lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out,x4Out,lam4Out,xSu4,su4Out, &
+                                                               1
+Warning: Unused dummy argument ‘lam4out’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:48:73:
+
+     np,b,H_hessOut,HIHOut,resOut,LCV,critCV,mtEvent,mt1Event,x1Out,lamOut,xSu1,suOut,x2Out, &
+                                                                         1
+Warning: Unused dummy argument ‘lamout’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:203:59:
+
+     double precision,dimension(:,:,:),allocatable::lamTOuts !en plus
+                                                           1
+Warning: Unused variable ‘lamtouts’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:48:36:
+
+     np,b,H_hessOut,HIHOut,resOut,LCV,critCV,mtEvent,mt1Event,x1Out,lamOut,xSu1,suOut,x2Out, &
+                                    1
+Warning: Unused dummy argument ‘lcv’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:199:39:
+
+     double precision,dimension(2)::LCVs,shapeweibs,scaleweibs,k0s
+                                       1
+Warning: Unused variable ‘lcvs’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:210:58:
+
+     double precision,dimension(:),allocatable::linearpreds,martingaleCoxs,times
+                                                          1
+Warning: Unused variable ‘linearpreds’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:210:73:
+
+     double precision,dimension(:),allocatable::linearpreds,martingaleCoxs,times
+                                                                         1
+Warning: Unused variable ‘martingalecoxs’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:211:40:
+
+     integer::timedepMul,nbinnerknots0Mul,qorder0Mul
+                                        1
+Warning: Unused variable ‘nbinnerknots0mul’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:159:26:
+
+     integer::nbIntervEvent,nz0
+                          1
+Warning: Unused variable ‘nbintervevent’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:164:37:
+
+     integer::np1,np2,np3,np4,np2joint
+                                     1
+Warning: Unused variable ‘np2joint’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:179:49:
+
+     integer::indd,ent,entdc,entmeta,typeof0,nzsha
+                                                 1
+Warning: Unused variable ‘nzsha’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:171:82:
+
+     double precision::tt0,tt0meta,tt0dc,tt1,tt1meta,tt1dc,h,res,min,mindc,max,pord, &
+                                                                                  1
+Warning: Unused variable ‘pord’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:211:51:
+
+     integer::timedepMul,nbinnerknots0Mul,qorder0Mul
+                                                   1
+Warning: Unused variable ‘qorder0mul’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:50:34:
+
+     ni,cptEvent,ResMartingaleEvent,frailtyEstimates, &
+                                  1
+Warning: Unused dummy argument ‘resmartingaleevent’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:209:60:
+
+     double precision,dimension(nobsEvent(2))::Resmartingales,frailtypreds,frailtysds,frailtyvars
+                                                            1
+Warning: Unused variable ‘resmartingales’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:199:61:
+
+     double precision,dimension(2)::LCVs,shapeweibs,scaleweibs,k0s
+                                                             1
+Warning: Unused variable ‘scaleweibs’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:199:50:
+
+     double precision,dimension(2)::LCVs,shapeweibs,scaleweibs,k0s
+                                                  1
+Warning: Unused variable ‘shapeweibs’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:196:52:
+
+     double precision,dimension(:),allocatable::str00
+                                                    1
+Warning: Unused variable ‘str00’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:49:23:
+
+     lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out,x4Out,lam4Out,xSu4,su4Out, &
+                       1
+Warning: Unused dummy argument ‘su2out’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:49:49:
+
+     lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out,x4Out,lam4Out,xSu4,su4Out, &
+                                                 1
+Warning: Unused dummy argument ‘su3out’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:49:75:
+
+     lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out,x4Out,lam4Out,xSu4,su4Out, &
+                                                                           1
+Warning: Unused dummy argument ‘su4out’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:48:84:
+
+     np,b,H_hessOut,HIHOut,resOut,LCV,critCV,mtEvent,mt1Event,x1Out,lamOut,xSu1,suOut,x2Out, &
+                                                                                    1
+Warning: Unused dummy argument ‘suout’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:205:48:
+
+     double precision,dimension(100,3,1)::suTOuts !en plus
+                                                1
+Warning: Unused variable ‘sutouts’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:180:26:
+
+     double precision::temp,kappa1
+                          1
+Warning: Unused variable ‘temp’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:52:8:
+
+     time,timedc,timeM,ghNodes0,ghWeights0,tolerance0)
+        1
+Warning: Unused dummy argument ‘time’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:52:15:
+
+     time,timedc,timeM,ghNodes0,ghWeights0,tolerance0)
+               1
+Warning: Unused dummy argument ‘timedc’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:211:23:
+
+     integer::timedepMul,nbinnerknots0Mul,qorder0Mul
+                       1
+Warning: Unused variable ‘timedepmul’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:52:21:
+
+     time,timedc,timeM,ghNodes0,ghWeights0,tolerance0)
+                     1
+Warning: Unused dummy argument ‘timem’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:210:79:
+
+     double precision,dimension(:),allocatable::linearpreds,martingaleCoxs,times
+                                                                               1
+Warning: Unused variable ‘times’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:48:66:
+
+     np,b,H_hessOut,HIHOut,resOut,LCV,critCV,mtEvent,mt1Event,x1Out,lamOut,xSu1,suOut,x2Out, &
+                                                                  1
+Warning: Unused dummy argument ‘x1out’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:48:90:
+
+     np,b,H_hessOut,HIHOut,resOut,LCV,critCV,mtEvent,mt1Event,x1Out,lamOut,xSu1,suOut,x2Out, &
+                                                                                          1
+Warning: Unused dummy argument ‘x2out’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:49:29:
+
+     lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out,x4Out,lam4Out,xSu4,su4Out, &
+                             1
+Warning: Unused dummy argument ‘x3out’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:49:55:
+
+     lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out,x4Out,lam4Out,xSu4,su4Out, &
+                                                       1
+Warning: Unused dummy argument ‘x4out’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:190:53:
+
+     double precision,dimension(1,nobsEvent(1))::XBeta
+                                                     1
+Warning: Unused variable ‘xbeta’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:191:55:
+
+     double precision,dimension(1,nobsEvent(2))::XBetadc!, XBetadc2
+                                                       1
+Warning: Unused variable ‘xbetadc’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:192:54:
+
+     double precision,dimension(1,nobsEvent(3))::XBetaM
+                                                      1
+Warning: Unused variable ‘xbetam’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:48:78:
+
+     np,b,H_hessOut,HIHOut,resOut,LCV,critCV,mtEvent,mt1Event,x1Out,lamOut,xSu1,suOut,x2Out, &
+                                                                              1
+Warning: Unused dummy argument ‘xsu1’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:49:16:
+
+     lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out,x4Out,lam4Out,xSu4,su4Out, &
+                1
+Warning: Unused dummy argument ‘xsu2’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:49:42:
+
+     lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out,x4Out,lam4Out,xSu4,su4Out, &
+                                          1
+Warning: Unused dummy argument ‘xsu3’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:49:68:
+
+     lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out,x4Out,lam4Out,xSu4,su4Out, &
+                                                                    1
+Warning: Unused dummy argument ‘xsu4’ at (1) [-Wunused-dummy-argument]
+multiveJoint.f90:207:44:
+
+     double precision,dimension(100,1)::xSuTs !en plus
+                                            1
+Warning: Unused variable ‘xsuts’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:201:55:
+
+     double precision,dimension(:,:),allocatable::xTOuts !en plus
+                                                       1
+Warning: Unused variable ‘xtouts’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:208:50:
+
+     double precision,dimension(:),allocatable::zis
+                                                  1
+Warning: Unused variable ‘zis’ declared at (1) [-Wunused-variable]
+multiveJoint.f90:351:0:
+
+     allocate(b01(np1),b02(np2),b03(np3),b04(np4))!,b02joint(np2joint))
+ 
+Warning: ‘np4’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+multiveJoint.f90:351:0: Warning: ‘np3’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+multiveJoint.f90:351:0: Warning: ‘np2’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+multiveJoint.f90:351:0: Warning: ‘np1’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  nested.f90 -o nested.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  prediction.f90 -o prediction.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  prediction_Recurr_Sha.f90 -o prediction_Recurr_Sha.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  prediction_biv.f90 -o prediction_biv.o
+prediction_biv.f90:1077:1:
+
+   allocate(frail(1))
+ 1
+Warning: Nonconforming tab character at (1) [-Wtabs]
+prediction_biv.f90:1078:1:
+
+   frail(1) = frail1
+ 1
+Warning: Nonconforming tab character at (1) [-Wtabs]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  prediction_sha_logn.f90 -o prediction_sha_logn.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  prediction_tri.f90 -o prediction_tri.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  prediction_tri_nl.f90 -o prediction_tri_nl.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  predictionfam.f90 -o predictionfam.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  risque.f90 -o risque.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  somme.f90 -o somme.o
+somme.f90:7:47:
+
+     integer:: i,num_thread,num_proc,nb_thread,d
+                                               1
+Warning: Unused variable ‘d’ declared at (1) [-Wunused-variable]
+somme.f90:7:45:
+
+     integer:: i,num_thread,num_proc,nb_thread,d
+                                             1
+Warning: Unused variable ‘nb_thread’ declared at (1) [-Wunused-variable]
+somme.f90:1:31:
+
+ subroutine somme(ab,s,nboot,nbr,vOut)
+                               1
+Warning: Unused dummy argument ‘nbr’ at (1) [-Wunused-dummy-argument]
+somme.f90:7:35:
+
+     integer:: i,num_thread,num_proc,nb_thread,d
+                                   1
+Warning: Unused variable ‘num_proc’ declared at (1) [-Wunused-variable]
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  surrosim.f90 -o surrosim.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  survival.f90 -o survival.o
+gfortran -mmacosx-version-min=10.13 -fno-optimize-sibling-calls   -fPIC  -Wall -g -O2  -c  test.f90 -o test.o
+clang -mmacosx-version-min=10.13 -dynamiclib -Wl,-headerpad_max_install_names -undefined dynamic_lookup -single_module -multiply_defined suppress -L/Library/Frameworks/R.framework/Resources/lib -L/usr/local/lib -o frailtypack.so Adonnees.o AparamMultive.o Aparameters.o Integrale_mult_scl.o Integrant_scl.o Pour_Adaptative.o aGhermite.o aaOptim.o aaOptim_New_scl.o aaOptim_New_scl2.o aaOptim_SCL_0.o aaOptimres.o aaUseFunction.o aaUseFunctionG.o aamarq98o.o additive.o afuncpasres.o ahrmsym.o aresidusMartingale.o autres_fonctions.o distance.o epoce.o epoce_log.o epoce_long.o epoce_long_nl.o frailtypack.o funcpaG_tps.o funcpaGcpm.o funcpaGcpm_intcens.o funcpaGcpm_log.o funcpaGsplines.o funcpaGsplines_intcens.o funcpaGsplines_log.o funcpaGweib.o funcpaGweib_intcens.o funcpaGweib_log.o funcpaMultivCpm.o funcpaMultivSplines.o funcpaMultivWeib.o funcpa_adaptative.o funcpa_laplace.o funcpaacpm.o funcpaasplines.o funcpaaweib.o funcpaj_tps.o funcpajcpm.o funcpajcpm_log.o funcpajgeneral.o funcpajlongisplines.o funcpajlongisplines_nl.o funcpajlongiweib.o funcpajlongiweib_nl.o funcpajsplines.o funcpajsplinesIndiv.o funcpajsplines_copule_surrogate_scl_2.o funcpajsplines_fam.o funcpajsplines_intcens.o funcpajsplines_log.o funcpajsplines_logIndiv.o funcpajsplines_surrogate_scl_1.o funcpajsplines_surrogate_scl_2.o funcpajweib.o funcpajweib_fam.o funcpajweib_intcens.o funcpajweib_log.o funcpalongi_uni.o funcpancpm.o funcpansplines.o funcpanweib.o funcpas_tps.o funcpascpm.o funcpascpm_intcens.o funcpascpm_log.o funcpassplines.o funcpassplines_intcens.o funcpassplines_log.o funcpasweib.o funcpasweib_intcens.o funcpasweib_log.o init.o joint.o jointSurrogate.o joint_longi.o joint_longi_nl.o joint_surrogate.o jointsurrokendall.o longi_uni_nl.o multiveJoint.o nested.o prediction.o prediction_Recurr_Sha.o prediction_biv.o prediction_sha_logn.o prediction_tri.o prediction_tri_nl.o predictionfam.o risque.o somme.o surrosim.o survival.o test.o -L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin18/8.2.0/ -L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin18/8.2.0/../../../../x86_64-apple-darwin18/lib/x86_64-apple-darwin18/8.2.0/ -L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin18/8.2.0/../../../../x86_64-apple-darwin18/lib/ -L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin18/8.2.0/../../../x86_64-apple-darwin18/8.2.0/ -L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin18/8.2.0/../../../ -F/Library/Frameworks/R.framework/.. -framework R -Wl,-framework -Wl,CoreFoundation
+ld: warning: directory not found for option '-L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin18/8.2.0/../../../../x86_64-apple-darwin18/lib/x86_64-apple-darwin18/8.2.0/'
+ld: warning: directory not found for option '-L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin18/8.2.0/../../../../x86_64-apple-darwin18/lib/'
+ld: warning: directory not found for option '-L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin18/8.2.0/../../../x86_64-apple-darwin18/8.2.0/'
+ld: warning: could not create compact unwind for ___lois_normales_MOD_hrmtrl: stack subq instruction is too different from dwarf stack size
+ld: warning: could not create compact unwind for ___autres_fonctions_MOD_generation_surrogate: stack subq instruction is too different from dwarf stack size
+ld: warning: could not create compact unwind for ___autres_fonctions_MOD_generation_gamma: stack subq instruction is too different from dwarf stack size
+ld: warning: could not create compact unwind for _funcpi_long_: stack subq instruction is too different from dwarf stack size
+ld: warning: could not create compact unwind for _funcpi2_long_: stack subq instruction is too different from dwarf stack size
+ld: warning: could not create compact unwind for _funcpajlongisplines_: stack subq instruction is too different from dwarf stack size
+ld: warning: could not create compact unwind for _funcpajlongiweib_: stack subq instruction is too different from dwarf stack size
+ld: warning: could not create compact unwind for _jointsurrogate_: stack subq instruction is too different from dwarf stack size
+installing to /Users/etzkornlacey15/Documents/Research/Delirium/frailtypack.Rcheck/00LOCK-frailtypack/00new/frailtypack/libs
+** R
+** data
+** demo
+** inst
+** byte-compile and prepare package for lazy loading
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+Note: ... may be used in an incorrect context 
+** help
+*** installing help indices
+*** copying figures
+** building package indices
+** testing if installed package can be loaded from temporary location
+** checking absolute paths in shared objects and dynamic libraries
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (frailtypack)

@@ -1,0 +1,184 @@
+Cmeasures               Concordance measures in shared frailty and Cox
+                        proportional hazard models
+Diffepoce               Difference of Expected Prognostic Observed
+                        Cross-Entropy (EPOCE) estimators and its 95%
+                        tracking interval between two joint models.
+SurvIC                  Create a survival object for interval censoring
+                        and possibly left truncated data
+additivePenal           Fit an Additive Frailty model using a
+                        semiparametric penalized likelihood estimation
+                        or a parametric estimation
+bcos                    Breast Cosmesis Data
+cluster                 Identify clusters
+colorectal              Follow-up of metastatic colorectal cancer
+                        patients: times of new lesions appearance and
+                        death
+colorectalLongi         Follow-up of metastatic colorectal cancer
+                        patients : longitudinal measurements of tumor
+                        size
+dataAdditive            Simulated data as a gathering of clinical
+                        trials databases
+dataMultiv              Simulated data for two types of recurrent
+                        events and a terminal event
+dataNCC                 Simulated data for recurrent events and a
+                        terminal event with weigths using nested
+                        case-control design
+dataNested              Simulated data with two levels of grouping
+dataOvarian             Advanced Ovarian Cancer dataset
+epoce                   Estimators of the Expected Prognostic Observed
+                        Cross-Entropy (EPOCE) for evaluating predictive
+                        accuracy of joint models.
+event2                  Identify event2 indicator
+frailtyPenal            Fit a Shared, Joint or Nested Frailty model
+frailtypack-package     General Frailty models: shared, joint and
+                        nested frailty models with prediction;
+                        Evaluation of Failure-Time Surrogate Endpoints
+gastadj                 Advanced Gastric Cancer dataset
+hazard                  Hazard function.
+jointSurrCopSimul       Generate survival times for two endpoints using
+                        the joint frailty-copula model for surrogacy
+jointSurrSimul          Generate survival times for two endpoints using
+                        the joint frailty surrogate model
+jointSurroCopPenal      Fit the one-step Joint frailty-copula model for
+                        evaluating a canditate surrogate endpoint
+jointSurroPenal         Fit the one-step Joint surrogate model for
+                        evaluating a canditate surrogate endpoint
+jointSurroPenalSimul    Simulation studies based on the one-step Joint
+                        surrogate models for the evaluation of a
+                        canditate surrogate endpoint
+jointSurroTKendall      Kendall's tau estimation using numerical
+                        integration methods
+longDat                 Longitudinal semicontinuous biomarker dataset
+                        (TPJM)
+longiPenal              Fit a Joint Model for Longitudinal Data and a
+                        Terminal Event
+loocv                   Leave-one-out crossvalidation for the one-step
+                        Joint surrogate model for evaluating a
+                        canditate surrogate endpoint.
+multivPenal             Fit a multivariate frailty model for two types
+                        of recurrent events and a terminal event.
+num.id                  Identify individuals in Joint model for
+                        clustered data
+plot.Diffepoce          Plot difference of EPOCE estimators between two
+                        joint frailty models.
+plot.additivePenal      Plot Method for an Additive frailty model.
+plot.epoce              Plot values of estimators of the Expected
+                        Prognostic Observed Cross-Entropy (EPOCE).
+plot.frailtyPenal       Plot Method for a Shared frailty model.
+plot.jointNestedPenal   Plot method for a joint nested frailty model.
+plot.jointPenal         Plot Method for a Joint frailty model.
+plot.jointSurroPenal    Plot Method for the one-step Joint surrogate
+                        model for the evaluation of a canditate
+                        surrogate endpoint.
+plot.jointSurroPenalloocv
+                        Plot of leave-one-out crossvalidation Outputs
+                        from the one-step Joint surrogate model for
+                        evaluating a canditate surrogate endpoint.
+plot.longiPenal         Plot Method for a joint model for longitudinal
+                        data and a terminal event.
+plot.multivPenal        Plot Method for a multivariate frailty model.
+plot.nestedPenal        Plot Method for a Nested frailty model.
+plot.predFrailty        Plot predictions using a Cox or a shared
+                        frailty model.
+plot.predJoint          Plot predictions using a joint frailty model.
+plot.predLongi          Plot predictions using a joint model for
+                        longitudinal data and a terminal event or a
+                        trivariate joint model for longitudinal data,
+                        recurrent events and a terminal event.
+plot.trivPenal          Plot Method for a trivariate joint model for
+                        longitudinal data, recurrent events and a
+                        terminal event.
+plot.trivPenalNL        Plot Method for a Non-Linear Trivariate Joint
+                        Model for Recurrent Events and a Terminal Event
+                        with a Biomarker Described with an ODE.
+plotTreatPredJointSurro
+                        Plot of the prediction of the treatment effect
+                        on the true endpoint
+predict.jointSurroPenal
+                        Predict Method for the one-step Joint surrogate
+                        models for the evaluation of a canditate
+                        surrogate endpoint.
+prediction              Prediction probabilities for Cox proportional
+                        hazard, Shared, Joint frailty models, Joint
+                        models for longitudinal data and a terminal
+                        event and Trivariate joint model for
+                        longitudinal data, recurrent events and a
+                        terminal event (linear and non-linear).
+print.Cmeasures         Print a short summary of results of Cmeasure
+                        function.
+print.additivePenal     Print a Short Summary of parameter estimates of
+                        an additive frailty model
+print.frailtyPenal      Print a Short Summary of parameter estimates of
+                        a shared frailty model
+print.jointNestedPenal
+                        Print a Short Summary of parameter estimates of
+                        a joint nested frailty model
+print.jointPenal        Print a Short Summary of parameter estimates of
+                        a joint frailty model
+print.longiPenal        Print a Summary of parameter estimates of a
+                        joint model for longitudinal data and a
+                        terminal event
+print.multivPenal       Print a Short Summary of parameter estimates of
+                        a multivariate frailty model
+print.nestedPenal       Print a Short Summary of parameter estimates of
+                        a nested frailty model
+print.prediction        Print a short summary of results of prediction
+                        function.
+print.trivPenal         Print a Summary of parameter estimates of a
+                        joint model for longitudinal data, recurrent
+                        events and a terminal event
+print.trivPenalNL       Print a Summary of parameter estimates of a
+                        non-linear trivariate joint model for
+                        longitudinal data, recurrent events and a
+                        terminal event
+readmission             Rehospitalization colorectal cancer
+runShiny                Shiny application for modelisation and
+                        prediction of frailty models
+slope                   Identify variable associated with the random
+                        slope
+ste                     Surrogate threshold effect for the one-step
+                        Joint surrogate model for the evaluation of a
+                        canditate surrogate endpoint.
+subcluster              Identify subclusters
+summary.additivePenal   summary of parameter estimates of an additive
+                        frailty model
+summary.frailtyPenal    summary of parameter estimates of a shared
+                        frailty model
+summary.jointNestedPenal
+                        summary of parameter estimates of a joint
+                        nested frailty model
+summary.jointPenal      summary of parameter estimates of a joint
+                        frailty model
+summary.jointSurroPenal
+                        Short summary of the random effects parameters,
+                        the fixed treatment effects, and the surrogacy
+                        evaluation criteria estimated from a joint
+                        surrogate model
+summary.jointSurroPenalSimul
+                        Short summary of the simulation studies based
+                        on a joint surrogate model
+summary.longiPenal      Short summary of fixed covariates estimates of
+                        a joint model for longitudinal data and a
+                        terminal event
+summary.multivPenal     summary of parameter estimates of a
+                        multivariate frailty model.
+summary.nestedPenal     summary of regression coefficient estimates of
+                        a nested frailty model
+summary.trivPenal       Short summary of fixed covariates estimates of
+                        a joint model for longitudinal data, recurrent
+                        events and a terminal event
+summary.trivPenalNL     Short summary of fixed covariates estimates of
+                        a non-linear trivariate joint model for
+                        longitudinal data, recurrent events and a
+                        terminal event
+survDat                 Survival dataset (TPJM)
+survival                Survival function
+terminal                Identify terminal indicator
+timedep                 Identify time-varying effects
+trivPenal               Fit a Trivariate Joint Model for Longitudinal
+                        Data, Recurrent Events and a Terminal Event
+trivPenalNL             Fit a Non-Linear Trivariate Joint Model for
+                        Recurrent Events and a Terminal Event with a
+                        Biomarker Described with an ODE Population
+                        Model
+wts                     Identify weights

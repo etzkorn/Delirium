@@ -1,0 +1,125 @@
+* using log directory ‘/Users/etzkornlacey15/Documents/Research/Delirium/frailtypack.Rcheck’
+* using R version 4.0.5 (2021-03-31)
+* using platform: x86_64-apple-darwin17.0 (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-manual --as-cran’
+* checking for file ‘frailtypack/DESCRIPTION’ ... OK
+* this is package ‘frailtypack’ version ‘3.2.0.1’
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘frailtypack’ can be installed ... WARNING
+Found the following significant warnings:
+  Warning: More actual than formal arguments in procedure call at (1)
+See ‘/Users/etzkornlacey15/Documents/Research/Delirium/frailtypack.Rcheck/00install.out’ for details.
+* checking installed package size ... NOTE
+  installed size is  6.1Mb
+  sub-directories of 1Mb or more:
+    R      1.0Mb
+    help   1.8Mb
+    libs   2.6Mb
+* checking package directory ... OK
+* checking for future file timestamps ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+multivPenal: no visible binding for global variable ‘kappa0’
+multivPenal: no visible global function definition for ‘drop.terms’
+multivPenal: no visible global function definition for ‘tibble’
+multivPenal: no visible binding for global variable ‘Raw.SE’
+multivPenal: no visible binding for global variable ‘Raw’
+multivPenal: no visible binding for global variable ‘Estimate’
+multivPenal: no visible binding for global variable ‘Estimate.SE’
+Undefined global functions or variables:
+  Estimate Estimate.SE Raw Raw.SE drop.terms kappa0 tibble
+Consider adding
+  importFrom("stats", "drop.terms")
+to your NAMESPACE file.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... WARNING
+Codoc mismatches from documentation object 'multivPenal':
+multivPenal
+  Code: function(formula, formula.Event2, formula.terminalEvent,
+                 formula.terminalEvent2, data, data.Event2, initialize
+                 = TRUE, gapTimes = FALSE, jointGeneral = FALSE,
+                 n.knots, kappa, maxit = 350, hazard = "Weibull",
+                 nb.int, print.times = TRUE, GHpoints = 32, tolerance =
+                 rep(10^-3, 3), save.progress = F, init.hazard = NULL,
+                 init.Sigma = 0.5, init.Alpha1 = 0.1, init.Alpha2 =
+                 -0.1, init.B = NULL)
+  Docs: function(formula, formula.Event2, formula.terminalEvent, data,
+                 initialize = TRUE, recurrentAG = FALSE, n.knots,
+                 kappa, maxit = 350, hazard = "Splines", nb.int,
+                 print.times = TRUE)
+  Argument names in code not in docs:
+    formula.terminalEvent2 data.Event2 gapTimes jointGeneral GHpoints
+    tolerance save.progress init.hazard init.Sigma init.Alpha1
+    init.Alpha2 init.B
+  Argument names in docs not in code:
+    recurrentAG
+  Mismatches in argument names (first 3):
+    Position: 4 Code: formula.terminalEvent2 Docs: data
+    Position: 5 Code: data Docs: initialize
+    Position: 6 Code: data.Event2 Docs: recurrentAG
+  Mismatches in argument default values:
+    Name: 'hazard' Code: "Weibull" Docs: "Splines"
+
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking contents of ‘data’ directory ... OK
+* checking data for non-ASCII characters ... OK
+* checking data for ASCII and uncompressed saves ... OK
+* checking line endings in C/C++/Fortran sources/headers ... OK
+* checking line endings in Makefiles ... OK
+* checking compilation flags in Makevars ... OK
+* checking for GNU extensions in Makefiles ... OK
+* checking for portable use of $(BLAS_LIBS) and $(LAPACK_LIBS) ... OK
+* checking use of PKG_*FLAGS in Makefiles ... OK
+* checking use of SHLIB_OPENMP_*FLAGS in Makefiles ... OK
+* checking pragmas in C/C++ headers and code ... OK
+* checking compilation flags used ... OK
+* checking compiled code ... NOTE
+File ‘frailtypack/libs/frailtypack.so’:
+  Found ‘__gfortran_st_close’, possibly from ‘close’ (Fortran)
+    Object: ‘funcpaMultivSplines.o’
+  Found ‘__gfortran_st_open’, possibly from ‘open’ (Fortran)
+    Object: ‘funcpaMultivSplines.o’
+  Found ‘__gfortran_st_write’, possibly from ‘write’ (Fortran), ‘print’
+    (Fortran)
+    Object: ‘funcpaMultivSplines.o’
+
+Compiled code should not call entry points which might terminate R nor
+write to stdout/stderr instead of to the console, nor use Fortran I/O
+nor system RNGs.
+
+See ‘Writing portable packages’ in the ‘Writing R Extensions’ manual.
+* checking examples ... OK
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
+* DONE
+Status: 2 WARNINGs, 3 NOTEs
