@@ -1,4 +1,4 @@
-# Delirium
+# Read Me: A Competing Joint Model for Delirium Events in the ICU
 
 ## File Structure
 
@@ -187,5 +187,170 @@ This should remove the output files from your main directory:
 
 	scp username@jhpce-transfer01.jhsph.edu:~/YourResults.rdata ~/TargetDirectory
 
+## Next Steps
 
+There are a number of sections of `multivJoint.f90` that were commented out in order to get the model to fit.
+These sections will be need to be re-incorporated or re-coded into R. These sections include:
+
+* I am not sure what this piece of code does:
+
+```
+    !if((effet.eq.1).and.(ier.eq.-1))then
+    !    v((np-nva-indic_alpha)*(np-nva-indic_alpha+1)/2)=10.d10
+        ! what does this mean?
+    !endif
+```
+
+* (11) Calculation of hazard functions and survival estimates
+
+```
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: (11) Calculating hazard and survival functions...'
+   !debug: close(1) 
+    !select case(typeof)
+        !case(0)
+            !call distanceJ_splines(nzloco,nzdc,nzmeta,b,mt1,mt2,mt3,x1Out,lamOut,suOut,x2Out,lam2Out,su2Out,&
+            !x3Out,lam3Out,su3Out)
+        !case(1)
+            !Call distanceJ_cpm(b,nbintervR+nbintervDC+nbintervM,mt1,mt2,mt3,x1Out,lamOut,xSu1,suOut,x2Out, &
+            !lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out)
+        !case(2)
+            !Call distanceJ_weib(b,np,mt1,x1Out,lamOut,xSu1,suOut,x2Out,lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out)
+            !scale_weib(1) = etaR
+            !shape_weib(1) = betaR
+            !scale_weib(2) = etaD
+            !shape_weib(2) = betaD
+            !if(event2_ind0.eq.1)then
+            !    scale_weib(3) = etaM
+            !    shape_weib(3) = betaM
+            !endif
+            !scale_weib(4) = etaD2
+            !shape_weib(4) = betaD2
+    !end select
+```
+
+* (12) Calculate Likelihood Cross-Validation Criterion
+
+```
+! (12) Calculate Likelihood Cross-Validation Criterion
+! LCV(1) = The approximate like cross-validation Criterion
+! LCV(2) = Akaike information Criterion 
+!     calcul de la trace, pour le LCV (likelihood cross validation)
+    !LCV=0.d0
+    !if(typeof == 0)then
+!        write(*,*)'The approximate like cross-validation Criterion in the non parametric case'
+        !call multi(H_hess,I_hess,np,np,np,HI)    
+        !do i =1,np
+        !    LCV(1) = LCV(1) + HI(i,i)
+        !end do
+        !LCV(1) = (LCV(1) - resnonpen) / nsujet
+        !else
+!        write(*,*)'=========> Akaike information Criterion <========='
+
+        !LCV(2) = (1.d0 / nsujet) *(np - resOut)
+!        write(*,*)'======== AIC :',LCV(2)
+    !endif
+! END (12) Likelihood Cross-Validation Criterion
+```
+
+* Calculate linear predictors
+
+```
+!debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: (13) Calculating fitted values...'
+   !debug: close(1) 
+
+    !write(*,*)'=========== coefBeta loco =========='
+    !coefBeta(1,:) = b((np-nva+1):(np-nva+nva1))
+    !print*,coefBeta
+
+    !write(*,*)'=========== coefBeta dc =========='
+    !coefBetadc(1,:) = b((np-nva+nva1+1):(np-nva+nva1+nva2))
+    !print*,coefBetadc
+
+    !write(*,*)'=========== coefBeta meta =========='
+    !if(Event2_ind0.eq.1)then
+    !    coefBetaM(1,:) = b((np-nva+nva1+nva2+1):(np-nva+nva1+nva2+nva3))
+        !print*,coefBetaM(1,:)
+    !endif
+
+    !write(*,*)'=========== coefBeta dc2 =========='
+    !coefBetadc2(1,:) = b((np-nva4+1) : np)
+    !print*,coefBetadc
+
+    !do i=1,nsujet
+    !   do j=1,nva1
+    !        ve1(i,j)=ve(i,j)
+    !    end do
+    !end do
+
+    !do i=1,ngmax
+    !    do j=1,nva2
+    !        ve2(i,j)=vedc(i,j)
+    !    end do
+    !end do
+
+    !if(event2_ind0.eq.1)then
+    !    do i=1,nsujetmeta
+    !        do j=1,nva3
+    !            ve3(i,j)=vemeta(i,j)
+    !        end do
+    !    end do
+    !endif
+
+    !do i=1,ngmax
+    !    do j=1,nva4
+    !        ve4(i,j)=vedc2(i,j)
+    !    end do
+    !end do
+
+   !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+   !debug: write(1,*)'multiveJoint.f90:: Multiplying design matricies by beta....'
+   !debug: close(1) 
+
+    !Xbeta = matmul(coefBeta,transpose(ve1))
+    !Xbetadc = matmul(coefBetadc,transpose(ve2))
+!    Xbetadc2 = matmul(coefBetadc2,transpose(ve4))
+    !if(event2_ind0.eq.1)then
+    !    XbetaM = matmul(coefBetaM,transpose(ve3))
+    !endif
+    
+    
+    if((istop.eq.1).and.(effet.eq.1))then
+!        print*,'======== Call Residus Martingale ==========='
+        deallocate(I_hess,H_hess)
+
+        !allocate(vres((2*(2+3)/2)),I_hess(2,2),H_hess(2,2))
+
+        !effetres = effet
+
+        !open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+        !write(1,*)'multiveJoint.f90:: Calculating martingale residuals....'
+        !close(1) 
+
+        !Call Residus_Martingale_multive(b,np,funcpamultires,Res_martingale,Res_martingaledc,Res_martingale2,&
+        !frailtypred,frailtypred2,frailtyvar,frailtyvar2,frailtyCorr)
+
+        !open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
+        !write(1,*)'multiveJoint.f90:: Calculating individual specific log hazards....'
+        !close(1) 
+
+        !do i=1,nsujet
+        !    linearpred(i)=Xbeta(1,i)+frailtypred(g(i))
+        !end do
+
+        !do i=1,ng
+        !    linearpreddc(i)=Xbetadc(1,i)+alpha1*frailtypred(g(i))+alpha2*frailtypred2(gmeta(i))
+        !    linearpreddc2(i)=Xbetadc2(1,i)+alpha1*frailtypred(g(i))+alpha2*frailtypred2(gmeta(i))
+        !end do
+
+        !do i=1,nsujetmeta
+        !    linearpredM(i)=XbetaM(1,i)+frailtypred2(gmeta(i))
+        !end do
+
+        !deallocate(I_hess,H_hess,vres)
+    else
+        deallocate(I_hess,H_hess)
+    endif
+```
 

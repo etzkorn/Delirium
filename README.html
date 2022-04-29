@@ -167,8 +167,8 @@ pre code {
 </div>
 
 
-<div id="delirium" class="section level1">
-<h1>Delirium</h1>
+<div id="read-me-a-competing-joint-model-for-delirium-events-in-the-icu" class="section level1">
+<h1>Read Me: A Competing Joint Model for Delirium Events in the ICU</h1>
 <div id="file-structure" class="section level2">
 <h2>File Structure</h2>
 <div id="frailtypack-folder" class="section level3">
@@ -242,11 +242,13 @@ pre code {
 <li><p><code>funcpaMultivSpines.f90</code> contains a similar likelihood subroutine, but this function currently does not work. I found that when attempting to optimize the likelihood, one of the spline coefficients was not changing at all, which makes me believe I using incorrect indexes for the parameter vector somewhere in this function. This needs to be investigated before this function is useable.</p></li>
 <li><p><code>aaOptim.f90</code> contains the optimizer routine, and got some added messages so I could examine errors during the optimization process.</p></li>
 <li><p><code>AparamMultive.f90</code> contains some modules of “global” variables, which I added to.</p></li>
+<li><p><code>multivPenal.R</code> contains the R function that the user calls to fit the competing joint model. Both the file and function will need to be re-named before integrating it back into frailtypack. This function performs some pre-processing and then calls the Fortran routine <code>joint_multiv</code> to fit the model.</p></li>
 </ul>
 </div>
+<div id="delirium_package-folder" class="section level3">
+<h3><code>delirium_package</code> Folder</h3>
+<p>This folder contains the code that I initially wrote in R to fit some of the models</p>
 </div>
-<div id="changes-made" class="section level2">
-<h2>Changes made</h2>
 </div>
 <div id="developing-with-this-package-on-jhpce" class="section level2">
 <h2>Developing with this package on JHPCE</h2>
@@ -317,6 +319,168 @@ simulation_analyses/0_Generate_Simulation_Values.R</code></pre>
 <h3>Downloading Results</h3>
 <pre><code>scp username@jhpce-transfer01.jhsph.edu:~/YourResults.rdata ~/TargetDirectory</code></pre>
 </div>
+</div>
+<div id="next-steps" class="section level2">
+<h2>Next Steps</h2>
+<p>There are a number of sections of <code>multivJoint.f90</code> that were commented out in order to get the model to fit. These sections will be need to be re-incorporated or re-coded into R. These sections include:</p>
+<ul>
+<li>I am not sure what this piece of code does:</li>
+</ul>
+<pre><code>    !if((effet.eq.1).and.(ier.eq.-1))then
+    !    v((np-nva-indic_alpha)*(np-nva-indic_alpha+1)/2)=10.d10
+        ! what does this mean?
+    !endif</code></pre>
+<ul>
+<li><ol start="11" style="list-style-type: decimal">
+<li>Calculation of hazard functions and survival estimates</li>
+</ol></li>
+</ul>
+<pre><code>   !debug: open(1, file = &#39;../package_tests/multiv_model_progress.dat&#39;,position=&quot;append&quot;)  
+   !debug: write(1,*)&#39;multiveJoint.f90:: (11) Calculating hazard and survival functions...&#39;
+   !debug: close(1) 
+    !select case(typeof)
+        !case(0)
+            !call distanceJ_splines(nzloco,nzdc,nzmeta,b,mt1,mt2,mt3,x1Out,lamOut,suOut,x2Out,lam2Out,su2Out,&amp;
+            !x3Out,lam3Out,su3Out)
+        !case(1)
+            !Call distanceJ_cpm(b,nbintervR+nbintervDC+nbintervM,mt1,mt2,mt3,x1Out,lamOut,xSu1,suOut,x2Out, &amp;
+            !lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out)
+        !case(2)
+            !Call distanceJ_weib(b,np,mt1,x1Out,lamOut,xSu1,suOut,x2Out,lam2Out,xSu2,su2Out,x3Out,lam3Out,xSu3,su3Out)
+            !scale_weib(1) = etaR
+            !shape_weib(1) = betaR
+            !scale_weib(2) = etaD
+            !shape_weib(2) = betaD
+            !if(event2_ind0.eq.1)then
+            !    scale_weib(3) = etaM
+            !    shape_weib(3) = betaM
+            !endif
+            !scale_weib(4) = etaD2
+            !shape_weib(4) = betaD2
+    !end select</code></pre>
+<ul>
+<li><ol start="12" style="list-style-type: decimal">
+<li>Calculate Likelihood Cross-Validation Criterion</li>
+</ol></li>
+</ul>
+<pre><code>! (12) Calculate Likelihood Cross-Validation Criterion
+! LCV(1) = The approximate like cross-validation Criterion
+! LCV(2) = Akaike information Criterion 
+!     calcul de la trace, pour le LCV (likelihood cross validation)
+    !LCV=0.d0
+    !if(typeof == 0)then
+!        write(*,*)&#39;The approximate like cross-validation Criterion in the non parametric case&#39;
+        !call multi(H_hess,I_hess,np,np,np,HI)    
+        !do i =1,np
+        !    LCV(1) = LCV(1) + HI(i,i)
+        !end do
+        !LCV(1) = (LCV(1) - resnonpen) / nsujet
+        !else
+!        write(*,*)&#39;=========&gt; Akaike information Criterion &lt;=========&#39;
+
+        !LCV(2) = (1.d0 / nsujet) *(np - resOut)
+!        write(*,*)&#39;======== AIC :&#39;,LCV(2)
+    !endif
+! END (12) Likelihood Cross-Validation Criterion</code></pre>
+<ul>
+<li>Calculate linear predictors</li>
+</ul>
+<pre><code>!debug: open(1, file = &#39;../package_tests/multiv_model_progress.dat&#39;,position=&quot;append&quot;)  
+   !debug: write(1,*)&#39;multiveJoint.f90:: (13) Calculating fitted values...&#39;
+   !debug: close(1) 
+
+    !write(*,*)&#39;=========== coefBeta loco ==========&#39;
+    !coefBeta(1,:) = b((np-nva+1):(np-nva+nva1))
+    !print*,coefBeta
+
+    !write(*,*)&#39;=========== coefBeta dc ==========&#39;
+    !coefBetadc(1,:) = b((np-nva+nva1+1):(np-nva+nva1+nva2))
+    !print*,coefBetadc
+
+    !write(*,*)&#39;=========== coefBeta meta ==========&#39;
+    !if(Event2_ind0.eq.1)then
+    !    coefBetaM(1,:) = b((np-nva+nva1+nva2+1):(np-nva+nva1+nva2+nva3))
+        !print*,coefBetaM(1,:)
+    !endif
+
+    !write(*,*)&#39;=========== coefBeta dc2 ==========&#39;
+    !coefBetadc2(1,:) = b((np-nva4+1) : np)
+    !print*,coefBetadc
+
+    !do i=1,nsujet
+    !   do j=1,nva1
+    !        ve1(i,j)=ve(i,j)
+    !    end do
+    !end do
+
+    !do i=1,ngmax
+    !    do j=1,nva2
+    !        ve2(i,j)=vedc(i,j)
+    !    end do
+    !end do
+
+    !if(event2_ind0.eq.1)then
+    !    do i=1,nsujetmeta
+    !        do j=1,nva3
+    !            ve3(i,j)=vemeta(i,j)
+    !        end do
+    !    end do
+    !endif
+
+    !do i=1,ngmax
+    !    do j=1,nva4
+    !        ve4(i,j)=vedc2(i,j)
+    !    end do
+    !end do
+
+   !debug: open(1, file = &#39;../package_tests/multiv_model_progress.dat&#39;,position=&quot;append&quot;)  
+   !debug: write(1,*)&#39;multiveJoint.f90:: Multiplying design matricies by beta....&#39;
+   !debug: close(1) 
+
+    !Xbeta = matmul(coefBeta,transpose(ve1))
+    !Xbetadc = matmul(coefBetadc,transpose(ve2))
+!    Xbetadc2 = matmul(coefBetadc2,transpose(ve4))
+    !if(event2_ind0.eq.1)then
+    !    XbetaM = matmul(coefBetaM,transpose(ve3))
+    !endif
+    
+    
+    if((istop.eq.1).and.(effet.eq.1))then
+!        print*,&#39;======== Call Residus Martingale ===========&#39;
+        deallocate(I_hess,H_hess)
+
+        !allocate(vres((2*(2+3)/2)),I_hess(2,2),H_hess(2,2))
+
+        !effetres = effet
+
+        !open(1, file = &#39;../package_tests/multiv_model_progress.dat&#39;,position=&quot;append&quot;)  
+        !write(1,*)&#39;multiveJoint.f90:: Calculating martingale residuals....&#39;
+        !close(1) 
+
+        !Call Residus_Martingale_multive(b,np,funcpamultires,Res_martingale,Res_martingaledc,Res_martingale2,&amp;
+        !frailtypred,frailtypred2,frailtyvar,frailtyvar2,frailtyCorr)
+
+        !open(1, file = &#39;../package_tests/multiv_model_progress.dat&#39;,position=&quot;append&quot;)  
+        !write(1,*)&#39;multiveJoint.f90:: Calculating individual specific log hazards....&#39;
+        !close(1) 
+
+        !do i=1,nsujet
+        !    linearpred(i)=Xbeta(1,i)+frailtypred(g(i))
+        !end do
+
+        !do i=1,ng
+        !    linearpreddc(i)=Xbetadc(1,i)+alpha1*frailtypred(g(i))+alpha2*frailtypred2(gmeta(i))
+        !    linearpreddc2(i)=Xbetadc2(1,i)+alpha1*frailtypred(g(i))+alpha2*frailtypred2(gmeta(i))
+        !end do
+
+        !do i=1,nsujetmeta
+        !    linearpredM(i)=XbetaM(1,i)+frailtypred2(gmeta(i))
+        !end do
+
+        !deallocate(I_hess,H_hess,vres)
+    else
+        deallocate(I_hess,H_hess)
+    endif</code></pre>
 </div>
 </div>
 
