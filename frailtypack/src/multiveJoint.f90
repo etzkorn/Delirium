@@ -12,7 +12,6 @@
 ! (5) Construct Vector of Spline Nodes (Z_i)
 ! (6) Map dates to sequence of unique dates
 ! (7) Calculate penalties
-
 ! (8) Copy initialized parameters to "b"
 ! (9) Model Optimization
 ! (10) Organize Hessian Matrix

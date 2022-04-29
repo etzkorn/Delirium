@@ -127,7 +127,7 @@
 #' \item{AIC}{the Akaike information Criterion for the parametric
 #' case.\deqn{AIC=\frac{1}{n}(np - l(.))}}
 #'
-#' \item{npar}{number of parameters.}
+#' \item{npar}{total number of parameters.}
 #'
 #' \item{nvar}{A vector with the number of covariates of each type of hazard function as
 #' components.}
@@ -184,11 +184,9 @@
 #'
 #' \item{median3}{The value of the median survival and its confidence bands for terminal1.}
 #'
-#' \item{median3}{The value of the median survival and its confidence bands for the terminal1.}
+#' \item{median4}{The value of the median survival and its confidence bands for the terminal2.}
 #'
 #' \item{n.iter}{number of iterations needed to converge.}
-#'
-#' \item{type.of.hazard}{Type of hazard functions (0:"Splines", "1:Piecewise", "2:Weibull").}
 #'
 #' \item{noVar}{indicator vector for recurrent, death and recurrent 2
 #' explanatory variables.}
@@ -216,7 +214,7 @@
 #'
 #' \item{linear.pred3}{Predicted log relative-hazard of the terminal1 event.}
 #'
-#' \item{linear.pred4}{Predicted log relative-hazard of the terminal1 event.}
+#' \item{linear.pred4}{Predicted log relative-hazard of the terminal2 event.}
 #'
 #' @seealso
 #' \code{\link{terminal}},

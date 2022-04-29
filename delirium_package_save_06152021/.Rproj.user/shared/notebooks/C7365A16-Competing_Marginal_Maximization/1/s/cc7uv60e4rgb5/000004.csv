@@ -1,4 +1,0 @@
-"0","data2 <- simulate.competing.data(n = 100, frailty.center = ""hazard"")
-"
-"2","Error in select(., -y1, -y2) : unused arguments (-y1, -y2)
-"
