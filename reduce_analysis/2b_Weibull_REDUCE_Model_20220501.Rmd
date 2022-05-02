@@ -1,7 +1,7 @@
 ---
 title: "Reduce Analysis"
 author: "Lacey Etzkorn"
-date: "2/9/2021"
+date: "5/01/2021"
 output: html_document
 params: 
   output_dir: "../reduce_analysis_output/"
@@ -37,7 +37,7 @@ summarise(length(unique(id)),
 # Treatment (2mg) Effect Only
 
 ```{r, echo = FALSE,message = FALSE}
-if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_20220218.rdata")){
+if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_20220501.rdata")){
 
 # the death initialization model for the gap.model doesn't work, so we set some starting vals
 gap.model1 <-
@@ -107,13 +107,13 @@ multivPenal(formula = Surv(tstart, tstop, del) ~ treatment +
 	maxit = 300, 
 	initialize = T)
 save(gap.model, cal.model,
-     file = "../reduce_analysis_output/REDUCE_Weibull_Models_20220218.rdata")
-}else load("../reduce_analysis_output/REDUCE_Weibull_Models_20220218.rdata")
+     file = "../reduce_analysis_output/REDUCE_Weibull_Models_20220501.rdata")
+}else load("../reduce_analysis_output/REDUCE_Weibull_Models_20220501.rdata")
 ```
 
 ### Tabulate Parameter Estimates
 
-```{r, eval = F}
+```{r}
 m1 <-dplyr::select(cal.model$summary.table, Parameter, Estimate, Estimate.SE, p)
 m2 <-dplyr::select(cal.model$initialization$summary.table1, Parameter, Estimate, Estimate.SE, p)
 m3 <-dplyr::select(cal.model$initialization$summary.table2, Parameter, Estimate, Estimate.SE, p)
@@ -139,32 +139,14 @@ text_transform(
   fn = function(x) ifelse(x == "","",paste0("(",x,")"))
   ) %>%
 fmt_number(columns = c(2,3,5,6,8,9),decimals = 3)%>%
-fmt_number(columns = c(4,7,10),decimals = 3) %>%
-as_latex() %>%as.character() %>%cat()
+fmt_number(columns = c(4,7,10),decimals = 3) #%>%
+#as_latex() %>%as.character() %>%cat()
 ```
-
-
-
-```{r, eval = FALSE}
-gap.model1 <-
-frailtyPenal(formula = Surv(tstart, tstop, del) ~ treatment+
-		terminal(death) + cluster(id),
-	formula.terminalEvent = ~treatment,
-	data = df2, 
-	recurrentAG = T,
-	hazard = "Splines", #RandDist = "LogN", 
-	n.knots = 20, kappa = c(10000,10000),
-	init.Alpha = 1,
-	init.B = c(-0.0182,-0.0504),
-	init.Theta = 0.25,
-	maxit = 300)
-```
-
 
 # Include Age and Apache Score Effects
 
 ```{r, echo = FALSE,message = FALSE}
-if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220218.rdata")){
+if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220501.rdata")){
 # the death initialization model for the gap.model doesn't work, so we set some starting vals
 gap.model1 <-
 frailtyPenal(formula = Surv(gap, del) ~ treatment + I(apache/5 - 19/5) + I(age/10 - 65/10) +
@@ -208,7 +190,8 @@ multivPenal(formula = Surv(tstart, tstop, del) ~ treatment + I(apache/5 - 19/5) 
 	init.Alpha2 = -5, 
 	init.hazard = c(0.34, 6.64, 2.6, 78.5, 1.51, 8.23),
 	init.B = rep(0,9))
-}else load("../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220214.rdata")
+save(gap.model, file = "../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220501.rdata")
+}else load("../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220501.rdata")
 
 gap.model$summary.table %>% 
 dplyr::select(Parameter, Estimate, Estimate.SE, p) %>%

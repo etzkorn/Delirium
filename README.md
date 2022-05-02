@@ -253,7 +253,7 @@ These sections will be need to be re-incorporated or re-coded into R. These sect
 ! END (12) Likelihood Cross-Validation Criterion
 ```
 
-* Calculate linear predictors
+* (13) Calculate linear predictors
 
 ```
 !debug: open(1, file = '../package_tests/multiv_model_progress.dat',position="append")  
@@ -354,3 +354,6 @@ These sections will be need to be re-incorporated or re-coded into R. These sect
     endif
 ```
 
+* After trying to fix some things with the intialization of the gap times models, I found that my current results no longer match the results I produced for my thesis, so I need to find why this discrepancy occurred.
+
+* Can we fit a gap times model with gaps in risk time with frailtyPenal?
