@@ -249,9 +249,9 @@
 # (3) Configure Model Matrices
 # (4) Configure Parameters
 # (5) Define Gauss-Hermite Nodes and Weights
-# (6) Fill Starting Parameter Vector with User-Defined Values
+# (6) Compute Gap times, if gapTimes == TRUE
+# (7) Fill Starting Parameter Vector with User-Defined Values
 #		OR Initialize Models
-# (7) Compute Gap times, if gapTimes == TRUE
 # (8) Check Dimensions of all variables being sent to Fortran
 #       for debugging
 # (9) Send to Fortran for optimization
@@ -605,9 +605,20 @@ gh <- statmod::gauss.quad(GHpoints, kind="hermite")
 ghNodes = gh$nodes
 ghWeights = gh$weights * exp(gh$nodes^2)
 
+############################################################
+############################################################
+# (6) Compute Gap Times (If Applicable)
+
+if(gapTimes){
+	tt11 <- tt11 - tt10
+	tt10 <- 0 * tt10
+	tt1meta0 <- tt1meta0 - tt0meta0
+	tt0meta0 <- 0 * tt0meta0
+}
+
 #########################################################################
 #########################################################################
-# (6) Fill Parameter Vector with User-Defined Values OR Initialize Models
+# (7) Fill Parameter Vector with User-Defined Values OR Initialize Models
 
 # Check if user entered values for hazard, input 1s if not
 
@@ -643,7 +654,6 @@ if(initialize){
 
 	# recreate time variable in original data set in case of gap times, create new formula
 	if(gapTimes){
-		#data$gapTimes <- tt11
 		initialization.formula <-
 			paste("Surv(gapTimes, ", EVENT1, ")",
 			      paste(gsub("Surv(.*)","", as.character(formula)), collapse = ""),
@@ -754,18 +764,6 @@ if(length(b)!=np) stop("Parameter vector not the correct length.")
 #debug: cat("\nmultivPenal.R:: length(b)=",length(b),
 #debug:     "\nmultivPenal.R:: np = ",np,
 #debug:     file='../package_tests/multiv_model_progress.dat',append=TRUE)
-
-
-############################################################
-############################################################
-# (7) Compute Gap Times (If Applicable)
-
-if(gapTimes){
-	tt11 <- tt11 - tt10
-	tt10 <- 0 * tt10
-	tt1meta0 <- tt1meta0 - tt0meta0
-	tt0meta0 <- 0 * tt0meta0
-}
 
 
 ############################################################
