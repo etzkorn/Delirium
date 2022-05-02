@@ -643,10 +643,8 @@ if(length(init.B) != nvar){
 if(initialize){
 
 	# ignore user-supplied initialization values if initialize == T
-	if(!is.null(init.hazard)) warning("Discarding init.hazard since initialize == T.")
 	init.hazard <- init.hazard*0 + 1
 
-	if(!is.null(init.B)) warning("Discarding init.B since initialize == T.")
 	init.B <- init.B*0
 
 	# recreate time variable in original data set in case of gap times, create new formula
