@@ -34,7 +34,7 @@ summarise(length(unique(id)),
 		  min(age), max(age))
 ```
 
-# Treatment (2mg) Effect Only
+# Treatment (2mg) Effect Only Models
 
 ```{r, echo = FALSE,message = FALSE}
 if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_20220501.rdata")){
