@@ -275,7 +275,7 @@ if (nrow(data) == 0)
 #############################################################
 # (1) Verify/extract event indicators, times, groups
 
-############################ Verify Event 1 / Times
+### (1a) Verify Recurrent Event 1 / Times
 # NN =  names of time gap and recurrent event 1
 Y1 <- get_all_vars(update(formula, "~1"), data)
 
@@ -299,12 +299,7 @@ event1 <- Y1[, 3]
 tt10 <- Y1[, 1]
 tt11 <- Y1[, 2]
 
-
-#if (type != "right" && type != "counting"){
-#      stop(paste("Cox model doesn't support \"", type, "\" survival data", sep = ""))
-#}
-
-############################ Verify recurrent event 2 (Not yet implemented)
+### (1b) Verify recurrent event 2 (Not yet implemented)
 event2.ind <- 0
 event2 <- 0
 tt0meta0 <- 0
@@ -344,7 +339,7 @@ tt1meta0 <- 0
 #   tt1meta0 <- 0
 # }
 
-############################ Verify Terminal Event 1
+### (1c) Verify Terminal Event 1
 TT <-
   survival::untangle.specials(terms(formula, c("terminal")), "terminal", 1:10)$vars
 start <- grep("\\(", unlist(strsplit(TT, "")))
@@ -357,7 +352,7 @@ if (!all(data[[TERMINAL1]] %in% c(1, 0))) {
   stop("terminal must contain a variable coded 0-1 and a non-factor variable")
 }
 
-############################ Verify Terminal Event 2
+### (1d) Verify Terminal Event 2
 TT <-survival::untangle.specials(terms(formula, c("terminal2")), "terminal2", 1:10)$vars
 start <- grep("\\(", unlist(strsplit(TT, "")))
 stop <- grep("\\)", unlist(strsplit(TT, "")))
@@ -373,7 +368,7 @@ if (length(TERMINAL2) == 0) {
   terminal2.ind <- 1
 }
 
-################################ Verify Cluster Variable
+### (1e) Verify Cluster Variable
 # name of cluster variable
 TT <-
   survival::untangle.specials(terms(formula, c("cluster")), "cluster", 1:10)$vars
@@ -622,12 +617,10 @@ if(gapTimes){
 
 # Check if user entered values for hazard, input 1s if not
 
-
 if(is.null(init.hazard)) init.hazard <- rep(1, np - nvar - 3 - 2*jointGeneral)
 
 # Check if user entered values for coefficients, input 0s if not
 if(is.null(init.B)) init.B <- rep(0, nvar)
-
 
 # Check lengths of inputs
 if(typeof == "Weibull" & length(init.hazard != 2 * (2 + event2.ind + terminal2.ind))){
@@ -646,10 +639,14 @@ if(length(init.B) != nvar){
 	stop("init.B must be the same length as the number of coefficients.")
 }
 
-# If initialization indicated, replace values
+# If initialization desired, replace values
 if(initialize){
+
 	# ignore user-supplied initialization values if initialize == T
+	if(!is.null(init.hazard)) warning("Discarding init.hazard since initialize == T.")
 	init.hazard <- init.hazard*0 + 1
+
+	if(!is.null(init.B)) warning("Discarding init.B since initialize == T.")
 	init.B <- init.B*0
 
 	# recreate time variable in original data set in case of gap times, create new formula
@@ -660,22 +657,19 @@ if(initialize){
 			      collapse = "")
 
 		data$gapTimes <- tt11
-		initialization.formula <-
-			paste("Surv(gapTimes, ", EVENT1, ")",
-			      paste(gsub("Surv(.*)","", as.character(formula)), collapse = ""),
-			      collapse = "")
 	}else{
 		initialization.formula <- formula
 	}
 	initialization.formula <- as.formula(initialization.formula)
 
-	# create separate formulas for each initialization model
+	# create formula for initialization model 1 (includes terminal 1)
 	initialization.formula <- terms(initialization.formula, specials = specials)
 	initialization.formula1 <- drop.terms(terms(initialization.formula),
 				  survival::untangle.specials(terms(initialization.formula, c("terminal2")), "terminal2", 1:10)$terms,
 				  keep.response = T)
 	initialization.formula1 <- formula(initialization.formula1)
 
+	# create formula for initialization model 2 (includes terminal 2)
 	initialization.formula2 <- drop.terms(terms(initialization.formula),
 				  survival::untangle.specials(terms(initialization.formula, c("terminal")), "terminal", 1:10)$terms,
 				  keep.response = T)
@@ -684,31 +678,30 @@ if(initialize){
 	initialization.formula2 <- formula(paste0(initialization.formula2[2:3], collapse = "~"))
 
 
-	# fit two joint models for initialization
+	# fit initialization model 1
 	mod.joint1<-
 		frailtyPenal(formula = initialization.formula1,
-			 # this line drops the "terminal2" term from the original model formula
 			 formula.terminalEvent = formula.terminalEvent,
 			 jointGeneral = F,
 			 data = data,
-			 recurrentAG= !gapTimes,
+			 recurrentAG = !gapTimes,
 			 hazard = "Weibull", RandDist = "LogN",
 			 maxit = 100, print.times = F)
 
+	# fit initialization model 2
 	mod.joint2<-
 		frailtyPenal(formula = initialization.formula2,
-			 # this line drops the "terminal" term from the original model formula
 			 formula.terminalEvent = formula.terminalEvent2,
 			 jointGeneral = F,
 			 data = data,
-			 recurrentAG= !gapTimes,
+			 recurrentAG = !gapTimes,
 			 hazard = "Weibull", RandDist = "LogN",
 			 maxit = 100, print.times = F)
 
 	# Grab initialized values
 		# Note: Joint model optimizes on the square root scale
 		# for hazard parameters and frailty
-		# variance, so we have to square to get to the true scale.
+		# variance, so we have to square to get to the original scale.
 	# Recurrent Hazard
 	init.hazard[1:(2+n.knots)] <- (mod.joint1$b[1:(2+n.knots)]^2 + mod.joint2$b[1:(2+n.knots)]^2)/2
 		# average estimates from the two models
@@ -758,6 +751,7 @@ if(!jointGeneral){
 	       init.B)
 }
 
+# save a copy of the starting value for the output
 start.b <- b
 
 if(length(b)!=np) stop("Parameter vector not the correct length.")
