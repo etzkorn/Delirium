@@ -34,7 +34,8 @@ summarise.data <- function(d){
 	ungroup %>%
 	group_by(trt) %>% 
 	mutate(anyevent.trt = 100*sum(anyevent)/sum(n),
-	       eventsPer100Day.trt = 100*sum(event) / sum(st)) %>%
+	       eventsPer100Day.trt = 100*sum(event) / sum(st), 
+		   pct = n / sum(n)*100) %>%
 	arrange(trt, desc(n))
 }
 ```
@@ -117,7 +118,7 @@ data1 <- simulate.competing.data(
 summarise.data(data1)
 ```
 
-# Increase Effect on Delirium
+### Increase Effect on Delirium
 
 ```{r}
 data0 <- simulate.competing.data(
@@ -194,6 +195,50 @@ data0 <- simulate.competing.data(
 	         sigma = 0.5,
 	         alphaM = 1,
 	         alphaD = -1,
+	         betaR = 0,
+	         betaM = 0,
+	         betaD = 0)) 
+
+summarise.data(data0)
+```
+
+# Increased Prevalence of Mortality
+
+### Null Model, but time to death is increased so prevalence of death is roughly 25%
+
+```{r}
+data0 <- simulate.competing.data(
+	n = 10000,truncate = 28,version=2,
+	par0 =c(shapeR = 1.5, 
+	         scaleR = 10,
+	         shapeM = 1.75, 
+	         scaleM = 29,
+	         shapeD = 1.75, 
+	         scaleD = 16,
+	         sigma = 0.5,
+	         alphaM = 0,
+	         alphaD = 0,
+	         betaR = 0,
+	         betaM = 0,
+	         betaD = 0)) 
+
+summarise.data(data0)
+```
+
+### Null Model, but time to death is increased so prevalence of death is roughly 12.5%
+
+```{r}
+data0 <- simulate.competing.data(
+	n = 10000,truncate = 28,version=2,
+	par0 =c(shapeR = 1.5, 
+	         scaleR = 10,
+	         shapeM = 1.75, 
+	         scaleM = 47,
+	         shapeD = 1.75, 
+	         scaleD = 16,
+	         sigma = 0.5,
+	         alphaM = 0,
+	         alphaD = 0,
 	         betaR = 0,
 	         betaM = 0,
 	         betaD = 0)) 

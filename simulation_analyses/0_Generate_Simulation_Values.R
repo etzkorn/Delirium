@@ -107,12 +107,18 @@ save(meta, file = "../simulation_results/metaData4.rdata")
 
 ###########################################################3
 # Version 5 (5/20/22)
-# Here, I increase the relative time of death so that
+# Include three versions of death scale parameter (etaD)
+# Reduce number of versions of sigma (since 1 is too high)
 
-meta <-     expand.grid(betaR = 1.5, etaR = 10,
-		betaD = 1.75, etaD = 16,
-		betaD2 = 1.75, etaD2 = 16,
-		sigma = c(0.5, 0.75, 1),
+meta <-
+	expand.grid(
+		betaR = 1.5,
+		etaR = 10,
+		betaD = 1.75,
+		etaD = c(16,29,47),
+		betaD2 = 1.75,
+		etaD2 = 16,
+		sigma = 0.5,
 		alpha1 = c(-1, 0, 1),
 		alpha2 = c(-1, 0, 1),
 		trtR = c(-0.5, 0, 0.5),
@@ -123,5 +129,5 @@ meta <-     expand.grid(betaR = 1.5, etaR = 10,
 	       scenario = ((simid-1) %% 729)+1,
 	       seed = cumsum(10 + rpois(n(),10)),
 	       n = 1500) %>%
-	filter(scenario %in% c(8,17,26,251,260,269,494,503,512))
-save(meta, file = "../simulation_results/metaData4.rdata")
+	filter(alpha1 == 1, trtR == -0.5, trtD == -0.5)
+save(meta, file = "../simulation_results/metaData5.rdata")
