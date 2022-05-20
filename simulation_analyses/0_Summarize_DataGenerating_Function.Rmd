@@ -13,21 +13,10 @@ source("../delirium_package/R/joint_simulate_data.R")
 source("../delirium_package/R/competing_simulate_data.R")
 source("../delirium_package/R/random_weibull.R")
 results <- tibble()
-```
-
-
-```{r}
-meta1 <- filter(meta, sigma == .75, alpha1 == 0.5, alpha2 == 0,
-         trtR == -0.25, trtD == -0.25, trtD2 == 0) %>%
-	filter(simid==min(simid))
-data0 <- simulate.competing.data(
-	n = 10000,truncate = 28,
-	par0 = unlist(dplyr::select(meta1, betaR:trtD2))) 
-
-data0 %>%
+summarise.data <- function(d){
+	d %>%
 	group_by(id) %>%
 	summarise(
-	         w = w[1],
 	         event = sum(event),
 	         trt = mean(trt),
 	         terminal1 = sum(terminal1),
@@ -47,164 +36,167 @@ data0 %>%
 	mutate(anyevent.trt = 100*sum(anyevent)/sum(n),
 	       eventsPer100Day.trt = 100*sum(event) / sum(st)) %>%
 	arrange(trt, desc(n))
-```
-### Effect on Death
-
-```{r}
-meta1 <- filter(meta, sigma == .75, alpha1 == 0.5, alpha2 == -0.5,
-         trtR == -0.25, trtD == -0.25, trtD2 == -0.25) %>%
-	filter(simid==min(simid))
-data1 <- simulate.competing.data(
-	n = 10000,truncate = 28,
-	par0 = unlist(dplyr::select(meta1, betaR:trtD2))) 
-
-data1 %>%
-	group_by(id) %>%
-	summarise(
-	         w = w[1],
-	         event = sum(event),
-	         trt = mean(trt),
-	         terminal1 = sum(terminal1),
-	         terminal2 = sum(terminal2),
-	         t = max(t)) %>%
-	ungroup %>%
-	group_by(terminal1, terminal2, trt) %>%
-	summarise(n = n(),
-	          st = sum(t),
-	          terminalPct = 100*n/sum(n),
-	          .groups = "drop",
-	          anyevent = sum(event>0),
-	       event = sum(event),
-	       eventsPer100Day = 100*event / st) %>%
-	ungroup %>%
-	group_by(trt) %>% 
-	mutate(anyevent.trt = 100*sum(anyevent)/sum(n),
-	       eventsPer100Day.trt = 100*sum(event) / sum(st)) %>%
-	arrange(trt, desc(n))
-```
-
-# Make Delirium Prevalence the Same
-
-```{r}
-data0 <- simulate.competing.data(
-	n = 10000,truncate = 28,
-	par0 = c(betaR = 0.35, etaR = 6.64,
-	         betaD = 2.59, etaD = 78.5,
-	         betaD2 = .5, etaD2 = 8.23, 
-	         sigma = 0.25, 
-	         alpha1 = 14.8, alpha2 = -6,
-	         trtR = -0.25, trtD = -0.25, trtD2 = -0.5)) 
-
-data0 %>%
-	group_by(id) %>%
-	summarise(
-	         w = w[1],
-	         event = sum(event),
-	         trt = mean(trt),
-	         terminal1 = sum(terminal1),
-	         terminal2 = sum(terminal2),
-	         t = max(t)) %>%
-	ungroup %>%
-	group_by(terminal1, terminal2, trt) %>%
-	summarise(n = n(),
-	          st = sum(t),
-	          terminalPct = 100*n/sum(n),
-	          .groups = "drop",
-	          anyevent = sum(event>0),
-	       event = sum(event),
-	       eventsPer100Day = 100*event / st) %>%
-	ungroup %>%
-	group_by(trt) %>% 
-	mutate(anyevent.trt = 100*sum(anyevent)/sum(n),
-	       eventsPer100Day.trt = 100*sum(event) / sum(st)) %>%
-	arrange(trt, desc(n))
-```
-
-# Make Incidence the Same
-
-```{r}
-data0 <- simulate.competing.data(
-	n = 10000,truncate = 28,
-	par0 = c(betaR = 0.35, etaR = 6.64,
-	         betaD = 2.59, etaD = 78.5,
-	         betaD2 = .5, etaD2 = 8.23, 
-	         sigma = 0.25, 
-	         alpha1 = 14.8, alpha2 = -12,
-	         trtR = -0.25, trtD = -0.25, trtD2 = 2)) 
-
-data0 %>%
-	group_by(id) %>%
-	summarise(
-	         w = w[1],
-	         event = sum(event),
-	         trt = mean(trt),
-	         terminal1 = sum(terminal1),
-	         terminal2 = sum(terminal2),
-	         t = max(t)) %>%
-	ungroup %>%
-	group_by(terminal1, terminal2, trt) %>%
-	summarise(n = n(),
-	          st = sum(t),
-	          terminalPct = 100*n/sum(n),
-	          .groups = "drop",
-	          anyevent = sum(event>0),
-	       event = sum(event),
-	       eventsPer100Day = 100*event / st) %>%
-	ungroup %>%
-	group_by(trt) %>% 
-	mutate(anyevent.trt = 100*sum(anyevent)/sum(n),
-	       eventsPer100Day.trt = 100*sum(event) / sum(st)) %>%
-	arrange(trt, desc(n))
-```
-
-# Make Both the Same?
-
-```{r}
-results <- tibble()
-meta <-     expand.grid(betaR = 0.5, etaR = 66,
-		betaD = 1.6, etaD = 25.2,
-		betaD2 = 1.3, etaD2 = 7.7,
-		sigma = 0.25,
-		alpha1 = 2,
-		alpha2 =  seq(-2,2, by=0.25),
-		trtR = -0.25,
-		trtD = -0.25,
-		trtD2 = seq(-1,1, by=0.1))
-
-for(i in 1:nrow(meta)){
-data0 <- simulate.competing.data(
-	n = 1000,truncate = 28,
-	par0 = unlist(meta[i,])) 
-results <- data0 %>%
-	group_by(id) %>%
-	summarise(
-	         w = w[1],
-	         event = sum(event),
-	         trt = mean(trt),
-	         terminal1 = sum(terminal1),
-	         terminal2 = sum(terminal2),
-	         t = max(t)) %>%
-	ungroup %>%
-	group_by(trt) %>% 
-	summarise(anyevent = 100*mean(event>0),
-	       eventsPer100Day = 100*mean(event)) %>%
-	ungroup %>%
-	bind_rows(results)
 }
+```
 
 
+# Simulate Null Scenario with No Treatment Effects
 
-results$i<- rep(1:nrow(meta),each = 2)
+```{r}
+options(digits = 2)
+data0 <- simulate.competing.data(
+	n = 10, truncate = 28, version=2,
+	par0 = c(shapeR = 1.5, 
+	         scaleR = 10,
+	         shapeM = 1.75, 
+	         scaleM = 16,
+	         shapeD = 1.75, 
+	         scaleD = 16,
+	         sigma = 0.5,
+	         alphaM = 0,
+	         alphaD = 0,
+	         betaR = 0,
+	         betaM = 0,
+	         betaD = 0))
 
-results2 <- results %>% group_by(i) %>%
-	summarise(anyDiff = anyevent[2]-anyevent[1],
-	       dayDiff = eventsPer100Day[2] - eventsPer100Day[1],
-	       weird = anyDiff>0 & dayDiff>0) %>%
-	bind_cols(meta)
-ggplot(results2) +
-geom_raster(aes(x = alpha2, y = trtD2, fill = weird))
+data0 %>%
+	group_by(id) %>%
+	summarise(
+	         event = sum(event),
+	         trt = mean(trt),
+	         terminal1 = sum(terminal1),
+	         terminal2 = sum(terminal2),
+	         t = max(t)) %>% summary
 
-filter(results2, anyDiff > 0, dayDiff > 0) %>%
-ggplot()+geom_histogram(aes(x = i))
+data0 %>%
+	group_by(id) %>%
+	summarise(
+	         event = sum(event),
+	         trt = mean(trt),
+	         terminal1 = sum(terminal1),
+	         terminal2 = sum(terminal2),
+	         t = max(t)) %>%
+	ungroup %>%
+	group_by(terminal1, terminal2) %>%
+	summarise(n = n(),
+	          studyTime = sum(t),
+	          anyevent = 100*mean(event>0),
+	          event = sum(event),
+	          eventsPer100Day = 100*event / studyTime,
+	          .groups = "drop"
+)%>%
+ungroup %>%
+mutate(freq = 100*n/sum(n),
+       studyTimePerPerson = studyTime/n,
+       eventsPerPerson = event/n,
+       anyevent.all = sum(anyevent*n)/sum(n),
+       eventsPerPerson.all = sum(event)/sum(n),
+	     eventsPer100Day.all = 100*sum(event) / sum(studyTime),
+       studyTimePerPerson.all = sum(studyTime)/sum(n)) %>%
+select(-studyTime, -n, -event)
+```
 
+### Increase effect on Mortality
+
+```{r}
+data1 <- simulate.competing.data(
+	n = 10000,truncate = 28,version=2,
+	par0 =c(shapeR = 1.5, 
+	         scaleR = 10,
+	         shapeM = 1.75, 
+	         scaleM = 16,
+	         shapeD = 1.75, 
+	         scaleD = 16,
+	         sigma = 0.5,
+	         alphaM = 0,
+	         alphaD = 0,
+	         betaR = 0,
+	         betaM = 0.5,
+	         betaD = 0)) 
+
+summarise.data(data1)
+```
+
+# Increase Effect on Delirium
+
+```{r}
+data0 <- simulate.competing.data(
+	n = 10000,truncate = 28,version=2,
+	par0 =c(shapeR = 1.5, 
+	         scaleR = 10,
+	         shapeM = 1.75, 
+	         scaleM = 16,
+	         shapeD = 1.75, 
+	         scaleD = 16,
+	         sigma = 0.5,
+	         alphaM = 0,
+	         alphaD = 0,
+	         betaR = 0.5,
+	         betaM = 0,
+	         betaD = 0)) 
+
+summarise.data(data0)
+```
+
+### Association between Death and Mortality
+
+```{r}
+data0 <- simulate.competing.data(
+	n = 10000,truncate = 28,version=2,
+	par0 =c(shapeR = 1.5, 
+	         scaleR = 10,
+	         shapeM = 1.75, 
+	         scaleM = 16,
+	         shapeD = 1.75, 
+	         scaleD = 16,
+	         sigma = 0.5,
+	         alphaM = 1,
+	         alphaD = 0,
+	         betaR = 0,
+	         betaM = 0,
+	         betaD = 0)) 
+
+summarise.data(data0)
+```
+
+### Association between Delirium and Mortality, Delirium and Discharge
+
+```{r}
+data0 <- simulate.competing.data(
+	n = 10000,truncate = 28,version=2,
+	par0 =c(shapeR = 1.5, 
+	         scaleR = 10,
+	         shapeM = 1.75, 
+	         scaleM = 16,
+	         shapeD = 1.75, 
+	         scaleD = 16,
+	         sigma = 0.5,
+	         alphaM = 1,
+	         alphaD = -1,
+	         betaR = 0,
+	         betaM = 0,
+	         betaD = 0)) 
+
+summarise.data(data0)
+```
+
+### Association between Delirium and Mortality, Delirium and Discharge
+
+```{r}
+data0 <- simulate.competing.data(
+	n = 10000,truncate = 28,version=2,
+	par0 =c(shapeR = 1.5, 
+	         scaleR = 10,
+	         shapeM = 1.75, 
+	         scaleM = 16,
+	         shapeD = 1.75, 
+	         scaleD = 16,
+	         sigma = 0.5,
+	         alphaM = 1,
+	         alphaD = -1,
+	         betaR = 0,
+	         betaM = 0,
+	         betaD = 0)) 
+
+summarise.data(data0)
 ```

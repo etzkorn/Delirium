@@ -31,7 +31,36 @@ summarise(delirium.coma.days = sum(as.numeric(delirium==1|coma==1), na.rm = T)) 
 left_join(df, by = "id")
 
 ########################################################################
-# Summarize by Patients
+# Summarize by Patients Overall (not by Treatment Group)
+df%>%
+summarise(size = paste0("(n=",n(),")"),
+          `Any Delirium (overall)` = paste0(sum(delirium.coma.days>0),
+          	         " (",100*round(mean(delirium.coma.days>0),3),"%)"),
+          `Length of Stay`= paste0(round(mean(pmin(losic, 28)),2),
+          		 " (",round(sd(pmin(losic, 28)),2),")"),
+          Died = paste0(sum(died),
+          	  " (",100*round(mean(died),3),"%)"),
+          Discharged = paste0(sum(discharged ),
+          	        " (",100*round(mean(discharged ),3),"%)"),
+          Censored = paste0(sum(censored),
+          	      " (",100*round(mean(censored),3),"%)"),
+
+          `Delirium among Discharges` = paste0(sum((delirium.coma.days>0)[discharged]),
+          		" (",100*round(mean((delirium.coma.days>0)[discharged]),3),"%)"),
+          `Length of Stay for Discharges`= paste0(round(mean(pmin(losic, 28)[discharged]),2),
+          			    " (",round(sd(pmin(losic, 28)[discharged]),2),")"),
+
+          `Delirium among Deaths` = paste0(sum((delirium.coma.days>0)[died]),
+          			 " (",100*round(mean((delirium.coma.days>0)[died]),3),"%)"),
+          `Length of Stay for Mortalities`= paste0(round(mean(pmin(losic, 28)[died]),2),
+          		 " (",round(sd(pmin(losic, 28)[died]),2),")"),
+
+          `Delirium among Censored` = paste0(sum((delirium.coma.days>0)[censored]),
+          		           " (",100*round(mean((delirium.coma.days>0)[censored]),3),"%)"),) %>%
+t() 
+
+########################################################################
+# Summarize by Patients by Treatment Group
 df%>%
 group_by(study_arm) %>%
 summarise(size = paste0("(n=",n(),")"),
@@ -68,9 +97,27 @@ table(coma = (df$coma_number_of_days>0),
       del = df$delirium_number_of_days>0) %>% prop.table(1)
 table(coma = (df$coma_number_of_days>0)>0)
 
+########################################################################
+# Summarize by Observation Days overall (not by Treatment Group)
+df%>%
+summarise(
+`Total Days` = paste0("(t = ",sum(pmin(losic, 28))," days)"),
+`Delirium Days, t(%)` = paste0(sum(delirium.coma.days)," (",round(100*sum(delirium.coma.days)/sum(pmin(losic, 28)),1),"%)"),
+
+`Discharges: Total Days` = paste0("(t = ",sum(pmin(losic[discharged], 28))," days)"),
+`Discharges: Total Delirium Days` = paste0(sum(delirium.coma.days[discharged]),
+			       " (",round(100*sum(delirium.coma.days[discharged])/sum(pmin(losic[discharged], 28)),1),"%)"),
+`Deaths: Total Days` = paste0("(t = ",sum(pmin(losic[died], 28))," days)"),
+`Deaths: Total Delirium Days` = paste0(sum(delirium.coma.days[died]),
+		" (",round(100*sum(delirium.coma.days[died])/sum(pmin(losic[died],28)),1),"%)")) %>%
+t() #%>%
+knitr::kable("latex")
+
+sum((df$delirium.coma.days)[df$died])/sum((df$losic)[df$died])
+sum((df$delirium.coma.days)[df$discharged])/sum((df$losic)[df$discharged])
 
 ########################################################################
-# Summarize by Observation Days
+# Summarize by Observation Days by Treatment Group
 df%>%
 group_by(study_arm) %>%
 summarise(
