@@ -35,73 +35,17 @@ summarise.data <- function(d){
 	group_by(trt) %>% 
 	mutate(anyevent.trt = 100*sum(anyevent)/sum(n),
 	       eventsPer100Day.trt = 100*sum(event) / sum(st), 
-		   pct = n / sum(n)*100) %>%
+		   pct = n / sum(n)*100, 
+		   anyevent = anyevent/n*100) %>%
 	arrange(trt, desc(n))
 }
 ```
 
-
-# Simulate Null Scenario with No Treatment Effects
-
-```{r}
-options(digits = 2)
-data0 <- simulate.competing.data(
-	n = 10, truncate = 28, version=2,
-	par0 = c(shapeR = 1.5, 
-	         scaleR = 10,
-	         shapeM = 1.75, 
-	         scaleM = 16,
-	         shapeD = 1.75, 
-	         scaleD = 16,
-	         sigma = 0.5,
-	         alphaM = 0,
-	         alphaD = 0,
-	         betaR = 0,
-	         betaM = 0,
-	         betaD = 0))
-
-data0 %>%
-	group_by(id) %>%
-	summarise(
-	         event = sum(event),
-	         trt = mean(trt),
-	         terminal1 = sum(terminal1),
-	         terminal2 = sum(terminal2),
-	         t = max(t)) %>% summary
-
-data0 %>%
-	group_by(id) %>%
-	summarise(
-	         event = sum(event),
-	         trt = mean(trt),
-	         terminal1 = sum(terminal1),
-	         terminal2 = sum(terminal2),
-	         t = max(t)) %>%
-	ungroup %>%
-	group_by(terminal1, terminal2) %>%
-	summarise(n = n(),
-	          studyTime = sum(t),
-	          anyevent = 100*mean(event>0),
-	          event = sum(event),
-	          eventsPer100Day = 100*event / studyTime,
-	          .groups = "drop"
-)%>%
-ungroup %>%
-mutate(freq = 100*n/sum(n),
-       studyTimePerPerson = studyTime/n,
-       eventsPerPerson = event/n,
-       anyevent.all = sum(anyevent*n)/sum(n),
-       eventsPerPerson.all = sum(event)/sum(n),
-	     eventsPer100Day.all = 100*sum(event) / sum(studyTime),
-       studyTimePerPerson.all = sum(studyTime)/sum(n)) %>%
-select(-studyTime, -n, -event)
-```
-
-### Increase effect on Mortality
+### Independent Discharge
 
 ```{r}
 data1 <- simulate.competing.data(
-	n = 10000,truncate = 28,version=2,
+	n = 100000,truncate = 28,version=2,
 	par0 =c(shapeR = 1.5, 
 	         scaleR = 10,
 	         shapeM = 1.75, 
@@ -109,36 +53,14 @@ data1 <- simulate.competing.data(
 	         shapeD = 1.75, 
 	         scaleD = 16,
 	         sigma = 0.5,
-	         alphaM = 0,
+	         alphaM = 1,
 	         alphaD = 0,
-	         betaR = 0,
-	         betaM = 0.5,
+	         betaR = -0.5,
+	         betaM = -0.5,
 	         betaD = 0)) 
 
-summarise.data(data1)
+summarise.data(data1) %>% arrange(trt, terminal1, terminal2)
 ```
-
-### Increase Effect on Delirium
-
-```{r}
-data0 <- simulate.competing.data(
-	n = 10000,truncate = 28,version=2,
-	par0 =c(shapeR = 1.5, 
-	         scaleR = 10,
-	         shapeM = 1.75, 
-	         scaleM = 16,
-	         shapeD = 1.75, 
-	         scaleD = 16,
-	         sigma = 0.5,
-	         alphaM = 0,
-	         alphaD = 0,
-	         betaR = 0.5,
-	         betaM = 0,
-	         betaD = 0)) 
-
-summarise.data(data0)
-```
-
 ### Association between Death and Mortality
 
 ```{r}
@@ -207,7 +129,7 @@ summarise.data(data0)
 ### Null Model, but time to death is increased so prevalence of death is roughly 25%
 
 ```{r}
-data0 <- simulate.competing.data(
+data2 <- simulate.competing.data(
 	n = 10000,truncate = 28,version=2,
 	par0 =c(shapeR = 1.5, 
 	         scaleR = 10,
@@ -216,19 +138,19 @@ data0 <- simulate.competing.data(
 	         shapeD = 1.75, 
 	         scaleD = 16,
 	         sigma = 0.5,
-	         alphaM = 0,
+	         alphaM = 1,
 	         alphaD = 0,
-	         betaR = 0,
-	         betaM = 0,
+	         betaR = -0.5,
+	         betaM = -0.5,
 	         betaD = 0)) 
 
-summarise.data(data0)
+summarise.data(data2)
 ```
 
 ### Null Model, but time to death is increased so prevalence of death is roughly 12.5%
 
 ```{r}
-data0 <- simulate.competing.data(
+data3 <- simulate.competing.data(
 	n = 10000,truncate = 28,version=2,
 	par0 =c(shapeR = 1.5, 
 	         scaleR = 10,
@@ -237,11 +159,155 @@ data0 <- simulate.competing.data(
 	         shapeD = 1.75, 
 	         scaleD = 16,
 	         sigma = 0.5,
-	         alphaM = 0,
+	         alphaM = 1,
 	         alphaD = 0,
-	         betaR = 0,
-	         betaM = 0,
+	         betaR = -0.5,
+	         betaM = -0.5,
 	         betaD = 0)) 
 
-summarise.data(data0)
+summarise.data(data3)
+```
+
+## Plot Hazard Functions
+
+```{r}
+f1 <- survfit(Surv(t, terminal1) ~ 1, data = filter(data1, event==0))
+f2 <- survfit(Surv(t, terminal1) ~ 1, data = filter(data2, event==0))
+f3 <- survfit(Surv(t, terminal1) ~ 1, data = filter(data3, event==0))
+g1 <- survfit(Surv(t, terminal2) ~ 1, data = filter(data1, event==0))
+g2 <- survfit(Surv(t, terminal2) ~ 1, data = filter(data2, event==0))
+g3 <- survfit(Surv(t, terminal2) ~ 1, data = filter(data3, event==0))
+r1 <- survfit(
+	Surv(t, event) ~ 1, 
+	data = data1 %>% 
+	group_by(id)%>%
+	filter(t == min(t)) %>%
+	ungroup
+)
+r2 <- survfit(
+	Surv(t, event) ~ 1, 
+	data = data2 %>% 
+	group_by(id)%>%
+	filter(t == min(t)) %>%
+	ungroup
+)
+r3 <- survfit(
+	Surv(t, event) ~ 1, 
+	data = data3 %>% 
+	group_by(id)%>%
+	filter(t == min(t)) %>%
+	ungroup
+)
+
+
+sfits <- tibble(
+	scenario = c(rep(1, length(f1$time)),rep(2, length(f2$time)),rep(3, length(f3$time)),
+				 rep(1, length(g1$time)),rep(2, length(g2$time)),rep(3, length(g3$time)),
+				 rep(1, length(r1$time)),rep(2, length(r2$time)),rep(3, length(r3$time))),
+	t = c(f1$time, f2$time, f3$time, g1$time, g2$time, g3$time, r1$time, r2$time, r3$time),
+	s = c(f1$surv, f2$surv, f3$surv, g1$surv, g2$surv, g3$surv, r1$surv, r2$surv, r3$surv),
+	terminal = c(
+		rep("Mortality", length(f1$time)+length(f2$time)+length(f3$time)),
+	    rep("Discharge", length(f1$time)+length(f2$time)+length(f3$time)),
+		rep("First Delirium", length(r1$time)+length(r2$time)+length(r3$time))
+	)
+)
+sfuncs <- 
+tibble(t = seq(0, 28, by=0.25),
+	   Discharge.0 = 1-pweibull(t, shape = 1.75, scale = 16),
+	   Mortality.1 = 1-pweibull(t, shape = 1.75, scale = 16),
+	   Mortality.2 = 1-pweibull(t, shape = 1.75, scale = 29),
+	   Mortality.3 = 1-pweibull(t, shape = 1.75, scale = 47), 
+	   `First Delirium.0` = 1-pweibull(t, shape = 1.5, scale = 10)) %>%
+pivot_longer(
+	cols = Discharge.0:`First Delirium.0`, 
+	values_to = "s",
+	names_to = c("terminal", "scenario"), 
+	names_sep = "\\.")
+
+ggplot() +
+geom_line(
+	data = sfuncs,
+	linetype = 2,
+	aes(
+	 x = t, 
+	 y = s, 
+	 group = scenario, color = scenario),) +
+geom_line(data = sfits,
+  aes(
+	x = t, 
+	y = s, 
+	color = factor(scenario), 
+	group = factor(scenario))) + 
+facet_wrap("terminal", nrow = 1) +
+scale_color_manual("Scenario",values = c("black","#005AB5","#DC3220","#FFC20A"))
+```
+
+```{r}
+data4 <- simulate.competing.data(
+	n = 100000,truncate = 28,version=2,
+	par0 =c(shapeR = 1.5, 
+	         scaleR = 10,
+	         shapeM = 1.75, 
+	         scaleM = 16,
+	         shapeD = 1.75, 
+	         scaleD = 16,
+	         sigma = 0.5,
+	         alphaM = 1,
+	         alphaD = -1,
+	         betaR = -0.5,
+	         betaM = -0.5,
+	         betaD = 0.5)) 
+f1 <- survfit(Surv(t, terminal1) ~ 1, data = filter(data4, event==0))
+g1 <- survfit(Surv(t, terminal2) ~ 1, data = filter(data4, event==0))
+r1 <- survfit(
+	Surv(t, event) ~ 1, 
+	data = data4 %>% 
+	group_by(id)%>%
+	filter(t == min(t)) %>%
+	ungroup
+)
+
+
+sfits <- tibble(
+	t = c(f1$time,  g1$time, r1$time),
+	s = c(f1$surv,  g1$surv, r1$surv),
+	terminal = c(
+		rep("Mortality", length(f1$time)),
+	    rep("Discharge", length(f1$time)),
+		rep("First Delirium Episode", length(r1$time))
+	)
+)
+sfuncs <- 
+tibble(t = seq(0, 28, by=0.25),
+	   Discharge = 1-pweibull(t, shape = 1.75, scale = 16),
+	   Mortality = 1-pweibull(t, shape = 1.75, scale = 16),
+	   `First Delirium Episode` = 1-pweibull(t, shape = 1.5, scale = 10)) %>%
+pivot_longer(
+	cols = Discharge:`First Delirium Episode`, 
+	values_to = "s",
+	names_to = c("terminal"))
+
+{
+png("../simulation_results/Survival_Functions.png", height = 500, width = 1000)
+print(
+	ggplot() +
+	geom_line(
+		data = sfuncs,
+		linetype = 2,size = 1,
+		aes(
+		 x = t, 
+		 y = s)) +
+	geom_line(data = sfits, size = 1,
+	  aes(
+		x = t, 
+		y = s)) + 
+	facet_wrap("terminal", nrow = 1)+
+	scale_x_continuous("Time Since Enrollment (days)", 
+					   breaks = c(0,7,14,21,28)) +
+	ylab("Survival Function") + 
+	theme_bw(25)
+)
+dev.off()
+}
 ```

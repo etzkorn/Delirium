@@ -2,7 +2,7 @@
 library(tidyverse)
 
 # File names
-output.files <- dir("Simulation_Results_4", full.names = T)
+output.files <- dir("Simulation_Results_5", full.names = T)
 
 # Get File IDs
 #scenario <- gsub("Simulation_Results/Scenario_","", output.files)
@@ -89,4 +89,4 @@ for(i in 1:length(output.files)){
 		bind_rows(sumtab)
 }
 save(sumtab,
-     file = paste0("Gathered_Results/Simulation_Results_4_",gsub(" ","_",substr(date(),0,11)),".rdata"))
+     file = paste0("Gathered_Results/Simulation_Results_5_",gsub(" ","_",substr(date(),0,11)),".rdata"))
