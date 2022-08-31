@@ -1,3 +1,10 @@
+# This script processes the REDUCE data for the competing joint model
+# where coma and delirium are treated as separate classes of recurrent
+# events, delirium is the event of interest, and coma censors the delirium process.
+
+# Output files
+# "../reduce_data/processed_data.rdata")
+# "../reduce_data/processed_data_2mgonly.rdata")
 
 library(tidyverse)
 df <- read_csv("../reduce_data/reduce data.csv")

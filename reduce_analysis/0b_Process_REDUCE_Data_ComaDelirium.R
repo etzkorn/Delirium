@@ -1,4 +1,12 @@
 
+# This script processes the REDUCE data for the competing joint model
+# where coma and delirium are combined into a single class of recurrent
+# event.
+
+# Output files are
+# "../reduce_data/processed_data_coma_delirium.rdata"
+# "../reduce_data/processed_data_coma_delirium_2mgonly.rdata"
+
 library(tidyverse)
 df <- read_csv("../reduce_data/reduce data.csv")
 head(df)
