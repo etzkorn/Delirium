@@ -1,7 +1,7 @@
 ---
 title: "Reduce Analysis"
 author: "Lacey Etzkorn"
-date: "5/01/2021"
+date: "9/21/2021"
 output: html_document
 params: 
   output_dir: "../reduce_analysis_output/"
@@ -10,8 +10,9 @@ params:
 ```{r setup, echo = FALSE,message = FALSE}
 library(frailtypack); library(gt); library(tidyverse)
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
-load(file = "../reduce_data/processed_data_coma_2mgonly.rdata")
-df2 <- df2 %>% ungroup %>%
+load(file = "../reduce_data/processed_data_coma_delirium_separate_2mg_only.rdata")
+df2 <- df2 %>% 
+ungroup %>%
 filter((apache > 0) & !is.na(apache))%>% 
 mutate(gap = tstop - tstart,
        treatment = 1*(study_arm==2),
@@ -23,10 +24,11 @@ mutate(gap = tstop - tstart,
 # Treatment (2mg) Effect Only Models
 
 ```{r, echo = FALSE,message = FALSE}
-if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_ComaOnly_20220831.rdata")){
+if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_Separate_Delirium_Coma_20220921.rdata")){
 
-# GAP Time Models (with/without initialization)
-gap.model <-
+######################3
+# GAP Time Models 
+gap.model.coma <-
 multivPenal(formula = Surv(tstart, tstop, coma) ~ treatment +
 		terminal(death) + terminal2(discharge) + cluster(id),
 	formula.terminalEvent = ~treatment,
@@ -38,9 +40,21 @@ multivPenal(formula = Surv(tstart, tstop, coma) ~ treatment +
 	maxit = 300, 
 	initialize = T)
 
+gap.model.delirium <-
+multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
+		terminal(death) + terminal2(discharge) + cluster(id),
+	formula.terminalEvent = ~treatment,
+	formula.terminalEvent2= ~treatment,
+	data = df2,
+	gapTimes = T,
+	jointGeneral = F,
+	hazard = "Weibull",
+	maxit = 300, 
+	initialize = T)
+
 #############################
-# Calendar Time Model
-cal.model <-
+# Calendar Time Model, Coma
+cal.model.coma <-
 multivPenal(formula = Surv(tstart, tstop, coma) ~ treatment +
 		terminal(death) + terminal2(discharge) + cluster(id),
 	formula.terminalEvent = ~treatment,
@@ -50,9 +64,21 @@ multivPenal(formula = Surv(tstart, tstop, coma) ~ treatment +
 	hazard = "Weibull",
 	maxit = 300, 
 	initialize = T)
-save(gap.model, cal.model,
-     file = "../reduce_analysis_output/REDUCE_Weibull_Models_ComaOnly_20220831.rdata")
-}else load("../reduce_analysis_output/REDUCE_Weibull_Models_ComaOnly_20220831.rdata")
+
+# Calendar Time Model, Delirium
+cal.model.delirium <-
+multivPenal(formula = Surv(tstart, tstop, delirium) ~ treatment +
+		terminal(death) + terminal2(discharge) + cluster(id),
+	formula.terminalEvent = ~treatment,
+	formula.terminalEvent2= ~treatment,
+	data = df2,
+	jointGeneral = F,
+	hazard = "Weibull",
+	maxit = 300, 
+	initialize = T)
+save(gap.model.coma, gap.model.delirium, cal.model.coma, cal.model.delirium,
+     file = "../reduce_analysis_output/REDUCE_Weibull_Models_Separate_Delirium_Coma_20220921.rdata")
+}else load("../reduce_analysis_output/REDUCE_Weibull_Models_Separate_Delirium_Coma_20220921.rdata")
 ```
 
 ## Gap-Time Estimates
@@ -113,7 +139,7 @@ fmt_number(columns = c(4,7,10),decimals = 3) #%>%
 # Include Age and Apache Score Effects
 
 ```{r, echo = FALSE,message = FALSE}
-if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220831.rdata")){
+if(!file.exists("../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220921.rdata")){
 gap.model <-
 multivPenal(formula = Surv(tstart, tstop, del) ~ I(apache/5 - 19/5) + I(age/10 - 65/10)+
 		terminal(death) + terminal2(discharge) + cluster(id),
@@ -137,8 +163,8 @@ multivPenal(formula = Surv(tstart, tstop, del) ~ I(apache/5 - 19/5) + I(age/10 -
 	hazard = "Weibull",
 	maxit = 300, 
 	initialize = T)
-save(gap.model, cal.model, file = "../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220831.rdata")
-}else load("../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220831.rdata")
+save(gap.model, cal.model, file = "../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220921.rdata")
+}else load("../reduce_analysis_output/REDUCE_Weibull_Models_Covariates_20220921.rdata")
 
 gap.model$summary.table %>% 
 dplyr::select(Parameter, Estimate, Estimate.SE, p) %>%

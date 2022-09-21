@@ -39,30 +39,6 @@ mutate(prev.state = c("None", state[-n()]),
                ifelse(discharge == 1, "Discharge",
                       c(state[-1],"None"))))
 
-### Plot original data type
-id.sample <-
-df1 %>% group_by(id) %>% filter(sum(delirium + coma)>1) %>%
-select(id) %>% unlist() %>% unique %>% sample(5)
-
-# df1 %>%
-# ungroup %>%
-# filter(id %in% id.sample) %>%
-# mutate(id = dense_rank(id)) %>%
-# group_by(id) %>%
-# filter(day != -1) %>%
-# mutate(state2 = ifelse(state == "Delirium", "+",
-#            ifelse(state == "Coma", "C",
-#                   ifelse(day != 0, ".",
-#                          ifelse(death == 1, "Dead", "Discharged")))),
-#        day = ifelse(day == 0, max(day)+1, day)) %>%
-# ggplot() +
-# geom_text(aes(x = day, y = factor(id), label = state2),
-#           hjust = 0,nudge_x = -.12) +
-# scale_x_continuous("Day in ICU", breaks = 0:28, limits = c(0,28),
-#        minor_breaks = NULL) +
-# scale_y_discrete("Participant ID") +
-# theme_bw()
-
 # Re-Organize Data into subsequent intervals
 df2 <- df1  %>%
 mutate(state = ifelse(state %in% c("Coma","Delirium"), "Delirium/Coma", state),
@@ -75,7 +51,8 @@ summarise(tstart = min(tstart),
           state = state[1],
           prev.state = prev.state[1],
           next.state = next.state[n()],
-          gender = gender[1]) %>%
+          gender = gender[1],
+		  losic = losic[1]) %>%
 mutate(delirium = as.numeric(next.state == "Delirium"),
        coma = as.numeric(next.state == "Coma"),
        death = as.numeric(next.state == "Death"),
@@ -83,31 +60,79 @@ mutate(delirium = as.numeric(next.state == "Delirium"),
 # Remove intervals of active delirium
 filter(state != "Delirium" )
 
-### Plot original data type
-set.seed(100)
-id.sample <-
-df1 %>% group_by(id) %>% filter((sum(delirium+coma, na.rm=T)>1) & losic > 5) %>%
-select(id) %>% unlist() %>% unique %>% sample(5)
+
+#######################################################################################
+### Two panel plot (Daily Assessment over Recurrent Event)
+
+set.seed(123456)
+
+# select some with coma, death
+id.sample1 <-
+df1 %>%
+group_by(id) %>%
+filter(sum(delirium, na.rm=T)>1 &
+	   	sum(coma, na.rm=T)>1 &
+	   	sum(death)>0 &
+	   	losic > 10) %>%
+ungroup() %>%
+filter(losic == max(losic)) %>%
+select(id) %>% unlist() %>% unique %>% sample(1)
+
+# select some with coma, discharge
+id.sample1 <-
+df1 %>%
+group_by(id) %>%
+filter(sum(delirium, na.rm=T)>1 &
+	   	sum(coma, na.rm=T)>1 &
+	   	sum(discharge)>0 &
+	   	losic > 10) %>%
+ungroup() %>%
+#filter(losic == max(losic)) %>%
+select(id) %>% unlist() %>% unique %>% sample(1) %>% c(id.sample1)
+
+# select some death, without coma
+id.sample1 <-
+df1 %>% group_by(id) %>%
+filter(sum(delirium)>1 &
+       losic > 10 &
+       !any(coma==1) &
+	   !id %in% id.sample1 &
+	   	sum(death)>0 ) %>%
+ungroup() %>%
+#filter(losic == max(losic)) %>%
+select(id) %>% unlist() %>% unique %>% sample(1) %>% c(id.sample1)
+
+# select some discharge, without coma
 id.sample <-
 df1 %>% group_by(id) %>%
-filter((sum(delirium)>1)&
-       losic >27&
-       !any(coma==1)) %>%
-select(id) %>% unlist() %>% unique %>% sample(0) %>% c(id.sample)
+filter(sum(delirium)>1&
+       losic > 10 &
+       !any(coma==1) &
+	   !id %in% id.sample1 &
+	   sum(discharge)>0 ) %>%
+ungroup() %>%
+#filter(losic == max(losic)) %>%
+select(id) %>% unlist() %>% unique %>% sample(2) %>% c(id.sample1)
+
 {
 png("../reduce_analysis_output/Figure1_Introduction_Version2.png",height = 800, width = 800)
 gridExtra::grid.arrange(
 df1 %>%
 ungroup %>%
 filter(id %in% id.sample) %>%
-mutate(id = dense_rank(id)) %>%
+mutate(id = dense_rank(losic)) %>%
 group_by(id) %>%
 filter(day != -1) %>%
-mutate(state2 = ifelse(death == 1, "Dead",
-           ifelse(discharge == 1, "Discharged", state)) %>% factor,
-       state2 = relevel(state2, "Delirium"),
+mutate(
+	state2 = ifelse(
+		death == 1, "Dead",
+		ifelse(
+			discharge == 1,
+			"Discharged", state)) %>%
+		factor(ordered = T, levels = c("Delirium", "Coma","Discharged","Dead")),
        day = ifelse(day == 0, max(day)+1, day)) %>%
 filter(state2 !="None") %>%
+
 ggplot() +
 geom_point(aes(x = day-1, y = factor(id),
    shape = state2, fill = state2), size = 4) +
@@ -133,7 +158,7 @@ theme(panel.grid.major.y = element_blank(),
 df2 %>%
 filter(id %in% id.sample & !next.state %in% c("None")) %>%
 ungroup %>%
-mutate(id = dense_rank(id),
+mutate(id = dense_rank(losic),
        next.state = factor(next.state),
        next.state = relevel(next.state, "Discharge"),
        next.state = relevel(next.state, "Delirium/Coma")) %>% #print.data.frame
@@ -159,19 +184,24 @@ dev.off()
 }
 
 
-#### SEPARATE PLOTS
+#######################################################################################
+### SEPARATE PLOTS (Daily Assessment)
 
 {
-png("../reduce_analysis_output/OriginalData.png",height = 400, width = 800)
+png("../reduce_analysis_output/Figure1_OriginalData.png",height = 400, width = 800)
+print(
 df1 %>%
 ungroup %>%
 filter(id %in% id.sample) %>%
-mutate(id = dense_rank(id)) %>%
+mutate(id = dense_rank(losic)) %>%
 group_by(id) %>%
 filter(day != -1) %>%
-mutate(state2 = ifelse(death == 1, "Dead",
-          ifelse(discharge == 1, "Discharged", state)) %>% factor,
-       state2 = relevel(state2, "Delirium"),
+mutate(	state2 = ifelse(
+		death == 1, "Dead",
+		ifelse(
+			discharge == 1,
+			"Discharged", state)) %>%
+		factor(ordered = T, levels = c("Delirium", "Coma","Discharged","Dead")),
        day = ifelse(day == 0, max(day)+1, day)) %>%
 filter(state2 !="None") %>%
 ggplot() +
@@ -191,13 +221,18 @@ theme_bw(25) +
 theme(panel.grid.major.y = element_blank(),
       legend.position = c(.85,.23),
       legend.background = element_rect(color = "grey80"))
+)
 dev.off()
 
-png("../reduce_analysis_output/RecurrData.png",height = 400, width = 800)
-df2 %>%
+#######################################################################################
+### SEPARATE PLOTS (Recurrent Events)
+
+png("../reduce_analysis_output/Figure1_RecurrData.png",height = 400, width = 800)
+print(
+	df2 %>%
 filter(id %in% id.sample & !next.state %in% c("None")) %>%
 ungroup %>%
-mutate(id = dense_rank(id),
+mutate(id = dense_rank(losic),
        next.state = factor(next.state),
        next.state = relevel(next.state, "Discharge"),
        next.state = relevel(next.state, "Delirium/Coma")) %>% #print.data.frame
@@ -217,6 +252,7 @@ theme(
 legend.position = c(.85,.2),
 legend.background = element_rect(color = "grey80"),
 panel.grid.major.y = element_blank())
+)
 dev.off()
 }
 
