@@ -27,9 +27,9 @@ mutate(delirium = ifelse(delirium == -99, NA, delirium),
        coma = ifelse(coma == -99, NA, coma),
        delirium = zoo::na.locf(ifelse(day == 0 | coma == 1, 0, delirium)),
        coma = zoo::na.locf(ifelse(day == 0 ,0, coma)),
-       tstart = ifelse(day == 0, max(day) + 0.2 ,
+       tstart = ifelse(day == 0, max(day) + 0.3 ,
            ifelse(day == -1, 0, day - 0.8)),
-       tstop = ifelse(tstart == 0 | death == 1 | discharge == 1, tstart + 0.2, tstart + 1),
+       tstop = ifelse(tstart == 0 | death == 1 | discharge == 1, tstart + 0.3, tstart + 1),
        state = ifelse(delirium ==1, "Delirium",
           ifelse(coma == 1, "Coma", "None"))) %>%
 select(-dead) %>%
@@ -120,7 +120,8 @@ gridExtra::grid.arrange(
 df1 %>%
 ungroup %>%
 filter(id %in% id.sample) %>%
-mutate(id = dense_rank(losic)) %>%
+mutate(id = dense_rank(losic),
+	   id = paste("Patient",id)) %>%
 group_by(id) %>%
 filter(day != -1) %>%
 mutate(
@@ -128,10 +129,11 @@ mutate(
 		death == 1, "Dead",
 		ifelse(
 			discharge == 1,
-			"Discharged", state)) %>%
-		factor(ordered = T, levels = c("Delirium", "Coma","Discharged","Dead")),
+			"Discharged",
+			ifelse(state == "None", "No Delirium", state))) %>%
+		factor(ordered = T, levels = c("No Delirium","Delirium", "Coma","Discharged","Dead")),
        day = ifelse(day == 0, max(day)+1, day)) %>%
-filter(state2 !="None") %>%
+#filter(state2 !="None") %>%
 
 ggplot() +
 geom_point(aes(x = day-1, y = factor(id),
@@ -140,10 +142,11 @@ scale_x_continuous("Day in ICU", breaks = 0:28, limits = c(0,29),
        minor_breaks = NULL) +
 scale_y_discrete("Participant ID") +
 scale_shape_manual("Status",
-       values = c(22,23,24,25))+
+       values = c(1,22,23,24,25))+
 scale_fill_manual("Status",
-      values = c("#d55e00",
-                 "#f0e442",
+      values = c("#f0e442",
+      		     "#f0e442",
+                 "#d55e00",
                  "#0072b2",
                  "#009e73"))+
 theme_bw(25) +
@@ -151,14 +154,16 @@ theme(panel.grid.major.y = element_blank(),
       axis.title.x = element_blank(),
       axis.text.x = element_blank(),
       axis.ticks.x = element_blank(),
-      legend.position = c(.85,.2),
+      legend.position = c(.85,.25),
       legend.background = element_rect(color = "grey80"),
-      plot.margin = margin(.25,.25,.05,.25,"cm")),
+      plot.margin = margin(.25,.25,.05,.25,"cm"),
+      axis.title.y = element_blank()),
 
 df2 %>%
 filter(id %in% id.sample & !next.state %in% c("None")) %>%
 ungroup %>%
 mutate(id = dense_rank(losic),
+	   id = paste("Patient",id),
        next.state = factor(next.state),
        next.state = relevel(next.state, "Discharge"),
        next.state = relevel(next.state, "Delirium/Coma")) %>% #print.data.frame
@@ -171,14 +176,15 @@ geom_segment(aes(x = tstart, xend = tstop, y = factor(id), yend = factor(id)), s
 scale_shape_manual("Event Onset",
        values = c(23,24,25)) +
 scale_fill_manual("Event Onset",
-      values = c("#f0e442","#0072b2", "#009e73"))+
+      values = c("#d55e00","#0072b2", "#009e73"))+
 scale_x_continuous("Day in ICU", breaks = 0:28, limits = c(0,29), minor_breaks = NULL) +
-scale_y_discrete("Participant ID") +
 theme(
       legend.position = c(.85,.2),
       legend.background = element_rect(color = "grey80"),
       panel.grid.major.y = element_blank(),
-      plot.margin = margin(0,.25,.25,.25,"cm")),
+      plot.margin = margin(0,.25,.25,.25,"cm"),
+      axis.title.y = element_blank(),
+      axis.text.x = element_text(size = 15)),
 nrow = 2)
 dev.off()
 }
@@ -193,17 +199,21 @@ print(
 df1 %>%
 ungroup %>%
 filter(id %in% id.sample) %>%
-mutate(id = dense_rank(losic)) %>%
+mutate(id = dense_rank(losic),
+	   id = paste("Patient",id)) %>%
 group_by(id) %>%
 filter(day != -1) %>%
-mutate(	state2 = ifelse(
+mutate(
+	state2 = ifelse(
 		death == 1, "Dead",
 		ifelse(
 			discharge == 1,
-			"Discharged", state)) %>%
-		factor(ordered = T, levels = c("Delirium", "Coma","Discharged","Dead")),
+			"Discharged",
+			ifelse(state == "None", "No Delirium", state))) %>%
+		factor(ordered = T, levels = c("No Delirium","Delirium", "Coma","Discharged","Dead")),
        day = ifelse(day == 0, max(day)+1, day)) %>%
-filter(state2 !="None") %>%
+#filter(state2 !="None") %>%
+
 ggplot() +
 geom_point(aes(x = day-1, y = factor(id),
    shape = state2, fill = state2), size = 4) +
@@ -211,16 +221,20 @@ scale_x_continuous("Day in ICU", breaks = 0:28, limits = c(0,29),
        minor_breaks = NULL) +
 scale_y_discrete("Participant ID") +
 scale_shape_manual("Status",
-      values = c(22,23,24,25))+
+       values = c(1,22,23,24,25))+
 scale_fill_manual("Status",
-      values = c("#d55e00",
-                 "#f0e442",
+      values = c("#f0e442",
+      		     "#f0e442",
+                 "#d55e00",
                  "#0072b2",
                  "#009e73"))+
 theme_bw(25) +
 theme(panel.grid.major.y = element_blank(),
-      legend.position = c(.85,.23),
-      legend.background = element_rect(color = "grey80"))
+      legend.position = c(.85,.25),
+      legend.background = element_rect(color = "grey80"),
+      plot.margin = margin(.25,.25,.05,.25,"cm"),
+      axis.title.y = element_blank(),
+      axis.text.x = element_text(size = 15))
 )
 dev.off()
 
@@ -229,10 +243,11 @@ dev.off()
 
 png("../reduce_analysis_output/Figure1_RecurrData.png",height = 400, width = 800)
 print(
-	df2 %>%
+df2 %>%
 filter(id %in% id.sample & !next.state %in% c("None")) %>%
 ungroup %>%
 mutate(id = dense_rank(losic),
+	   id = paste("Patient",id),
        next.state = factor(next.state),
        next.state = relevel(next.state, "Discharge"),
        next.state = relevel(next.state, "Delirium/Coma")) %>% #print.data.frame
@@ -245,13 +260,15 @@ geom_segment(aes(x = tstart, xend = tstop, y = factor(id), yend = factor(id)), s
 scale_shape_manual("Event Onset",
        values = c(23,24,25)) +
 scale_fill_manual("Event Onset",
-      values = c("#f0e442","#0072b2", "#009e73"))+
+      values = c("#d55e00","#0072b2", "#009e73"))+
 scale_x_continuous("Day in ICU", breaks = 0:28, limits = c(0,29), minor_breaks = NULL) +
-scale_y_discrete("Participant ID") +
 theme(
-legend.position = c(.85,.2),
-legend.background = element_rect(color = "grey80"),
-panel.grid.major.y = element_blank())
+      legend.position = c(.85,.2),
+      legend.background = element_rect(color = "grey80"),
+      panel.grid.major.y = element_blank(),
+      plot.margin = margin(0,.25,.25,.25,"cm"),
+      axis.title.y = element_blank(),
+      axis.text.x = element_text(size = 15))
 )
 dev.off()
 }

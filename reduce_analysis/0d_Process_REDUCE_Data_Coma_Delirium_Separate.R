@@ -121,12 +121,6 @@ while(i < nrow(df2)){
 	i = i+1
 }
 
-
-filter(df1, id ==226)
-
-filter(df2, id ==226)
-
-
 #############################################################################################
 # Gather Subsequent Days with the same state into subsequent intervals
 df3 <- df2  %>%
@@ -149,15 +143,15 @@ mutate(delirium = as.numeric(next.state == "Delirium"), # commented out for coma
 
 # Remove intervals of active coma, delirium
 filter(state != "Coma"  & state != "Delirium") %>%
-dplyr::select(id, tstart, tstop, apache, age, study_arm, coma:discharge)
+dplyr::select(id, tstart, tstop, apache, age, study_arm, delirium, coma:discharge)
 
 
-save(df2, file = "../reduce_data/processed_data_coma_delirium_separate.rdata")
+save(df3, file = "../reduce_data/processed_data_coma_delirium_separate.rdata")
 
-df2 <- df2 %>%
+df3 <- df3 %>%
 ungroup %>%
 filter(study_arm %in% c(1,2)) %>%
 mutate(treatment = as.numeric(study_arm==2),
 	   id = dense_rank(id))
 
-save(df2, file = "../reduce_data/processed_data_coma_delirium_separate_2mg_only.rdata")
+save(df3, file = "../reduce_data/processed_data_coma_delirium_separate_2mg_only.rdata")

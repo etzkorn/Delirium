@@ -5,6 +5,9 @@
 #' @param n replicate count
 #' @param k shape parameter from rweibull.
 #' @param b transformed version of scale from rweibull. Specifically scale^-k or scale^-shape. The hazard will be proportional to b.
+#' @param shape shape parameter from rweibull.
+#' @param scale shape parameter from rweibull.
+#' @param rh relative hazard which compared to the hazard defined by shape and scale alone.
 #'
 #' @return Vector of n replicates
 #'
@@ -24,4 +27,7 @@ rweibRH <- function(n, shape ,scale , rh){
 	rweibull(n, shape = shape, scale = scale * rh^(-1/shape))
 }
 
+pweibRH <- function(q, shape, scale, rh){
+	pweibull(q, shape = shape, scale = scale * rh^(-1/shape))
+}
 
